@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "Rondo"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "events": "Events",
+    "training": "Training",
+    "squad": "Squad",
+    "profile": "Profile"
+  },
+  "events": {
+    "title": "Events",
+    "empty": "No events planned yet",
+    "emptyHint": "Your trainings and matches will show up here."
+  },
+  "training": {
+    "title": "Training",
+    "empty": "No training planned yet",
+    "emptyHint": "Once a training plan is published, you will see the drills here."
+  },
+  "squad": {
+    "title": "Squad",
+    "empty": "No players in the squad yet",
+    "emptyHint": "Invite players with an invite link."
+  },
+  "profile": {
+    "title": "Profile",
+    "empty": "Not signed in",
+    "emptyHint": "Email sign-in is coming soon."
+  },
+  "common": {
+    "close": "Close",
+    "notFound": "Page not found",
+    "backHome": "Back to start"
+  }
+}

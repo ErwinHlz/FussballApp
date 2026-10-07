@@ -1,0 +1,6 @@
+.tools/
+dist/
+node_modules/
+coverage/
+src/types/database.ts
+package-lock.json
