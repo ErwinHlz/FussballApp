@@ -26,12 +26,38 @@
   },
   "profile": {
     "title": "Profile",
-    "empty": "Not signed in",
-    "emptyHint": "Email sign-in is coming soon."
+    "displayName": "Display name",
+    "displayNameHint": "This is how coaches and team mates see you.",
+    "saved": "Saved",
+    "saveFailed": "Saving failed. Please try again.",
+    "loadFailed": "Profile could not be loaded."
   },
   "common": {
     "close": "Close",
     "notFound": "Page not found",
-    "backHome": "Back to start"
+    "backHome": "Back to start",
+    "save": "Save",
+    "loading": "Loading …",
+    "retry": "Try again"
+  },
+  "auth": {
+    "tagline": "Come to training prepared.",
+    "signIn": "Sign in",
+    "magicLinkHint": "Enter your email address. We will send you a link to sign in without a password.",
+    "email": "Email",
+    "sendLink": "Send sign-in link",
+    "sendFailed": "The link could not be sent. Please try again in a moment.",
+    "checkInbox": "Check your inbox",
+    "linkSentTo": "We sent a sign-in link to {email}. Open it on this device.",
+    "devMailbox": "Local development: find emails at",
+    "useOtherEmail": "Use a different email",
+    "signOut": "Sign out",
+    "signOutFailed": "Sign-out failed. Please try again."
+  },
+  "validation": {
+    "required": "Required",
+    "email": "Please enter a valid email address.",
+    "minLength2": "At least 2 characters",
+    "maxLength60": "At most 60 characters"
   }
 }

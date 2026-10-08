@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '../App.vue'
 import { routes } from '../router'
 import { i18n } from '@/lib/i18n'
 
+// Uses a router without the auth guard: this test covers layout and navigation only.
 async function mountAt(path: string) {
   const router = createRouter({ history: createMemoryHistory(), routes })
   await router.push(path)
   await router.isReady()
-  const wrapper = mount(App, { global: { plugins: [router, i18n] } })
+  const wrapper = mount(App, { global: { plugins: [createPinia(), router, i18n] } })
   return { wrapper, router }
 }
 

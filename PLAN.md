@@ -227,11 +227,11 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** `npm run dev` startet, leere App mit Navigation wird angezeigt, alle Checks grün.
 
 ### Phase 1 – Login und Profil
-- [ ] Migration: `profiles` + Trigger, der beim Registrieren ein Profil anlegt
-- [ ] Login per Magic Link (E-Mail) über Supabase Auth
-- [ ] Auth-Store (Pinia) mit Session, Router-Guard für geschützte Routen, Redirect zum Login
-- [ ] Profil-Seite: Anzeigename ändern
-- [ ] Logout
+- [x] Migration: `profiles` + Trigger, der beim Registrieren ein Profil anlegt
+- [x] Login per Magic Link (E-Mail) über Supabase Auth
+- [x] Auth-Store (Pinia) mit Session, Router-Guard für geschützte Routen, Redirect zum Login
+- [x] Profil-Seite: Anzeigename ändern
+- [x] Logout
 
 **Abnahme:** Registrieren, Einloggen, Namen ändern und Ausloggen funktionieren.
 

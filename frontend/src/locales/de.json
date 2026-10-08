@@ -26,12 +26,38 @@
   },
   "profile": {
     "title": "Profil",
-    "empty": "Noch nicht angemeldet",
-    "emptyHint": "Die Anmeldung per E-Mail folgt in Kürze."
+    "displayName": "Anzeigename",
+    "displayNameHint": "So sehen dich Trainer und Mitspieler.",
+    "saved": "Gespeichert",
+    "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    "loadFailed": "Profil konnte nicht geladen werden."
   },
   "common": {
     "close": "Schließen",
     "notFound": "Seite nicht gefunden",
-    "backHome": "Zur Startseite"
+    "backHome": "Zur Startseite",
+    "save": "Speichern",
+    "loading": "Lädt …",
+    "retry": "Erneut versuchen"
+  },
+  "auth": {
+    "tagline": "Vorbereitet ins Training.",
+    "signIn": "Anmelden",
+    "magicLinkHint": "Gib deine E-Mail-Adresse ein. Wir schicken dir einen Link, mit dem du dich ohne Passwort anmeldest.",
+    "email": "E-Mail",
+    "sendLink": "Anmeldelink senden",
+    "sendFailed": "Der Link konnte nicht gesendet werden. Bitte versuche es gleich noch einmal.",
+    "checkInbox": "Schau in dein Postfach",
+    "linkSentTo": "Wir haben einen Anmeldelink an {email} geschickt. Öffne ihn auf diesem Gerät.",
+    "devMailbox": "Lokale Entwicklung: Mails findest du unter",
+    "useOtherEmail": "Andere E-Mail verwenden",
+    "signOut": "Abmelden",
+    "signOutFailed": "Abmelden fehlgeschlagen. Bitte versuche es erneut."
+  },
+  "validation": {
+    "required": "Pflichtfeld",
+    "email": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "minLength2": "Mindestens 2 Zeichen",
+    "maxLength60": "Höchstens 60 Zeichen"
   }
 }

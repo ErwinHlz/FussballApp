@@ -26,8 +26,12 @@ npm run status     # zeigt URLs und API-Schlüssel
 - Studio: http://127.0.0.1:54323
 - Mails (Magic Links): http://127.0.0.1:54324
 - `npm run db:reset` spielt alle Migrationen und `seed.sql` neu ein
-- `npm run gen:types` erzeugt `frontend/src/types/database.ts`
+- `npm run gen:types` erzeugt `frontend/src/types/database.ts` (nach jeder neuen Migration)
+- `npm run test:db` prüft die Zugriffsregeln (RLS) mit pgTAP
 - `npm run stop` stoppt das Backend
+
+Hinweis Windows: Supabase-Analytics ist in `config.toml` deaktiviert, weil der Log-Dienst
+unter Docker Desktop nicht startet. Für die App wird er nicht gebraucht.
 
 ## 2. Frontend starten
 
@@ -38,7 +42,8 @@ npm install
 npm run dev
 ```
 
-Die App läuft unter http://localhost:5173.
+Die App läuft unter http://localhost:5173. Login per Magic Link: E-Mail eingeben, dann den
+Link im lokalen Postfach unter http://127.0.0.1:54324 öffnen.
 
 ## Skripte (frontend)
 
