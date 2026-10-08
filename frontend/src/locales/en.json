@@ -13,7 +13,127 @@
   "events": {
     "title": "Events",
     "empty": "No events planned yet",
-    "emptyHint": "Your trainings and matches will show up here."
+    "emptyHint": "Your trainings and matches will show up here.",
+    "emptyHintCoach": "Create a training, a training series or a match above.",
+    "loadFailed": "Events could not be loaded.",
+    "loadFailedOne": "Event could not be loaded.",
+    "createLabel": "Create event",
+    "newTraining": "Training",
+    "newSeries": "Series",
+    "newMatch": "Match",
+    "training": "Training",
+    "match": "Match",
+    "matchHome": "vs. {opponent}",
+    "matchAway": "{'@'} {opponent}",
+    "home": "Home",
+    "away": "Away",
+    "time": "Time",
+    "meet": "Meeting point",
+    "cancelled": "Cancelled",
+    "cancelledTitle": "This event has been cancelled.",
+    "fromSeries": "Series",
+    "past": "Past events ({count})",
+    "reminder": "You have not answered {n} event yet. | You have not answered {n} events yet.",
+    "countsLabel": "{yes} yes, {maybe} maybe, {no} no, {none} no answer",
+    "dayMonthPattern": "MMM d",
+    "yourAnswer": "Your answer",
+    "answerFailed": "Your answer could not be saved.",
+    "prefilledInjured": "Filled in automatically because you are marked as injured. You can change it.",
+    "answer": {
+      "label": "Answer",
+      "yes": "Yes",
+      "maybe": "Maybe",
+      "no": "No"
+    },
+    "locked": {
+      "deadlinePassed": "The response deadline has passed. Only your coach can change it now.",
+      "started": "The event has already started."
+    },
+    "declineTitle": "Decline",
+    "reasonLabel": "Reason (optional)",
+    "reasonNote": "Note (optional)",
+    "reasonNotePlaceholder": "e.g. arriving at 7:30 pm",
+    "reasons": {
+      "none": "No reason",
+      "injured": "Injured",
+      "sick": "Sick",
+      "work": "Work",
+      "vacation": "Vacation",
+      "other": "Other"
+    },
+    "competition": {
+      "league": "League",
+      "cup": "Cup",
+      "friendly": "Friendly"
+    },
+    "squadRole": {
+      "starter": "Starting XI",
+      "bench": "Bench",
+      "reserve": "Reserve"
+    },
+    "squadRoleShort": {
+      "starter": "Start",
+      "bench": "Bench",
+      "reserve": "Res.",
+      "none": "–"
+    },
+    "overview": {
+      "title": "Who is coming?",
+      "live": "live",
+      "yes": "Yes",
+      "maybe": "Maybe",
+      "no": "No",
+      "none": "No answer"
+    },
+    "nomination": {
+      "title": "Match squad",
+      "counts": "Starting {starter} · Bench {bench} · Reserve {reserve}",
+      "noCandidates": "Nobody has said yes yet.",
+      "save": "Save squad",
+      "saved": "Squad saved",
+      "saveFailed": "Squad could not be saved.",
+      "you": "You are nominated: {role}",
+      "notYou": "You are not nominated for this match."
+    },
+    "coachActions": "Coach actions",
+    "edit": "Edit",
+    "cancel": "Cancel event",
+    "cancelTitle": "Cancel event",
+    "cancelReason": "Reason (optional)",
+    "cancelReasonPlaceholder": "e.g. pitch closed",
+    "reactivate": "Undo cancellation",
+    "delete": "Delete event",
+    "deleteConfirm": "Really delete? All answers will be lost.",
+    "form": {
+      "newTitle": {
+        "training": "New training",
+        "series": "New training series",
+        "match": "New match"
+      },
+      "editTitle": "Edit event",
+      "date": "Date",
+      "startTime": "Start",
+      "duration": "Duration (minutes)",
+      "location": "Location",
+      "notes": "Notes",
+      "deadline": "Response deadline",
+      "noDeadline": "None",
+      "hoursBefore": "{n} hour before | {n} hours before",
+      "weekdays": "Weekdays",
+      "validFrom": "From",
+      "validUntil": "Until",
+      "seriesCount": "{n} training will be created. | {n} trainings will be created.",
+      "seriesFirst": "First training: {date}",
+      "createSeries": "Create {n} training | Create {n} trainings",
+      "opponent": "Opponent",
+      "venue": "Home or away",
+      "competition": "Competition",
+      "kickoff": "Kick-off",
+      "meetTime": "Meeting time",
+      "meetLocation": "Meeting point",
+      "venueLocation": "Venue",
+      "saveFailed": "Saving failed. Please check your input."
+    }
   },
   "training": {
     "title": "Training",
@@ -206,6 +326,12 @@
     "passwordMin": "At least {min} characters",
     "passwordMax": "At most 72 characters",
     "passwordMismatch": "Passwords do not match.",
-    "shirtNumber": "Please enter a number from 0 to 99"
+    "shirtNumber": "Please enter a number from 0 to 99",
+    "duration": "Please 15 to 600 minutes",
+    "weekdays": "Please choose at least one weekday",
+    "dateRange": "The end must be after the start",
+    "seriesTooLong": "A series can be at most one year long",
+    "maxLength120": "At most 120 characters",
+    "maxLength2000": "At most 2000 characters"
   }
 }

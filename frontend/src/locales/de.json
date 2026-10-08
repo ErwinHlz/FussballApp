@@ -13,7 +13,127 @@
   "events": {
     "title": "Termine",
     "empty": "Noch kein Termin geplant",
-    "emptyHint": "Hier erscheinen bald deine Trainings und Spiele."
+    "emptyHint": "Hier erscheinen bald deine Trainings und Spiele.",
+    "emptyHintCoach": "Leg oben ein Training, eine Trainingsserie oder ein Spiel an.",
+    "loadFailed": "Termine konnten nicht geladen werden.",
+    "loadFailedOne": "Termin konnte nicht geladen werden.",
+    "createLabel": "Termin anlegen",
+    "newTraining": "Training",
+    "newSeries": "Serie",
+    "newMatch": "Spiel",
+    "training": "Training",
+    "match": "Spiel",
+    "matchHome": "vs. {opponent}",
+    "matchAway": "{'@'} {opponent}",
+    "home": "Heim",
+    "away": "Auswärts",
+    "time": "Zeit",
+    "meet": "Treffpunkt",
+    "cancelled": "Abgesagt",
+    "cancelledTitle": "Dieser Termin wurde abgesagt.",
+    "fromSeries": "Serie",
+    "past": "Vergangene Termine ({count})",
+    "reminder": "Du hast {n} Termin noch nicht beantwortet. | Du hast {n} Termine noch nicht beantwortet.",
+    "countsLabel": "{yes} Zusagen, {maybe} vielleicht, {no} Absagen, {none} ohne Antwort",
+    "dayMonthPattern": "dd.MM.",
+    "yourAnswer": "Deine Antwort",
+    "answerFailed": "Antwort konnte nicht gespeichert werden.",
+    "prefilledInjured": "Automatisch eingetragen, weil du als verletzt gemeldet bist. Du kannst das ändern.",
+    "answer": {
+      "label": "Antwort",
+      "yes": "Zusage",
+      "maybe": "Vielleicht",
+      "no": "Absage"
+    },
+    "locked": {
+      "deadlinePassed": "Anmeldeschluss vorbei. Änderungen nur noch über den Trainer.",
+      "started": "Der Termin hat schon begonnen."
+    },
+    "declineTitle": "Absagen",
+    "reasonLabel": "Grund (optional)",
+    "reasonNote": "Bemerkung (optional)",
+    "reasonNotePlaceholder": "z. B. komme erst ab 19:30",
+    "reasons": {
+      "none": "Ohne Grund",
+      "injured": "Verletzt",
+      "sick": "Krank",
+      "work": "Arbeit",
+      "vacation": "Urlaub",
+      "other": "Sonstiges"
+    },
+    "competition": {
+      "league": "Liga",
+      "cup": "Pokal",
+      "friendly": "Test"
+    },
+    "squadRole": {
+      "starter": "Startelf",
+      "bench": "Bank",
+      "reserve": "Reserve"
+    },
+    "squadRoleShort": {
+      "starter": "Start",
+      "bench": "Bank",
+      "reserve": "Res.",
+      "none": "–"
+    },
+    "overview": {
+      "title": "Wer kommt?",
+      "live": "live",
+      "yes": "Zusagen",
+      "maybe": "Vielleicht",
+      "no": "Absagen",
+      "none": "Keine Antwort"
+    },
+    "nomination": {
+      "title": "Spieltagskader",
+      "counts": "Startelf {starter} · Bank {bench} · Reserve {reserve}",
+      "noCandidates": "Noch keine Zusagen.",
+      "save": "Kader speichern",
+      "saved": "Kader gespeichert",
+      "saveFailed": "Kader konnte nicht gespeichert werden.",
+      "you": "Du bist nominiert: {role}",
+      "notYou": "Du bist für dieses Spiel nicht nominiert."
+    },
+    "coachActions": "Trainer-Aktionen",
+    "edit": "Bearbeiten",
+    "cancel": "Termin absagen",
+    "cancelTitle": "Termin absagen",
+    "cancelReason": "Grund (optional)",
+    "cancelReasonPlaceholder": "z. B. Platz gesperrt",
+    "reactivate": "Absage zurücknehmen",
+    "delete": "Termin löschen",
+    "deleteConfirm": "Wirklich löschen? Alle Antworten gehen verloren.",
+    "form": {
+      "newTitle": {
+        "training": "Neues Training",
+        "series": "Neue Trainingsserie",
+        "match": "Neues Spiel"
+      },
+      "editTitle": "Termin bearbeiten",
+      "date": "Datum",
+      "startTime": "Beginn",
+      "duration": "Dauer (Minuten)",
+      "location": "Ort",
+      "notes": "Notizen",
+      "deadline": "Anmeldeschluss",
+      "noDeadline": "Keiner",
+      "hoursBefore": "{n} Std. vorher | {n} Std. vorher",
+      "weekdays": "Wochentage",
+      "validFrom": "Von",
+      "validUntil": "Bis",
+      "seriesCount": "Es wird {n} Training angelegt. | Es werden {n} Trainings angelegt.",
+      "seriesFirst": "Erstes Training: {date}",
+      "createSeries": "{n} Training anlegen | {n} Trainings anlegen",
+      "opponent": "Gegner",
+      "venue": "Heim oder auswärts",
+      "competition": "Wettbewerb",
+      "kickoff": "Anstoß",
+      "meetTime": "Treffzeit",
+      "meetLocation": "Treffpunkt",
+      "venueLocation": "Spielort",
+      "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben."
+    }
   },
   "training": {
     "title": "Training",
@@ -206,6 +326,12 @@
     "passwordMin": "Mindestens {min} Zeichen",
     "passwordMax": "Höchstens 72 Zeichen",
     "passwordMismatch": "Die Passwörter stimmen nicht überein.",
-    "shirtNumber": "Bitte eine Zahl von 0 bis 99"
+    "shirtNumber": "Bitte eine Zahl von 0 bis 99",
+    "duration": "Bitte 15 bis 600 Minuten",
+    "weekdays": "Bitte mindestens einen Wochentag wählen",
+    "dateRange": "Das Ende muss nach dem Beginn liegen",
+    "seriesTooLong": "Eine Serie darf höchstens ein Jahr lang sein",
+    "maxLength120": "Höchstens 120 Zeichen",
+    "maxLength2000": "Höchstens 2000 Zeichen"
   }
 }

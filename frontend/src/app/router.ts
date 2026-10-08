@@ -57,6 +57,25 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/events/views/EventsView.vue'),
       },
       {
+        path: 'events/new/:kind(training|series|match)',
+        name: 'event-new',
+        props: true,
+        meta: { requiresTeam: true },
+        component: () => import('@/features/events/views/EventFormView.vue'),
+      },
+      {
+        path: 'events/:eventId',
+        name: 'event',
+        props: true,
+        component: () => import('@/features/events/views/EventDetailView.vue'),
+      },
+      {
+        path: 'events/:eventId/edit',
+        name: 'event-edit',
+        props: true,
+        component: () => import('@/features/events/views/EventFormView.vue'),
+      },
+      {
         path: 'training',
         name: 'training',
         meta: { requiresTeam: true },

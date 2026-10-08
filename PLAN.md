@@ -146,7 +146,7 @@ event_series        (team_id, type: 'training', weekday int, start_time time,
 
 events              (team_id, type: 'training' | 'match',
                      series_id NULL → event_series,
-                     starts_at, ends_at NULL, meet_at NULL, location, notes,
+                     starts_at, ends_at NULL, meet_at NULL, meet_location NULL, location, notes,
                      response_deadline NULL,           -- Anmeldeschluss
                      is_cancelled bool default false, cancel_reason NULL,
                      plan_status: 'draft' | 'published' default 'draft',  -- nur für Training relevant
@@ -154,7 +154,8 @@ events              (team_id, type: 'training' | 'match',
 
 attendances         (event_id → events, member_id → team_members,
                      status: 'yes' | 'no' | 'maybe',
-                     reason NULL, updated_by → profiles, updated_at,
+                     reason NULL, reason_note NULL (Freitext),
+                     updated_by → profiles (NULL = vom System, z. B. „verletzt“), updated_at,
                      unique(event_id, member_id))
                      -- keine Zeile = noch nicht geantwortet
 
@@ -272,20 +273,20 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** Trainer pflegt einen vollständigen Kader, Spieler sehen ihn nur lesend.
 
 ### Phase 4 – Termine und Anmeldung (Training und Spiel)
-- [ ] Migration: `event_series`, `events`, `attendances`, `match_squad` + RLS
-- [ ] **Training anlegen:** Datum, Uhrzeit, Dauer, Ort, Notizen, optional Anmeldeschluss
-- [ ] **Trainingsserie anlegen:** z. B. „jeden Dienstag und Donnerstag 19:00“ für einen Zeitraum, erzeugt die einzelnen Termine. Einzelne Termine der Serie bleiben einzeln bearbeitbar.
-- [ ] **Spiel anlegen:** Gegner, Heim/Auswärts, Wettbewerb (Liga, Pokal, Test), Treffpunkt und Treffzeit, Anstoß, Ort, Anmeldeschluss
-- [ ] Terminliste: kommende Termine chronologisch, Training und Spiel optisch klar unterscheidbar, vergangene Termine einklappbar
-- [ ] **Anmeldung:** Zusage, Absage, Vielleicht mit einem Tipp direkt in der Liste. Bei Absage optional Grund (Verletzt, Krank, Arbeit, Urlaub, Sonstiges + Freitext)
-- [ ] Anmeldung ändern bis zum Anmeldeschluss, danach gesperrt (Trainer kann weiterhin ändern)
-- [ ] **Übersicht für den Trainer:** Zugesagt / Abgesagt / Vielleicht / Keine Antwort mit Namen und Anzahl, live per Supabase Realtime
-- [ ] Trainer kann Anmeldungen für Spieler ohne Account eintragen
-- [ ] Verletzte Spieler werden bei neuen Terminen automatisch als „abgesagt (verletzt)“ vorgeschlagen
-- [ ] **Nominierung für Spiele:** Trainer wählt aus den Zusagen den Spieltagskader (Startelf, Bank, Reserve). Spieler sehen, ob sie nominiert sind.
-- [ ] Termin absagen (mit Grund), abgesagte Termine bleiben sichtbar, aber durchgestrichen
-- [ ] Erinnerungs-Hinweis in der App für Spieler, die noch nicht geantwortet haben (Push folgt in Phase 11)
-- [ ] Unit-Tests für Serienerzeugung und Anmeldeschluss-Logik
+- [x] Migration: `event_series`, `events`, `attendances`, `match_squad` + RLS
+- [x] **Training anlegen:** Datum, Uhrzeit, Dauer, Ort, Notizen, optional Anmeldeschluss
+- [x] **Trainingsserie anlegen:** z. B. „jeden Dienstag und Donnerstag 19:00“ für einen Zeitraum, erzeugt die einzelnen Termine. Einzelne Termine der Serie bleiben einzeln bearbeitbar.
+- [x] **Spiel anlegen:** Gegner, Heim/Auswärts, Wettbewerb (Liga, Pokal, Test), Treffpunkt und Treffzeit, Anstoß, Ort, Anmeldeschluss
+- [x] Terminliste: kommende Termine chronologisch, Training und Spiel optisch klar unterscheidbar, vergangene Termine einklappbar
+- [x] **Anmeldung:** Zusage, Absage, Vielleicht mit einem Tipp direkt in der Liste. Bei Absage optional Grund (Verletzt, Krank, Arbeit, Urlaub, Sonstiges + Freitext)
+- [x] Anmeldung ändern bis zum Anmeldeschluss, danach gesperrt (Trainer kann weiterhin ändern)
+- [x] **Übersicht für den Trainer:** Zugesagt / Abgesagt / Vielleicht / Keine Antwort mit Namen und Anzahl, live per Supabase Realtime
+- [x] Trainer kann Anmeldungen für Spieler ohne Account eintragen
+- [x] Verletzte Spieler werden bei neuen Terminen automatisch als „abgesagt (verletzt)“ vorgeschlagen
+- [x] **Nominierung für Spiele:** Trainer wählt aus den Zusagen den Spieltagskader (Startelf, Bank, Reserve). Spieler sehen, ob sie nominiert sind.
+- [x] Termin absagen (mit Grund), abgesagte Termine bleiben sichtbar, aber durchgestrichen
+- [x] Erinnerungs-Hinweis in der App für Spieler, die noch nicht geantwortet haben (Push folgt in Phase 11)
+- [x] Unit-Tests für Serienerzeugung und Anmeldeschluss-Logik
 
 **Abnahme:** Trainer legt eine Trainingsserie und ein Spiel an. Spieler melden sich an oder ab, der Trainer sieht live, wer kommt, und nominiert den Kader fürs Spiel.
 

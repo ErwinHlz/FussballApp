@@ -23,7 +23,39 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "club_members": {
+            "attendances": {
+                  Row: {
+                    "created_at": string,"event_id": string,"id": string,"member_id": string,"reason": string | null,"reason_note": string | null,"status": Database["public"]['Enums']["attendance_status"],"updated_at": string,"updated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"event_id": string,"id"?: string,"member_id": string,"reason"?: string | null,"reason_note"?: string | null,"status": Database["public"]['Enums']["attendance_status"],"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"event_id"?: string,"id"?: string,"member_id"?: string,"reason"?: string | null,"reason_note"?: string | null,"status"?: Database["public"]['Enums']["attendance_status"],"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "attendances_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attendances_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "team_members"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attendances_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"club_members": {
                   Row: {
                     "club_id": string,"created_at": string,"id": string,"role": Database["public"]['Enums']["club_role"],"user_id": string
                   }
@@ -66,6 +98,78 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"event_series": {
+                  Row: {
+                    "created_at": string,"duration_min": number,"id": string,"location": string | null,"start_time": string,"team_id": string,"type": Database["public"]['Enums']["event_type"],"valid_from": string,"valid_until": string,"weekday": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"duration_min": number,"id"?: string,"location"?: string | null,"start_time": string,"team_id": string,"type"?: Database["public"]['Enums']["event_type"],"valid_from": string,"valid_until": string,"weekday": number
+                  }
+                  Update: {
+                    "created_at"?: string,"duration_min"?: number,"id"?: string,"location"?: string | null,"start_time"?: string,"team_id"?: string,"type"?: Database["public"]['Enums']["event_type"],"valid_from"?: string,"valid_until"?: string,"weekday"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "event_series_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"events": {
+                  Row: {
+                    "cancel_reason": string | null,"competition": string | null,"created_at": string,"ends_at": string | null,"id": string,"is_cancelled": boolean,"is_home": boolean | null,"location": string | null,"meet_at": string | null,"meet_location": string | null,"notes": string | null,"opponent": string | null,"plan_status": Database["public"]['Enums']["plan_status"],"response_deadline": string | null,"series_id": string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"response_deadline"?: string | null,"series_id"?: string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
+                  }
+                  Update: {
+                    "cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"response_deadline"?: string | null,"series_id"?: string | null,"starts_at"?: string,"team_id"?: string,"type"?: Database["public"]['Enums']["event_type"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "events_series_id_fkey"
+      columns: ["series_id"]
+isOneToOne: false
+      referencedRelation: "event_series"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"match_squad": {
+                  Row: {
+                    "created_at": string,"event_id": string,"id": string,"member_id": string,"role": Database["public"]['Enums']["squad_role"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"event_id": string,"id"?: string,"member_id": string,"role": Database["public"]['Enums']["squad_role"]
+                  }
+                  Update: {
+                    "created_at"?: string,"event_id"?: string,"id"?: string,"member_id"?: string,"role"?: Database["public"]['Enums']["squad_role"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "match_squad_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_squad_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "team_members"
       referencedColumns: ["id"]
     }
                   ]
@@ -183,6 +287,31 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"create_training_series":
+{ Args: { "p_deadline_hours"?: number,"p_duration_min": number,"p_location": string,"p_start_time": string,"p_starts_at": (string)[],"p_team_id": string,"p_valid_from": string,"p_valid_until": string,"p_weekday": number }; Returns: {
+              "created_at": string,
+"duration_min": number,
+"id": string,
+"location": string | null,
+"start_time": string,
+"team_id": string,
+"type": Database["public"]['Enums']["event_type"],
+"valid_from": string,
+"valid_until": string,
+"weekday": number
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "event_series"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"event_open_for_responses":
+{ Args: { "p_event_id": string }; Returns: boolean
+                           },
+"event_team_id":
+{ Args: { "p_event_id": string }; Returns: string
+                           },
 "get_team_invite":
 { Args: { "p_token": string }; Returns: {
               "club_name": string,"expires_at": string,"role": Database["public"]['Enums']["team_role"],"status": string,"team_name": string,"team_season": string
@@ -193,6 +322,9 @@ isOneToOne: false
                            },
 "is_club_member":
 { Args: { "p_club_id": string }; Returns: boolean
+                           },
+"is_own_member":
+{ Args: { "p_member_id": string }; Returns: boolean
                            },
 "is_team_coach":
 { Args: { "p_team_id": string }; Returns: boolean
@@ -228,8 +360,29 @@ isOneToOne: false
               "club_id": string,"club_name": string,"is_club_admin": boolean,"team_id": string,"team_name": string,"team_role": Database["public"]['Enums']["team_role"],"team_season": string
             }[]
                            },
+"set_attendance":
+{ Args: { "p_event_id": string,"p_member_id": string,"p_reason"?: string,"p_reason_note"?: string,"p_status": Database["public"]['Enums']["attendance_status"] }; Returns: {
+              "created_at": string,
+"event_id": string,
+"id": string,
+"member_id": string,
+"reason": string | null,
+"reason_note": string | null,
+"status": Database["public"]['Enums']["attendance_status"],
+"updated_at": string,
+"updated_by": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "attendances"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "set_club_member_role":
 { Args: { "p_club_id": string,"p_role": Database["public"]['Enums']["club_role"],"p_user_id": string }; Returns: undefined
+                           },
+"set_match_squad":
+{ Args: { "p_entries": Json,"p_event_id": string }; Returns: undefined
                            },
 "shares_club_with":
 { Args: { "p_user_id": string }; Returns: boolean
@@ -239,7 +392,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "club_role": "admin"|"member","member_status": "active"|"injured"|"inactive","team_role": "coach"|"player"
+            "attendance_status": "yes"|"no"|"maybe","club_role": "admin"|"member","event_type": "training"|"match","member_status": "active"|"injured"|"inactive","plan_status": "draft"|"published","squad_role": "starter"|"bench"|"reserve","team_role": "coach"|"player"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -359,7 +512,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "club_role": ["admin", "member"],"member_status": ["active", "injured", "inactive"],"team_role": ["coach", "player"]
+            "attendance_status": ["yes", "no", "maybe"],"club_role": ["admin", "member"],"event_type": ["training", "match"],"member_status": ["active", "injured", "inactive"],"plan_status": ["draft", "published"],"squad_role": ["starter", "bench", "reserve"],"team_role": ["coach", "player"]
           }
         }
 } as const
