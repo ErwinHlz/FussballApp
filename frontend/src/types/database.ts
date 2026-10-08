@@ -23,7 +23,53 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "profiles": {
+            "club_members": {
+                  Row: {
+                    "club_id": string,"created_at": string,"id": string,"role": Database["public"]['Enums']["club_role"],"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "club_id": string,"created_at"?: string,"id"?: string,"role"?: Database["public"]['Enums']["club_role"],"user_id": string
+                  }
+                  Update: {
+                    "club_id"?: string,"created_at"?: string,"id"?: string,"role"?: Database["public"]['Enums']["club_role"],"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "club_members_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "clubs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "club_members_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"clubs": {
+                  Row: {
+                    "created_at": string,"created_by": string,"id": string,"name": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string,"id"?: string,"name": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"id"?: string,"name"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "clubs_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
                   Row: {
                     "avatar_url": string | null,"created_at": string,"display_name": string,"id": string
                   }
@@ -37,16 +83,145 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"team_invites": {
+                  Row: {
+                    "created_at": string,"created_by": string,"expires_at": string,"id": string,"revoked_at": string | null,"role": Database["public"]['Enums']["team_role"],"team_id": string,"token": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string,"expires_at"?: string,"id"?: string,"revoked_at"?: string | null,"role": Database["public"]['Enums']["team_role"],"team_id": string,"token"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"expires_at"?: string,"id"?: string,"revoked_at"?: string | null,"role"?: Database["public"]['Enums']["team_role"],"team_id"?: string,"token"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "team_invites_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_invites_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"team_members": {
+                  Row: {
+                    "created_at": string,"display_name": string,"id": string,"positions": (string)[],"role": Database["public"]['Enums']["team_role"],"shirt_number": number | null,"status": Database["public"]['Enums']["member_status"],"team_id": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"display_name": string,"id"?: string,"positions"?: (string)[],"role"?: Database["public"]['Enums']["team_role"],"shirt_number"?: number | null,"status"?: Database["public"]['Enums']["member_status"],"team_id": string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"display_name"?: string,"id"?: string,"positions"?: (string)[],"role"?: Database["public"]['Enums']["team_role"],"shirt_number"?: number | null,"status"?: Database["public"]['Enums']["member_status"],"team_id"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "team_members_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_members_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"teams": {
+                  Row: {
+                    "club_id": string,"created_at": string,"created_by": string,"id": string,"name": string,"season": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "club_id": string,"created_at"?: string,"created_by"?: string,"id"?: string,"name": string,"season"?: string | null
+                  }
+                  Update: {
+                    "club_id"?: string,"created_at"?: string,"created_by"?: string,"id"?: string,"name"?: string,"season"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "teams_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "clubs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "accept_team_invite":
+{ Args: { "p_token": string }; Returns: string
+                           },
+"create_club":
+{ Args: { "p_name": string }; Returns: {
+              "created_at": string,
+"created_by": string,
+"id": string,
+"name": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "clubs"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"get_team_invite":
+{ Args: { "p_token": string }; Returns: {
+              "club_name": string,"expires_at": string,"role": Database["public"]['Enums']["team_role"],"status": string,"team_name": string,"team_season": string
+            }[]
+                           },
+"is_club_admin":
+{ Args: { "p_club_id": string }; Returns: boolean
+                           },
+"is_club_member":
+{ Args: { "p_club_id": string }; Returns: boolean
+                           },
+"is_team_coach":
+{ Args: { "p_team_id": string }; Returns: boolean
+                           },
+"is_team_member":
+{ Args: { "p_team_id": string }; Returns: boolean
+                           },
+"my_clubs":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "club_id": string,"club_name": string,"role": Database["public"]['Enums']["club_role"]
+            }[]
+                           },
+"my_teams":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "club_id": string,"club_name": string,"is_club_admin": boolean,"team_id": string,"team_name": string,"team_role": Database["public"]['Enums']["team_role"],"team_season": string
+            }[]
+                           },
+"set_club_member_role":
+{ Args: { "p_club_id": string,"p_role": Database["public"]['Enums']["club_role"],"p_user_id": string }; Returns: undefined
+                           },
+"shares_club_with":
+{ Args: { "p_user_id": string }; Returns: boolean
+                           },
+"team_club_id":
+{ Args: { "p_team_id": string }; Returns: string
+                           }
           }
           Enums: {
-            [_ in never]: never
+            "club_role": "admin"|"member","member_status": "active"|"injured"|"inactive","team_role": "coach"|"player"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -166,7 +341,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            
+            "club_role": ["admin", "member"],"member_status": ["active", "injured", "inactive"],"team_role": ["coach", "player"]
           }
         }
 } as const

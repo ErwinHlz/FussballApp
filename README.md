@@ -42,8 +42,9 @@ npm install
 npm run dev
 ```
 
-Die App läuft unter http://localhost:5173. Login per Magic Link: E-Mail eingeben, dann den
-Link im lokalen Postfach unter http://127.0.0.1:54324 öffnen.
+Die App läuft unter http://localhost:5173. Konto mit E-Mail und Passwort anlegen, dann
+„Verein anlegen“ → Mannschaft anmelden → Trainer-Link verschicken. Mails (z. B. „Passwort
+vergessen“) landen lokal im Postfach unter http://127.0.0.1:54324.
 
 ## Skripte (frontend)
 

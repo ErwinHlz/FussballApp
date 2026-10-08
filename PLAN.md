@@ -25,13 +25,16 @@
 ### Kernidee
 Spieler kommen vorbereitet ins Training. Sie wissen schon vorher, welche Übungen kommen, in welcher Gruppe (Leibchenfarbe) sie sind und wie die Übung abläuft (Animation oder Video). Für Trainings **und** Spiele melden sie sich mit einem Tipp an oder ab.
 
-### Rollen
-- **Trainer (coach):** erstellt das Team, lädt Spieler ein, verwaltet den Kader, legt Trainings und Spiele an, baut Trainingsinhalte, teilt Gruppen ein, nominiert für Spiele, veröffentlicht Pläne.
-- **Spieler (player):** tritt per Einladungslink bei, meldet sich für Trainings und Spiele an oder ab, sieht die eigene Gruppe, die Übungen und die Spielinfos.
-- Ein Nutzer kann in mehreren Teams sein, mit unterschiedlichen Rollen.
+### Struktur und Rollen
+**Verein → Mannschaften → Mitglieder.** Jeder registrierte Nutzer kann einen Verein anlegen und ist dann dessen Admin.
+
+- **Vereins-Admin (club admin):** legt den Verein an, meldet Mannschaften an, bestimmt per Trainer-Einladungslink den Trainer jeder Mannschaft und kann weitere Admins ernennen. Hat in allen Mannschaften des Vereins Trainerrechte.
+- **Trainer (coach):** wird per Trainer-Einladungslink einer Mannschaft zugeordnet, lädt Spieler per Einladungslink ein, verwaltet den Kader, legt Trainings und Spiele an, baut Trainingsinhalte, teilt Gruppen ein, nominiert für Spiele, veröffentlicht Pläne.
+- **Spieler (player):** tritt per Einladungslink bei (legt dabei ein Konto mit E-Mail und Passwort an), meldet sich für Trainings und Spiele an oder ab, sieht die eigene Gruppe, die Übungen und die Spielinfos.
+- Ein Nutzer kann in mehreren Vereinen und Mannschaften sein, mit unterschiedlichen Rollen. Jedes Konto hat eine eindeutige interne ID (UUID).
 
 ### Bewusst NICHT im MVP
-Chat, Zahlungen, Mannschaftskasse, Vereinsverwaltung. Das machen Spond und SpielerPlus, dort konkurrieren wir nicht.
+Chat, Zahlungen, Mannschaftskasse, Mitgliederverwaltung des Vereins (Beiträge, Abteilungen usw.). Der Verein ist nur die Klammer um die Mannschaften. Das machen Spond und SpielerPlus, dort konkurrieren wir nicht.
 
 ---
 
@@ -118,7 +121,14 @@ Alle Tabellen haben `id uuid primary key default gen_random_uuid()` und `created
 ```
 profiles            (id = auth.users.id, display_name, avatar_url)
 
-teams               (name, season, created_by → profiles)
+clubs               (name, created_by → profiles)
+
+club_members        (club_id → clubs, user_id → profiles,
+                     role: 'admin' | 'member',
+                     unique(club_id, user_id))
+                     -- Ersteller wird automatisch 'admin'; wer einer Mannschaft beitritt, wird 'member'
+
+teams               (club_id → clubs, name, season, created_by → profiles)
 
 team_members        (team_id → teams, user_id → profiles NULL,
                      role: 'coach' | 'player',
@@ -126,7 +136,9 @@ team_members        (team_id → teams, user_id → profiles NULL,
                      status: 'active' | 'injured' | 'inactive')
                      -- user_id NULL = Spieler ohne Account (Trainer pflegt ihn manuell)
 
-team_invites        (team_id, token unique, role, expires_at, created_by)
+team_invites        (team_id, token unique, role: 'coach' | 'player', expires_at,
+                     created_by, revoked_at NULL)
+                     -- Trainer-Einladungen erstellt nur der Vereins-Admin, Spieler-Einladungen auch der Trainer
 
 event_series        (team_id, type: 'training', weekday int, start_time time,
                      duration_min, location, valid_from date, valid_until date)
@@ -167,7 +179,7 @@ group_assignments   (group_id → drill_groups, member_id → team_members,
 ```
 
 ### Row Level Security
-- Hilfsfunktionen `is_team_member(team_id)` und `is_team_coach(team_id)` als `security definer`.
+- Hilfsfunktionen `is_club_admin(club_id)`, `is_club_member(club_id)`, `is_team_member(team_id)` und `is_team_coach(team_id)` als `security definer`. `is_team_coach` ist auch für Vereins-Admins wahr.
 - **Lesen:** Alle Mitglieder eines Teams lesen dessen Termine, Anmeldungen und Nominierungen. Trainingsinhalte (`event_drills`, `drill_groups`, `group_assignments`) sehen Spieler nur, wenn `events.plan_status = 'published'`.
 - **Schreiben:** nur Trainer, mit einer Ausnahme: Spieler dürfen die `attendances`-Zeile für ihr eigenes `team_members`-Mitglied anlegen und ändern, solange der Anmeldeschluss nicht überschritten und der Termin nicht abgesagt ist. Trainer dürfen Anmeldungen für alle ändern (z. B. für Spieler ohne Account).
 - Öffentliche Drills (`team_id IS NULL`) sind für alle eingeloggten Nutzer lesbar.
@@ -229,21 +241,26 @@ Gespeichert in `drills.animation` als JSON:
 ### Phase 1 – Login und Profil
 - [x] Migration: `profiles` + Trigger, der beim Registrieren ein Profil anlegt
 - [x] Login per Magic Link (E-Mail) über Supabase Auth
+- [x] **Geändert:** Registrierung und Login mit E-Mail + Passwort statt Magic Link, „Passwort vergessen“ per Mail
 - [x] Auth-Store (Pinia) mit Session, Router-Guard für geschützte Routen, Redirect zum Login
 - [x] Profil-Seite: Anzeigename ändern
 - [x] Logout
 
 **Abnahme:** Registrieren, Einloggen, Namen ändern und Ausloggen funktionieren.
 
-### Phase 2 – Teams und Einladungen
-- [ ] Migration: `teams`, `team_members`, `team_invites` + RLS + Hilfsfunktionen
-- [ ] Team erstellen (Ersteller wird automatisch `coach`)
-- [ ] Team-Auswahl, wenn der Nutzer in mehreren Teams ist (aktives Team im Pinia-Store, in `localStorage` merken)
-- [ ] Einladungslink erzeugen (Token, Ablaufdatum, Rolle), mit Teilen-Button (Web Share API, Fallback: kopieren)
-- [ ] Route `/join/:token`: Einladung annehmen, auch direkt nach dem Login
-- [ ] RLS-Test: Nutzer A sieht Team von Nutzer B nicht
+### Phase 2 – Vereine, Mannschaften und Einladungen
+- [x] Migration: `clubs`, `club_members`, `teams`, `team_members`, `team_invites` + RLS + Hilfsfunktionen
+- [x] Verein anlegen (Ersteller wird automatisch Vereins-Admin)
+- [x] Vereins-Admin meldet Mannschaften an (Name, Saison)
+- [x] Vereins-Admin erzeugt pro Mannschaft einen **Trainer-Einladungslink**
+- [x] Trainer (und Admin) erzeugen **Spieler-Einladungslinks** (Token, Ablaufdatum, widerrufbar), mit Teilen-Button (Web Share API, Fallback: kopieren)
+- [x] Route `/join/:token`: zeigt Verein, Mannschaft und Rolle; ohne Konto direkt registrieren, danach automatisch beitreten
+- [x] Vereins-Admin kann weitere Admins ernennen
+- [x] Mannschafts-Auswahl, wenn der Nutzer in mehreren Mannschaften ist (aktive Mannschaft im Pinia-Store, in `localStorage` merken)
+- [x] Start ohne Verein/Mannschaft: „Verein anlegen“ oder Hinweis auf Einladungslink
+- [x] RLS-Tests: Nutzer A sieht Verein/Mannschaft von Nutzer B nicht, Spieler können keine Einladungen erzeugen, Trainer keine Trainer-Einladungen
 
-**Abnahme:** Trainer erstellt Team, schickt Link, Spieler tritt bei und erscheint im Team.
+**Abnahme:** Nutzer legt Verein an, meldet eine Mannschaft an und schickt den Trainer-Link. Der Trainer registriert sich über den Link, schickt einen Spieler-Link, der Spieler registriert sich und erscheint im Kader.
 
 ### Phase 3 – Kader
 - [ ] Kaderliste mit Rückennummer, Positionen, Status
@@ -332,7 +349,7 @@ Gespeichert in `drills.animation` als JSON:
 
 ### Phase 11 – Native App mit Capacitor
 - [ ] Capacitor einrichten, Android- und iOS-Projekte erzeugen
-- [ ] Deep Links für `/join/:token` und den Magic-Link-Login
+- [ ] Deep Links für `/join/:token` und „Passwort zurücksetzen“
 - [ ] Push-Benachrichtigungen: neuer Termin, Plan veröffentlicht, Erinnerung vor Anmeldeschluss für Spieler ohne Antwort, Nominierung fürs Spiel, Terminabsage
 - [ ] App-Icon und Splash Screen
 - [ ] Auf echtem Android-Gerät testen

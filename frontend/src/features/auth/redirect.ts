@@ -2,6 +2,8 @@ import type { LocationQueryValue, RouteLocationNormalized, RouteLocationRaw } fr
 
 export const DEFAULT_AUTHENTICATED_PATH = '/events'
 
+const AUTH_PAGES = ['/login', '/register', '/forgot-password', '/reset-password']
+
 /**
  * Only allow same-origin, absolute app paths as post-login redirect targets
  * (prevents open redirects like `//evil.com` or `https://evil.com`).
@@ -13,7 +15,8 @@ export function safeRedirect(
   const raw = Array.isArray(value) ? value[0] : value
   if (typeof raw !== 'string') return fallback
   if (!raw.startsWith('/') || raw.startsWith('//') || raw.startsWith('/\\')) return fallback
-  if (raw === '/login' || raw.startsWith('/login?')) return fallback
+  const pathname = raw.split(/[?#]/)[0]
+  if (AUTH_PAGES.includes(pathname!)) return fallback
   return raw
 }
 

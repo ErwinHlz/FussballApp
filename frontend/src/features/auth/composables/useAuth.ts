@@ -1,12 +1,24 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useRouter } from 'vue-router'
-import { sendMagicLink, signOut } from '../api'
+import { requestPasswordReset, signIn, signOut, signUp, updatePassword } from '../api'
 
-export function useSendMagicLink() {
+export function useSignIn() {
   return useMutation({
-    mutationFn: ({ email, redirectPath }: { email: string; redirectPath: string }) =>
-      sendMagicLink(email, redirectPath),
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      signIn(email, password),
   })
+}
+
+export function useSignUp() {
+  return useMutation({ mutationFn: signUp })
+}
+
+export function useRequestPasswordReset() {
+  return useMutation({ mutationFn: (email: string) => requestPasswordReset(email) })
+}
+
+export function useUpdatePassword() {
+  return useMutation({ mutationFn: (password: string) => updatePassword(password) })
 }
 
 export function useSignOut() {

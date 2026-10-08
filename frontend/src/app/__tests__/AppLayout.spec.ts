@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '../App.vue'
 import { routes } from '../router'
@@ -11,7 +12,11 @@ async function mountAt(path: string) {
   const router = createRouter({ history: createMemoryHistory(), routes })
   await router.push(path)
   await router.isReady()
-  const wrapper = mount(App, { global: { plugins: [createPinia(), router, i18n] } })
+  const wrapper = mount(App, {
+    global: {
+      plugins: [createPinia(), router, i18n, [VueQueryPlugin, { queryClient: new QueryClient() }]],
+    },
+  })
   return { wrapper, router }
 }
 
