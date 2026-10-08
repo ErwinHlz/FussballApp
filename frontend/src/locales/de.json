@@ -28,7 +28,48 @@
     "emptyHint": "Lade Spieler über einen Einladungslink ein.",
     "invitePlayers": "Spieler einladen",
     "inviteHint": "Schick diesen Link in deine Mannschaftsgruppe. Wer ihn öffnet, legt ein Konto an und ist sofort im Kader.",
-    "loadFailed": "Kader konnte nicht geladen werden."
+    "loadFailed": "Kader konnte nicht geladen werden.",
+    "addPlayer": "Spieler hinzufügen",
+    "addPlayerHint": "Für Spieler ohne eigenes Konto. Du kannst sie später mit ihrem Konto verknüpfen, wenn sie per Link beitreten.",
+    "editPlayer": "Spieler bearbeiten",
+    "editPlayerNamed": "{name} bearbeiten",
+    "name": "Name",
+    "shirtNumber": "Rückennummer",
+    "positionsLabel": "Positionen",
+    "statusLabel": "Status",
+    "roleLabel": "Rolle",
+    "filterAll": "Alle",
+    "noFilterResults": "Keine Spieler für diesen Filter.",
+    "noAccount": "ohne Konto",
+    "status": {
+      "active": "Aktiv",
+      "injured": "Verletzt",
+      "inactive": "Inaktiv"
+    },
+    "positions": {
+      "GK": "Tor",
+      "DF": "Abwehr",
+      "MF": "Mittelfeld",
+      "FW": "Sturm"
+    },
+    "positionsShort": {
+      "GK": "TW",
+      "DF": "ABW",
+      "MF": "MF",
+      "FW": "ST"
+    },
+    "linkTitle": "Mit Konto verknüpfen",
+    "linkHint": "Ist dieser Spieler inzwischen per Link beigetreten? Dann führe beide Einträge zusammen. Nummer, Positionen und Status bleiben erhalten.",
+    "linkSelect": "Beigetretenes Konto",
+    "linkChoose": "Konto auswählen …",
+    "linkAction": "Verknüpfen",
+    "linkNoCandidates": "Noch niemand per Link beigetreten.",
+    "remove": "Aus dem Kader entfernen",
+    "removeConfirm": "{name} wirklich entfernen?",
+    "errors": {
+      "shirtNumberTaken": "Diese Rückennummer ist schon vergeben.",
+      "unknown": "Das hat nicht geklappt. Bitte versuche es erneut."
+    }
   },
   "profile": {
     "title": "Profil",
@@ -48,7 +89,8 @@
     "save": "Speichern",
     "loading": "Lädt …",
     "retry": "Erneut versuchen",
-    "you": "du"
+    "you": "du",
+    "cancel": "Abbrechen"
   },
   "roles": {
     "admin": "Vereins-Admin",
@@ -163,6 +205,7 @@
     "maxLength80": "Höchstens 80 Zeichen",
     "passwordMin": "Mindestens {min} Zeichen",
     "passwordMax": "Höchstens 72 Zeichen",
-    "passwordMismatch": "Die Passwörter stimmen nicht überein."
+    "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+    "shirtNumber": "Bitte eine Zahl von 0 bis 99"
   }
 }

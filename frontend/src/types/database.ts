@@ -200,6 +200,24 @@ isOneToOne: false
 "is_team_member":
 { Args: { "p_team_id": string }; Returns: boolean
                            },
+"link_team_member":
+{ Args: { "p_account_member_id": string,"p_manual_member_id": string }; Returns: {
+              "created_at": string,
+"display_name": string,
+"id": string,
+"positions": (string)[],
+"role": Database["public"]['Enums']["team_role"],
+"shirt_number": number | null,
+"status": Database["public"]['Enums']["member_status"],
+"team_id": string,
+"user_id": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "team_members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "my_clubs":
 { Args: Record<PropertyKey, never>; Returns: {
               "club_id": string,"club_name": string,"role": Database["public"]['Enums']["club_role"]

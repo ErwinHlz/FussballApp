@@ -28,7 +28,48 @@
     "emptyHint": "Invite players with an invite link.",
     "invitePlayers": "Invite players",
     "inviteHint": "Send this link to your team chat. Whoever opens it creates an account and joins the squad right away.",
-    "loadFailed": "Squad could not be loaded."
+    "loadFailed": "Squad could not be loaded.",
+    "addPlayer": "Add player",
+    "addPlayerHint": "For players without their own account. You can link them to their account later when they join via link.",
+    "editPlayer": "Edit player",
+    "editPlayerNamed": "Edit {name}",
+    "name": "Name",
+    "shirtNumber": "Shirt number",
+    "positionsLabel": "Positions",
+    "statusLabel": "Status",
+    "roleLabel": "Role",
+    "filterAll": "All",
+    "noFilterResults": "No players match this filter.",
+    "noAccount": "no account",
+    "status": {
+      "active": "Active",
+      "injured": "Injured",
+      "inactive": "Inactive"
+    },
+    "positions": {
+      "GK": "Goalkeeper",
+      "DF": "Defence",
+      "MF": "Midfield",
+      "FW": "Attack"
+    },
+    "positionsShort": {
+      "GK": "GK",
+      "DF": "DEF",
+      "MF": "MID",
+      "FW": "FWD"
+    },
+    "linkTitle": "Link to account",
+    "linkHint": "Has this player joined via link in the meantime? Then merge both entries. Number, positions and status are kept.",
+    "linkSelect": "Joined account",
+    "linkChoose": "Choose account …",
+    "linkAction": "Link",
+    "linkNoCandidates": "Nobody has joined via link yet.",
+    "remove": "Remove from squad",
+    "removeConfirm": "Really remove {name}?",
+    "errors": {
+      "shirtNumberTaken": "This shirt number is already taken.",
+      "unknown": "That did not work. Please try again."
+    }
   },
   "profile": {
     "title": "Profile",
@@ -48,7 +89,8 @@
     "save": "Save",
     "loading": "Loading …",
     "retry": "Try again",
-    "you": "you"
+    "you": "you",
+    "cancel": "Cancel"
   },
   "roles": {
     "admin": "Club admin",
@@ -163,6 +205,7 @@
     "maxLength80": "At most 80 characters",
     "passwordMin": "At least {min} characters",
     "passwordMax": "At most 72 characters",
-    "passwordMismatch": "Passwords do not match."
+    "passwordMismatch": "Passwords do not match.",
+    "shirtNumber": "Please enter a number from 0 to 99"
   }
 }

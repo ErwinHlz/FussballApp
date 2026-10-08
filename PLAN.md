@@ -263,11 +263,11 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** Nutzer legt Verein an, meldet eine Mannschaft an und schickt den Trainer-Link. Der Trainer registriert sich über den Link, schickt einen Spieler-Link, der Spieler registriert sich und erscheint im Kader.
 
 ### Phase 3 – Kader
-- [ ] Kaderliste mit Rückennummer, Positionen, Status
-- [ ] Spieler ohne Account manuell anlegen (`user_id = NULL`)
-- [ ] Manuellen Spieler später mit einem beigetretenen Account verknüpfen
-- [ ] Status ändern (aktiv, verletzt, inaktiv), Filter nach Status und Position
-- [ ] Rolle ändern (Spieler zu Co-Trainer machen)
+- [x] Kaderliste mit Rückennummer, Positionen, Status
+- [x] Spieler ohne Account manuell anlegen (`user_id = NULL`)
+- [x] Manuellen Spieler später mit einem beigetretenen Account verknüpfen
+- [x] Status ändern (aktiv, verletzt, inaktiv), Filter nach Status und Position
+- [x] Rolle ändern (Spieler zu Co-Trainer machen)
 
 **Abnahme:** Trainer pflegt einen vollständigen Kader, Spieler sehen ihn nur lesend.
 
