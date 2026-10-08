@@ -1,21 +1,59 @@
 <script setup lang="ts">
-import { watchEffect } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, watchEffect } from 'vue'
+import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppIcon, { type IconName } from '@/components/AppIcon.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
+import { useMyClubs } from '@/features/teams/composables/useTeams'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { myTeams, activeTeam } = useActiveTeam()
+const myClubs = useMyClubs()
 
-const tabs: { to: string; icon: IconName; labelKey: string }[] = [
-  { to: '/events', icon: 'calendar', labelKey: 'nav.events' },
-  { to: '/training', icon: 'whistle', labelKey: 'nav.training' },
-  { to: '/squad', icon: 'users', labelKey: 'nav.squad' },
-  { to: '/profile', icon: 'user', labelKey: 'nav.profile' },
-]
+type Tab = { key: string; to: RouteLocationRaw; match: string; icon: IconName; labelKey: string }
+
+const adminClubs = computed(() => (myClubs.data.value ?? []).filter((c) => c.role === 'admin'))
+
+// The club tab only exists for club admins: one club opens it directly, several open the list.
+const tabs = computed<Tab[]>(() => {
+  const result: Tab[] = [
+    { key: 'events', to: '/events', match: '/events', icon: 'calendar', labelKey: 'nav.events' },
+    {
+      key: 'training',
+      to: '/training',
+      match: '/training',
+      icon: 'whistle',
+      labelKey: 'nav.training',
+    },
+    { key: 'squad', to: '/squad', match: '/squad', icon: 'users', labelKey: 'nav.squad' },
+  ]
+  const [onlyClub, ...others] = adminClubs.value
+  if (onlyClub) {
+    result.push({
+      key: 'club',
+      to: others.length
+        ? { name: 'teams' }
+        : { name: 'club', params: { clubId: onlyClub.club_id } },
+      match: '/clubs',
+      icon: 'building',
+      labelKey: 'nav.club',
+    })
+  }
+  result.push({
+    key: 'profile',
+    to: '/profile',
+    match: '/profile',
+    icon: 'user',
+    labelKey: 'nav.profile',
+  })
+  return result
+})
+
+function isActive(tab: Tab) {
+  return route.path.startsWith(tab.match)
+}
 
 // Without any team, team pages make no sense: send the user to club/team setup.
 watchEffect(() => {
@@ -49,8 +87,13 @@ watchEffect(() => {
 
     <nav class="bottom-nav" :aria-label="t('nav.label')">
       <ul class="bottom-nav__list" role="list">
-        <li v-for="tab in tabs" :key="tab.to">
-          <RouterLink :to="tab.to" class="bottom-nav__link" active-class="bottom-nav__link--active">
+        <li v-for="tab in tabs" :key="tab.key">
+          <RouterLink
+            :to="tab.to"
+            class="bottom-nav__link"
+            :class="{ 'bottom-nav__link--active': isActive(tab) }"
+            :aria-current="isActive(tab) ? 'page' : undefined"
+          >
             <AppIcon :name="tab.icon" />
             <span class="bottom-nav__label">{{ t(tab.labelKey) }}</span>
           </RouterLink>
@@ -155,7 +198,8 @@ watchEffect(() => {
 
   &__list {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
     max-width: 720px;
     height: $bottom-nav-height;
     margin: 0 auto;

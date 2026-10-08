@@ -3,10 +3,13 @@ import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
+import AppIcon from '@/components/AppIcon.vue'
+import BaseBadge from '@/components/BaseBadge.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseCard from '@/components/BaseCard.vue'
 import BaseInput from '@/components/BaseInput.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useMyClubs } from '@/features/teams/composables/useTeams'
 import { profileSchema } from '../schemas'
 import { useProfile, useUpdateProfile } from '../composables/useProfile'
 import { useSignOut } from '../composables/useAuth'
@@ -16,6 +19,7 @@ const auth = useAuthStore()
 const profile = useProfile()
 const updateProfile = useUpdateProfile()
 const signOut = useSignOut()
+const myClubs = useMyClubs()
 
 const { defineField, errors, handleSubmit, resetForm, meta } = useForm({
   validationSchema: toTypedSchema(profileSchema),
@@ -82,6 +86,30 @@ const onSubmit = handleSubmit(async (values) => {
       </form>
     </BaseCard>
 
+    <section class="profile__clubs" aria-labelledby="profile-clubs">
+      <h2 id="profile-clubs" class="profile__subtitle">{{ t('profile.myClubs') }}</h2>
+      <p v-if="myClubs.isSuccess.value && !myClubs.data.value?.length" class="profile__status">
+        {{ t('profile.noClubs') }}
+      </p>
+      <ul v-else class="profile__club-list" role="list">
+        <li v-for="club in myClubs.data.value" :key="club.club_id" class="profile__club">
+          <span class="profile__club-name">{{ club.club_name }}</span>
+          <BaseBadge v-if="club.role === 'admin'" tone="training">
+            <template #icon><AppIcon name="shield" :size="14" /></template>
+            {{ t('roles.admin') }}
+          </BaseBadge>
+          <RouterLink
+            v-if="club.role === 'admin'"
+            class="profile__club-link"
+            :to="{ name: 'club', params: { clubId: club.club_id } }"
+          >
+            {{ t('profile.manageClub') }}
+            <AppIcon name="chevronRight" :size="18" />
+          </RouterLink>
+        </li>
+      </ul>
+    </section>
+
     <BaseButton
       variant="secondary"
       block
@@ -101,6 +129,52 @@ const onSubmit = handleSubmit(async (values) => {
   display: flex;
   flex-direction: column;
   gap: $space-4;
+
+  &__subtitle {
+    font-size: $font-lg;
+  }
+
+  &__clubs {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+  }
+
+  &__club-list {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: $radius-lg;
+  }
+
+  &__club {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    min-height: 52px;
+    padding: $space-1 $space-2 $space-1 $space-4;
+
+    & + & {
+      border-top: 1px solid var(--color-border);
+    }
+  }
+
+  &__club-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  &__club-link {
+    @include focus-visible;
+
+    display: inline-flex;
+    align-items: center;
+    min-height: $touch-target;
+    padding-inline: $space-2;
+    font-weight: 600;
+    text-decoration: none;
+  }
 
   &__form {
     display: flex;

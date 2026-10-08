@@ -16,6 +16,7 @@ const paths = {
   swap: 'M7 7h13M16 3l4 4-4 4M17 17H4M8 21l-4-4 4-4',
   link: 'M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1',
   x: 'M6 6l12 12M18 6L6 18',
+  building: 'M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6M9 11h.01M15 11h.01',
 } as const
 
 export type IconName = keyof typeof paths

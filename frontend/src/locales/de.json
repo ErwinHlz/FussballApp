@@ -7,7 +7,8 @@
     "events": "Termine",
     "training": "Training",
     "squad": "Kader",
-    "profile": "Profil"
+    "profile": "Profil",
+    "club": "Verein"
   },
   "events": {
     "title": "Termine",
@@ -35,7 +36,10 @@
     "displayNameHint": "So sehen dich Trainer und Mitspieler.",
     "saved": "Gespeichert",
     "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
-    "loadFailed": "Profil konnte nicht geladen werden."
+    "loadFailed": "Profil konnte nicht geladen werden.",
+    "myClubs": "Meine Vereine",
+    "manageClub": "Verwalten",
+    "noClubs": "Du bist noch in keinem Verein."
   },
   "common": {
     "close": "Schließen",

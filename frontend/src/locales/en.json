@@ -7,7 +7,8 @@
     "events": "Events",
     "training": "Training",
     "squad": "Squad",
-    "profile": "Profile"
+    "profile": "Profile",
+    "club": "Club"
   },
   "events": {
     "title": "Events",
@@ -35,7 +36,10 @@
     "displayNameHint": "This is how coaches and team mates see you.",
     "saved": "Saved",
     "saveFailed": "Saving failed. Please try again.",
-    "loadFailed": "Profile could not be loaded."
+    "loadFailed": "Profile could not be loaded.",
+    "myClubs": "My clubs",
+    "manageClub": "Manage",
+    "noClubs": "You are not in a club yet."
   },
   "common": {
     "close": "Close",
