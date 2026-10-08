@@ -101,6 +101,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"drills": {
+                  Row: {
+                    "animation": Json | null,"category": string,"copied_from": string | null,"created_at": string,"created_by": string | null,"description": string,"duration_min": number | null,"equipment": (string)[],"id": string,"max_players": number | null,"min_players": number | null,"team_id": string | null,"title": string,"updated_at": string,"video_path": string | null,"video_url": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "animation"?: Json | null,"category": string,"copied_from"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string,"duration_min"?: number | null,"equipment"?: (string)[],"id"?: string,"max_players"?: number | null,"min_players"?: number | null,"team_id"?: string | null,"title": string,"updated_at"?: string,"video_path"?: string | null,"video_url"?: string | null
+                  }
+                  Update: {
+                    "animation"?: Json | null,"category"?: string,"copied_from"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string,"duration_min"?: number | null,"equipment"?: (string)[],"id"?: string,"max_players"?: number | null,"min_players"?: number | null,"team_id"?: string | null,"title"?: string,"updated_at"?: string,"video_path"?: string | null,"video_url"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "drills_copied_from_fkey"
+      columns: ["copied_from"]
+isOneToOne: false
+      referencedRelation: "drills"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "drills_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "drills_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"event_series": {
                   Row: {
                     "created_at": string,"duration_min": number,"id": string,"location": string | null,"start_time": string,"team_id": string,"type": Database["public"]['Enums']["event_type"],"valid_from": string,"valid_until": string,"weekday": number
@@ -274,6 +306,31 @@ isOneToOne: false
             "accept_team_invite":
 { Args: { "p_token": string }; Returns: string
                            },
+"copy_drill":
+{ Args: { "p_drill_id": string,"p_team_id": string }; Returns: {
+              "animation": Json | null,
+"category": string,
+"copied_from": string | null,
+"created_at": string,
+"created_by": string | null,
+"description": string,
+"duration_min": number | null,
+"equipment": (string)[],
+"id": string,
+"max_players": number | null,
+"min_players": number | null,
+"team_id": string | null,
+"title": string,
+"updated_at": string,
+"video_path": string | null,
+"video_url": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "drills"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "create_club":
 { Args: { "p_name": string }; Returns: {
               "created_at": string,

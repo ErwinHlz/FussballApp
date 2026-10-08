@@ -76,6 +76,30 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/events/views/EventFormView.vue'),
       },
       {
+        path: 'drills',
+        name: 'drills',
+        meta: { requiresTeam: true },
+        component: () => import('@/features/drills/views/DrillsView.vue'),
+      },
+      {
+        path: 'drills/new',
+        name: 'drill-new',
+        meta: { requiresTeam: true },
+        component: () => import('@/features/drills/views/DrillFormView.vue'),
+      },
+      {
+        path: 'drills/:drillId',
+        name: 'drill',
+        props: true,
+        component: () => import('@/features/drills/views/DrillDetailView.vue'),
+      },
+      {
+        path: 'drills/:drillId/edit',
+        name: 'drill-edit',
+        props: true,
+        component: () => import('@/features/drills/views/DrillFormView.vue'),
+      },
+      {
         path: 'training',
         name: 'training',
         meta: { requiresTeam: true },

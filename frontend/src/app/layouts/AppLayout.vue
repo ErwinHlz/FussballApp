@@ -12,22 +12,22 @@ const router = useRouter()
 const { myTeams, activeTeam } = useActiveTeam()
 const myClubs = useMyClubs()
 
-type Tab = { key: string; to: RouteLocationRaw; match: string; icon: IconName; labelKey: string }
+type Tab = { key: string; to: RouteLocationRaw; match: string[]; icon: IconName; labelKey: string }
 
 const adminClubs = computed(() => (myClubs.data.value ?? []).filter((c) => c.role === 'admin'))
 
 // The club tab only exists for club admins: one club opens it directly, several open the list.
 const tabs = computed<Tab[]>(() => {
   const result: Tab[] = [
-    { key: 'events', to: '/events', match: '/events', icon: 'calendar', labelKey: 'nav.events' },
+    { key: 'events', to: '/events', match: ['/events'], icon: 'calendar', labelKey: 'nav.events' },
     {
       key: 'training',
       to: '/training',
-      match: '/training',
+      match: ['/training', '/drills'],
       icon: 'whistle',
       labelKey: 'nav.training',
     },
-    { key: 'squad', to: '/squad', match: '/squad', icon: 'users', labelKey: 'nav.squad' },
+    { key: 'squad', to: '/squad', match: ['/squad'], icon: 'users', labelKey: 'nav.squad' },
   ]
   const [onlyClub, ...others] = adminClubs.value
   if (onlyClub) {
@@ -36,7 +36,7 @@ const tabs = computed<Tab[]>(() => {
       to: others.length
         ? { name: 'teams' }
         : { name: 'club', params: { clubId: onlyClub.club_id } },
-      match: '/clubs',
+      match: ['/clubs'],
       icon: 'building',
       labelKey: 'nav.club',
     })
@@ -44,7 +44,7 @@ const tabs = computed<Tab[]>(() => {
   result.push({
     key: 'profile',
     to: '/profile',
-    match: '/profile',
+    match: ['/profile'],
     icon: 'user',
     labelKey: 'nav.profile',
   })
@@ -52,7 +52,7 @@ const tabs = computed<Tab[]>(() => {
 })
 
 function isActive(tab: Tab) {
-  return route.path.startsWith(tab.match)
+  return tab.match.some((prefix) => route.path.startsWith(prefix))
 }
 
 // Without any team, team pages make no sense: send the user to club/team setup.

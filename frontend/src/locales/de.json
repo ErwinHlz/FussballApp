@@ -138,7 +138,11 @@
   "training": {
     "title": "Training",
     "empty": "Noch kein Training geplant",
-    "emptyHint": "Sobald ein Trainingsplan veröffentlicht ist, siehst du hier die Übungen."
+    "emptyHint": "Sobald ein Trainingsplan veröffentlicht ist, siehst du hier die Übungen.",
+    "libraryTitle": "Übungsbibliothek",
+    "libraryText": "Standardübungen und die Übungen deiner Mannschaft, mit Beschreibung und Video.",
+    "openLibrary": "Bibliothek öffnen",
+    "plansSoon": "Trainingspläne für einzelne Termine folgen im nächsten Schritt."
   },
   "squad": {
     "title": "Kader",
@@ -332,6 +336,73 @@
     "dateRange": "Das Ende muss nach dem Beginn liegen",
     "seriesTooLong": "Eine Serie darf höchstens ein Jahr lang sein",
     "maxLength120": "Höchstens 120 Zeichen",
-    "maxLength2000": "Höchstens 2000 Zeichen"
+    "maxLength2000": "Höchstens 2000 Zeichen",
+    "maxLength400": "Höchstens 400 Zeichen",
+    "maxLength4000": "Höchstens 4000 Zeichen",
+    "drillDuration": "Bitte 1 bis 180 Minuten",
+    "players": "Bitte 1 bis 40",
+    "playersRange": "Max. muss mindestens so groß wie Min. sein",
+    "youtube": "Bitte einen YouTube-Link angeben"
+  },
+  "drills": {
+    "title": "Übungen",
+    "new": "Neue Übung",
+    "search": "Suchen",
+    "searchPlaceholder": "Übung, Inhalt oder Material suchen …",
+    "category": "Kategorie",
+    "allCategories": "Alle",
+    "count": "{n} Übung | {n} Übungen",
+    "empty": "Keine Übungen gefunden",
+    "emptyHint": "Ändere die Suche oder den Filter.",
+    "loadFailed": "Übungen konnten nicht geladen werden.",
+    "loadFailedOne": "Übung konnte nicht geladen werden.",
+    "minutes": "{n} Min.",
+    "players": "{n} Spieler",
+    "hasVideo": "Video",
+    "scope": {
+      "label": "Herkunft",
+      "all": "Alle",
+      "team": "Meine Mannschaft",
+      "library": "Bibliothek",
+      "teamShort": "Eigene",
+      "libraryShort": "Bibliothek"
+    },
+    "categories": {
+      "warmup": "Aufwärmen",
+      "passing": "Passspiel",
+      "possession": "Ballbesitz",
+      "technique": "Technik",
+      "finishing": "Torabschluss",
+      "defending": "Verteidigen",
+      "tactics": "Taktik",
+      "game": "Spielform",
+      "fitness": "Athletik",
+      "goalkeeping": "Torwart"
+    },
+    "copyToTeam": "In „{team}“ übernehmen und anpassen",
+    "edit": "Bearbeiten",
+    "delete": "Übung löschen",
+    "deleteConfirm": "Wirklich löschen?",
+    "video": {
+      "load": "Video laden",
+      "privacy": "Erst nach dem Klick wird eine Verbindung zu YouTube aufgebaut.",
+      "invalid": "Kein gültiger YouTube-Link."
+    },
+    "form": {
+      "newTitle": "Neue Übung",
+      "editTitle": "Übung bearbeiten",
+      "title": "Titel",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Aufbau, Ablauf, Regeln, Coachingpunkte …",
+      "duration": "Dauer (Min.)",
+      "players": "Spieler",
+      "minPlayers": "Spieler min.",
+      "maxPlayers": "Spieler max.",
+      "equipment": "Material",
+      "equipmentHint": "Mit Komma trennen, z. B. Hütchen, Bälle, Leibchen",
+      "video": "YouTube-Link (optional)",
+      "videoHint": "youtube.com/watch?v=…, youtu.be/… oder Shorts",
+      "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben."
+    }
   }
 }

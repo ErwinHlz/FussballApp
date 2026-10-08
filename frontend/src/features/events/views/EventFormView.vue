@@ -9,6 +9,7 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseCard from '@/components/BaseCard.vue'
 import BaseChipGroup from '@/components/BaseChipGroup.vue'
 import BaseInput from '@/components/BaseInput.vue'
+import BaseTextarea from '@/components/BaseTextarea.vue'
 import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import type { EventInput } from '../api'
@@ -355,7 +356,7 @@ const onSubmit = handleSubmit(async (raw) => {
         :label="t('events.form.deadline')"
         :options="deadlineOptions"
       />
-      <BaseInput
+      <BaseTextarea
         v-if="kind !== 'series'"
         v-model="notes"
         :label="t('events.form.notes')"

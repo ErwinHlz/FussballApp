@@ -291,12 +291,12 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** Trainer legt eine Trainingsserie und ein Spiel an. Spieler melden sich an oder ab, der Trainer sieht live, wer kommt, und nominiert den Kader fürs Spiel.
 
 ### Phase 5 – Übungsbibliothek
-- [ ] Migration: `drills` + RLS
-- [ ] Übungen anlegen und bearbeiten: Titel, Beschreibung, Kategorie, Dauer, Spielerzahl, Material
-- [ ] Video als YouTube-Link (eingebettete Vorschau)
-- [ ] Liste mit Suche und Filter nach Kategorie
-- [ ] Seed-Daten: 10–15 Standardübungen (Rondo 4v2, Passdreieck, Torschuss, Abschlussspiel usw.) als öffentliche Bibliothek
-- [ ] Öffentliche Übung ins eigene Team kopieren und anpassen
+- [x] Migration: `drills` + RLS
+- [x] Übungen anlegen und bearbeiten: Titel, Beschreibung, Kategorie, Dauer, Spielerzahl, Material
+- [x] Video als YouTube-Link (eingebettete Vorschau)
+- [x] Liste mit Suche und Filter nach Kategorie
+- [x] Seed-Daten: 10–15 Standardübungen (Rondo 4v2, Passdreieck, Torschuss, Abschlussspiel usw.) als öffentliche Bibliothek
+- [x] Öffentliche Übung ins eigene Team kopieren und anpassen
 
 **Abnahme:** Trainer findet, erstellt und bearbeitet Übungen. Videos werden angezeigt.
 

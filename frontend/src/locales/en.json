@@ -138,7 +138,11 @@
   "training": {
     "title": "Training",
     "empty": "No training planned yet",
-    "emptyHint": "Once a training plan is published, you will see the drills here."
+    "emptyHint": "Once a training plan is published, you will see the drills here.",
+    "libraryTitle": "Drill library",
+    "libraryText": "Standard drills and your team's drills, with description and video.",
+    "openLibrary": "Open library",
+    "plansSoon": "Training plans for single events are coming next."
   },
   "squad": {
     "title": "Squad",
@@ -332,6 +336,73 @@
     "dateRange": "The end must be after the start",
     "seriesTooLong": "A series can be at most one year long",
     "maxLength120": "At most 120 characters",
-    "maxLength2000": "At most 2000 characters"
+    "maxLength2000": "At most 2000 characters",
+    "maxLength400": "At most 400 characters",
+    "maxLength4000": "At most 4000 characters",
+    "drillDuration": "Please 1 to 180 minutes",
+    "players": "Please 1 to 40",
+    "playersRange": "Max. must be at least min.",
+    "youtube": "Please enter a YouTube link"
+  },
+  "drills": {
+    "title": "Drills",
+    "new": "New drill",
+    "search": "Search",
+    "searchPlaceholder": "Search drill, content or equipment …",
+    "category": "Category",
+    "allCategories": "All",
+    "count": "{n} drill | {n} drills",
+    "empty": "No drills found",
+    "emptyHint": "Change the search or the filter.",
+    "loadFailed": "Drills could not be loaded.",
+    "loadFailedOne": "Drill could not be loaded.",
+    "minutes": "{n} min",
+    "players": "{n} players",
+    "hasVideo": "Video",
+    "scope": {
+      "label": "Source",
+      "all": "All",
+      "team": "My team",
+      "library": "Library",
+      "teamShort": "Own",
+      "libraryShort": "Library"
+    },
+    "categories": {
+      "warmup": "Warm-up",
+      "passing": "Passing",
+      "possession": "Possession",
+      "technique": "Technique",
+      "finishing": "Finishing",
+      "defending": "Defending",
+      "tactics": "Tactics",
+      "game": "Game",
+      "fitness": "Fitness",
+      "goalkeeping": "Goalkeeping"
+    },
+    "copyToTeam": "Copy to “{team}” and adapt",
+    "edit": "Edit",
+    "delete": "Delete drill",
+    "deleteConfirm": "Really delete?",
+    "video": {
+      "load": "Load video",
+      "privacy": "A connection to YouTube is only made after you click.",
+      "invalid": "Not a valid YouTube link."
+    },
+    "form": {
+      "newTitle": "New drill",
+      "editTitle": "Edit drill",
+      "title": "Title",
+      "description": "Description",
+      "descriptionPlaceholder": "Setup, sequence, rules, coaching points …",
+      "duration": "Duration (min)",
+      "players": "Players",
+      "minPlayers": "Min. players",
+      "maxPlayers": "Max. players",
+      "equipment": "Equipment",
+      "equipmentHint": "Separate with commas, e.g. cones, balls, bibs",
+      "video": "YouTube link (optional)",
+      "videoHint": "youtube.com/watch?v=…, youtu.be/… or Shorts",
+      "saveFailed": "Saving failed. Please check your input."
+    }
   }
 }
