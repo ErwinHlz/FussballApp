@@ -138,11 +138,12 @@
   "training": {
     "title": "Training",
     "empty": "Noch kein Training geplant",
-    "emptyHint": "Sobald ein Trainingsplan veröffentlicht ist, siehst du hier die Übungen.",
+    "emptyHint": "Leg unter „Termine“ ein Training oder eine Trainingsserie an.",
     "libraryTitle": "Übungsbibliothek",
     "libraryText": "Standardübungen und die Übungen deiner Mannschaft, mit Beschreibung und Video.",
     "openLibrary": "Bibliothek öffnen",
-    "plansSoon": "Trainingspläne für einzelne Termine folgen im nächsten Schritt."
+    "plansSoon": "Trainingspläne für einzelne Termine folgen im nächsten Schritt.",
+    "upcoming": "Nächste Trainings"
   },
   "squad": {
     "title": "Kader",
@@ -404,5 +405,55 @@
       "videoHint": "youtube.com/watch?v=…, youtu.be/… oder Shorts",
       "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben."
     }
+  },
+  "plan": {
+    "title": "Trainingsplan",
+    "backToEvent": "Zum Termin",
+    "coachOnly": "Nur Trainer können den Plan bearbeiten.",
+    "draft": "Entwurf",
+    "published": "Veröffentlicht",
+    "available": "Plan verfügbar",
+    "none": "Kein Plan",
+    "draftCount": "Entwurf · {n} Übung | Entwurf · {n} Übungen",
+    "drillCount": "{n} Übung | {n} Übungen",
+    "publishedAt": "seit {date}",
+    "draftHint": "Spieler sehen den Plan erst nach dem Veröffentlichen.",
+    "publishedHint": "Spieler sehen den Plan jetzt vor dem Training.",
+    "publish": "Plan veröffentlichen",
+    "unpublish": "Zurück auf Entwurf",
+    "total": "{n} Min. geplant",
+    "ofAvailable": "von {n} Min.",
+    "durationLabel": "Geplante Dauer im Vergleich zur Trainingszeit",
+    "fit": {
+      "fits": "passt",
+      "under": "noch Zeit frei",
+      "over": "zu lang",
+      "none": ""
+    },
+    "empty": "Noch keine Übungen im Plan.",
+    "create": "Plan erstellen",
+    "edit": "Plan bearbeiten",
+    "addDrill": "Übung hinzufügen",
+    "alreadyInPlan": "Schon im Plan",
+    "copyFrom": "Plan kopieren",
+    "copyTitle": "Plan von einem anderen Training übernehmen",
+    "copyHint": "Die Übungen werden ans Ende dieses Plans angehängt.",
+    "copyNone": "Es gibt noch kein anderes Training mit Plan.",
+    "copyFailed": "Kopieren fehlgeschlagen.",
+    "copied": "{n} Übung übernommen | {n} Übungen übernommen",
+    "dragHandle": "Zum Sortieren ziehen",
+    "moveUp": "{title} nach oben",
+    "moveDown": "{title} nach unten",
+    "moved": "{title} ist jetzt an Position {position}",
+    "remove": "{title} entfernen",
+    "min": "Min.",
+    "minutesShort": "{n} Min.",
+    "minutesFor": "Minuten für {title}",
+    "notesAdd": "Notiz",
+    "notesEdit": "Notiz bearbeiten",
+    "notesLabel": "Trainernotiz",
+    "notesPlaceholder": "z. B. Fokus auf ersten Kontakt",
+    "saveFailed": "Änderung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "lateDeclines": "{n} Spieler hat nach dem Veröffentlichen abgesagt: | {n} Spieler haben nach dem Veröffentlichen abgesagt:"
   }
 }

@@ -70,6 +70,12 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/events/views/EventDetailView.vue'),
       },
       {
+        path: 'events/:eventId/plan',
+        name: 'event-plan',
+        props: true,
+        component: () => import('@/features/training-plan/views/PlanEditorView.vue'),
+      },
+      {
         path: 'events/:eventId/edit',
         name: 'event-edit',
         props: true,

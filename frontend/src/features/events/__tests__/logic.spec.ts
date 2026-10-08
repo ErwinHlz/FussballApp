@@ -33,6 +33,7 @@ function event(overrides: Partial<TeamEvent>): TeamEvent {
     is_cancelled: false,
     cancel_reason: null,
     plan_status: 'draft',
+    plan_published_at: null,
     opponent: null,
     is_home: null,
     competition: null,

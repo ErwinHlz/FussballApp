@@ -11,6 +11,7 @@ import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import AttendanceControl from '../components/AttendanceControl.vue'
 import AttendanceOverview from '../components/AttendanceOverview.vue'
 import MatchSquadEditor from '../components/MatchSquadEditor.vue'
+import PlanSection from '@/features/training-plan/components/PlanSection.vue'
 import { useEventFormat } from '../format'
 import { SQUAD_ROLES } from '../logic'
 import { useDeleteEvent, useEvent, useMyMember, useUpdateEvent } from '../composables/useEvents'
@@ -155,6 +156,14 @@ async function remove() {
           {{ t('events.prefilledInjured') }}
         </p>
       </BaseCard>
+
+      <!-- Training plan -->
+      <PlanSection
+        v-if="e.type === 'training' && !e.is_cancelled"
+        :event="e"
+        :is-coach="isCoach"
+        :members="members.data.value ?? []"
+      />
 
       <!-- Nomination (visible to everyone) -->
       <BaseCard v-if="e.type === 'match' && (myNomination || squadByRole.length)">

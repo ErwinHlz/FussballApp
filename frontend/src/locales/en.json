@@ -138,11 +138,12 @@
   "training": {
     "title": "Training",
     "empty": "No training planned yet",
-    "emptyHint": "Once a training plan is published, you will see the drills here.",
+    "emptyHint": "Create a training or a training series under “Events”.",
     "libraryTitle": "Drill library",
     "libraryText": "Standard drills and your team's drills, with description and video.",
     "openLibrary": "Open library",
-    "plansSoon": "Training plans for single events are coming next."
+    "plansSoon": "Training plans for single events are coming next.",
+    "upcoming": "Upcoming trainings"
   },
   "squad": {
     "title": "Squad",
@@ -404,5 +405,55 @@
       "videoHint": "youtube.com/watch?v=…, youtu.be/… or Shorts",
       "saveFailed": "Saving failed. Please check your input."
     }
+  },
+  "plan": {
+    "title": "Training plan",
+    "backToEvent": "Back to event",
+    "coachOnly": "Only coaches can edit the plan.",
+    "draft": "Draft",
+    "published": "Published",
+    "available": "Plan available",
+    "none": "No plan",
+    "draftCount": "Draft · {n} drill | Draft · {n} drills",
+    "drillCount": "{n} drill | {n} drills",
+    "publishedAt": "since {date}",
+    "draftHint": "Players only see the plan once it is published.",
+    "publishedHint": "Players can now see the plan before training.",
+    "publish": "Publish plan",
+    "unpublish": "Back to draft",
+    "total": "{n} min planned",
+    "ofAvailable": "of {n} min",
+    "durationLabel": "Planned duration compared to training time",
+    "fit": {
+      "fits": "fits",
+      "under": "time left",
+      "over": "too long",
+      "none": ""
+    },
+    "empty": "No drills in the plan yet.",
+    "create": "Create plan",
+    "edit": "Edit plan",
+    "addDrill": "Add drill",
+    "alreadyInPlan": "Already in plan",
+    "copyFrom": "Copy plan",
+    "copyTitle": "Copy the plan of another training",
+    "copyHint": "The drills are appended to the end of this plan.",
+    "copyNone": "There is no other training with a plan yet.",
+    "copyFailed": "Copying failed.",
+    "copied": "{n} drill copied | {n} drills copied",
+    "dragHandle": "Drag to reorder",
+    "moveUp": "Move {title} up",
+    "moveDown": "Move {title} down",
+    "moved": "{title} is now at position {position}",
+    "remove": "Remove {title}",
+    "min": "min",
+    "minutesShort": "{n} min",
+    "minutesFor": "Minutes for {title}",
+    "notesAdd": "Note",
+    "notesEdit": "Edit note",
+    "notesLabel": "Coach note",
+    "notesPlaceholder": "e.g. focus on first touch",
+    "saveFailed": "Change could not be saved. Please try again.",
+    "lateDeclines": "{n} player declined after publishing: | {n} players declined after publishing:"
   }
 }

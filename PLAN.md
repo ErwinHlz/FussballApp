@@ -150,6 +150,7 @@ events              (team_id, type: 'training' | 'match',
                      response_deadline NULL,           -- Anmeldeschluss
                      is_cancelled bool default false, cancel_reason NULL,
                      plan_status: 'draft' | 'published' default 'draft',  -- nur für Training relevant
+                     plan_published_at NULL,           -- Zeitpunkt der Veröffentlichung (späte Absagen erkennen)
                      opponent NULL, is_home bool NULL, competition NULL)    -- nur für Spiele
 
 attendances         (event_id → events, member_id → team_members,
@@ -301,12 +302,12 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** Trainer findet, erstellt und bearbeitet Übungen. Videos werden angezeigt.
 
 ### Phase 6 – Trainingsinhalte
-- [ ] Migration: `event_drills` + RLS
-- [ ] Zu einem Trainingstermin Übungen aus der Bibliothek hinzufügen und per Drag & Drop sortieren
-- [ ] Dauer pro Übung überschreiben, Gesamtdauer anzeigen und mit Termindauer vergleichen
-- [ ] Trainingsplan von einem anderen Termin kopieren
-- [ ] Plan-Status `draft` / `published`, Button „Plan veröffentlichen“
-- [ ] Hinweis an den Trainer, wenn Spieler nach Veröffentlichung absagen
+- [x] Migration: `event_drills` + RLS
+- [x] Zu einem Trainingstermin Übungen aus der Bibliothek hinzufügen und per Drag & Drop sortieren
+- [x] Dauer pro Übung überschreiben, Gesamtdauer anzeigen und mit Termindauer vergleichen
+- [x] Trainingsplan von einem anderen Termin kopieren
+- [x] Plan-Status `draft` / `published`, Button „Plan veröffentlichen“
+- [x] Hinweis an den Trainer, wenn Spieler nach Veröffentlichung absagen
 
 **Abnahme:** Trainer baut den Inhalt einer Einheit und veröffentlicht den Plan.
 
