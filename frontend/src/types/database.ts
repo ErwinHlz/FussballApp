@@ -101,6 +101,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"drill_groups": {
+                  Row: {
+                    "color": string,"created_at": string,"event_drill_id": string,"id": string,"name": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "color": string,"created_at"?: string,"event_drill_id": string,"id"?: string,"name": string
+                  }
+                  Update: {
+                    "color"?: string,"created_at"?: string,"event_drill_id"?: string,"id"?: string,"name"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "drill_groups_event_drill_id_fkey"
+      columns: ["event_drill_id"]
+isOneToOne: false
+      referencedRelation: "event_drills"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"drills": {
                   Row: {
                     "animation": Json | null,"category": string,"copied_from": string | null,"created_at": string,"created_by": string | null,"description": string,"duration_min": number | null,"equipment": (string)[],"id": string,"max_players": number | null,"min_players": number | null,"team_id": string | null,"title": string,"updated_at": string,"video_path": string | null,"video_url": string | null
@@ -202,6 +222,32 @@ isOneToOne: false
       columns: ["team_id"]
 isOneToOne: false
       referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"group_assignments": {
+                  Row: {
+                    "created_at": string,"group_id": string,"id": string,"member_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"group_id": string,"id"?: string,"member_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"group_id"?: string,"id"?: string,"member_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "group_assignments_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "drill_groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "group_assignments_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "team_members"
       referencedColumns: ["id"]
     }
                   ]
@@ -392,6 +438,12 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"drill_group_event_id":
+{ Args: { "p_group_id": string }; Returns: string
+                           },
+"event_drill_event_id":
+{ Args: { "p_event_drill_id": string }; Returns: string
+                           },
 "event_open_for_responses":
 { Args: { "p_event_id": string }; Returns: boolean
                            },
@@ -475,6 +527,9 @@ isOneToOne: false
       } },
 "set_club_member_role":
 { Args: { "p_club_id": string,"p_role": Database["public"]['Enums']["club_role"],"p_user_id": string }; Returns: undefined
+                           },
+"set_drill_groups":
+{ Args: { "p_event_drill_id": string,"p_groups": Json }; Returns: undefined
                            },
 "set_match_squad":
 { Args: { "p_entries": Json,"p_event_id": string }; Returns: undefined

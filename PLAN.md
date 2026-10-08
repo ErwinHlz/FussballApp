@@ -174,7 +174,7 @@ drills              (team_id NULL = öffentliche Bibliothek, created_by,
 event_drills        (event_id → events (nur type = 'training'), drill_id,
                      position int, duration_min, coach_notes)
 
-drill_groups        (event_drill_id, name, color)       -- z. B. "Rot", #ef4444
+drill_groups        (event_drill_id, name, color)       -- z. B. "Rot", 'red' (Leibchenfarben-Token)
 
 group_assignments   (group_id → drill_groups, member_id → team_members,
                      unique(group_id, member_id))
@@ -312,12 +312,12 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** Trainer baut den Inhalt einer Einheit und veröffentlicht den Plan.
 
 ### Phase 7 – Gruppeneinteilung
-- [ ] Migration: `drill_groups`, `group_assignments` + RLS
-- [ ] Pro Übung Gruppen anlegen, mit Name und Leibchenfarbe
-- [ ] Spieler per Drag & Drop in Gruppen ziehen (`vue-draggable-plus`, auch per Touch)
-- [ ] Nur zugesagte Spieler (und „Vielleicht“, markiert) stehen zur Auswahl, abgesagte sind ausgeblendet
-- [ ] „Zufällig verteilen“, „Nach Positionen ausgleichen“ und „Gleich wie vorherige Übung“
-- [ ] Hinweis, wenn ein zugesagter Spieler in keiner Gruppe ist oder nach der Einteilung absagt
+- [x] Migration: `drill_groups`, `group_assignments` + RLS
+- [x] Pro Übung Gruppen anlegen, mit Name und Leibchenfarbe
+- [x] Spieler per Drag & Drop in Gruppen ziehen (`vue-draggable-plus`, auch per Touch)
+- [x] Nur zugesagte Spieler (und „Vielleicht“, markiert) stehen zur Auswahl, abgesagte sind ausgeblendet
+- [x] „Zufällig verteilen“, „Nach Positionen ausgleichen“ und „Gleich wie vorherige Übung“
+- [x] Hinweis, wenn ein zugesagter Spieler in keiner Gruppe ist oder nach der Einteilung absagt
 
 **Abnahme:** Trainer teilt für jede Übung alle zugesagten Spieler in farbige Gruppen ein.
 

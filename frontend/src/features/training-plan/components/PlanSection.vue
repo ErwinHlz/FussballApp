@@ -64,6 +64,14 @@ const total = computed(() => planTotalMinutes(items.value))
         {{ items.length ? t('plan.edit') : t('plan.create') }}
       </BaseButton>
     </RouterLink>
+    <RouterLink
+      v-if="isCoach && items.length"
+      v-slot="{ navigate }"
+      custom
+      :to="{ name: 'event-groups', params: { eventId: event.id } }"
+    >
+      <BaseButton variant="secondary" block @click="navigate">{{ t('groups.assign') }}</BaseButton>
+    </RouterLink>
   </BaseCard>
 </template>
 

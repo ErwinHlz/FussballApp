@@ -254,6 +254,12 @@ function togglePublish() {
             >
               {{ item.coach_notes ? t('plan.notesEdit') : t('plan.notesAdd') }}
             </button>
+            <RouterLink
+              class="plan-item__action plan-item__action--text plan-item__action--link"
+              :to="{ name: 'event-groups', params: { eventId }, query: { drill: item.id } }"
+            >
+              {{ t('groups.short') }}
+            </RouterLink>
             <span class="plan__muted plan-item__effective">
               {{ t('plan.minutesShort', { n: itemMinutes(item) }) }}
             </span>
@@ -526,6 +532,13 @@ function togglePublish() {
     &--text {
       font-size: $font-sm;
       font-weight: 600;
+    }
+
+    &--link {
+      display: inline-flex;
+      align-items: center;
+      color: inherit;
+      text-decoration: none;
     }
 
     &--danger {
