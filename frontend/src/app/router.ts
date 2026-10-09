@@ -78,7 +78,7 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/events/views/EventsView.vue'),
       },
       {
-        path: 'events/new/:kind(training|series|match)',
+        path: 'events/new/:kind(training|series|match|event)',
         name: 'event-new',
         props: true,
         meta: { requiresTeam: true, title: 'events.createLabel', back: 'events' },

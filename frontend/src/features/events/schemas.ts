@@ -47,6 +47,15 @@ export const seriesSchema = z
     path: ['validUntil'],
   })
 
+/** Team events (team evening, tournament, meeting): like a training, plus a title. */
+export const eventSchema = trainingSchema.extend({
+  title: z
+    .string({ required_error: 'validation.required' })
+    .trim()
+    .min(2, 'validation.minLength2')
+    .max(80, 'validation.maxLength80'),
+})
+
 export const matchSchema = z.object({
   opponent: z
     .string({ required_error: 'validation.required' })

@@ -15,7 +15,9 @@ export type PushRow = {
     | 'test'
   payload: Record<string, unknown>
   event_id: string | null
-  event_type: 'training' | 'match' | null
+  event_type: 'training' | 'match' | 'event' | null
+  /** Title of team events (type event). */
+  event_title?: string | null
   starts_at: string | null
   opponent: string | null
   is_home: boolean | null
@@ -45,6 +47,7 @@ const texts = {
   de: {
     training: 'Training',
     match: 'Spiel',
+    event: 'Event',
     vs: (o: string) => `vs. ${o}`,
     created: (what: string, team: string) => `Neues ${what} · ${team}`,
     series: (team: string) => `Neue Trainings · ${team}`,
@@ -61,6 +64,7 @@ const texts = {
   en: {
     training: 'Training',
     match: 'Match',
+    event: 'Event',
     vs: (o: string) => `vs. ${o}`,
     created: (what: string, team: string) => `New ${what.toLowerCase()} · ${team}`,
     series: (team: string) => `New trainings · ${team}`,
@@ -81,8 +85,14 @@ export function buildMessage(row: PushRow): PushMessage {
   const tx = texts[locale]
   const team = row.team_name ?? 'Rondo'
   const date = when(row.starts_at, locale)
-  const what = row.event_type === 'match' ? tx.match : tx.training
-  const title = row.event_type === 'match' && row.opponent ? tx.vs(row.opponent) : what
+  const what =
+    row.event_type === 'match' ? tx.match : row.event_type === 'event' ? tx.event : tx.training
+  const title =
+    row.event_type === 'match' && row.opponent
+      ? tx.vs(row.opponent)
+      : row.event_type === 'event' && row.event_title
+        ? row.event_title
+        : what
   const url = row.event_id ? `/events/${row.event_id}` : '/events'
   // One notification per event and kind; a newer one replaces an older one.
   const tag = `${row.kind}:${row.event_id ?? row.outbox_id}`
@@ -91,7 +101,7 @@ export function buildMessage(row: PushRow): PushMessage {
     case 'event_created':
       return {
         title: tx.created(what, team),
-        body: [row.event_type === 'match' ? title : null, date, row.location].filter(Boolean).join(' · '),
+        body: [title !== what ? title : null, date, row.location].filter(Boolean).join(' · '),
         url,
         tag,
       }

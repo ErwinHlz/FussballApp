@@ -1,7 +1,7 @@
 <script setup lang="ts">
 withDefaults(
   defineProps<{
-    tone?: 'neutral' | 'success' | 'danger' | 'warning' | 'info' | 'training' | 'match'
+    tone?: 'neutral' | 'success' | 'danger' | 'warning' | 'info' | 'training' | 'match' | 'event'
   }>(),
   { tone: 'neutral' },
 )
@@ -51,6 +51,10 @@ withDefaults(
 
   &--training {
     --badge-color: var(--color-training);
+  }
+
+  &--event {
+    --badge-color: var(--color-event);
   }
 }
 </style>

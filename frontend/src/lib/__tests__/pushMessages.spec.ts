@@ -33,6 +33,16 @@ describe('push messages', () => {
     })
   })
 
+  it('names team events by their title', () => {
+    const m = buildMessage(row({ event_type: 'event', event_title: 'Teamabend' }))
+    expect(m.title).toBe('Neues Event · U17')
+    expect(m.body).toBe('Teamabend · Di., 13.10., 18:30 · Sportpark')
+    const cancelled = buildMessage(
+      row({ kind: 'event_cancelled', event_type: 'event', event_title: 'Teamabend' }),
+    )
+    expect(cancelled.title).toBe('Abgesagt: Teamabend am Di., 13.10., 18:30')
+  })
+
   it('names the opponent for matches', () => {
     const m = buildMessage(row({ event_type: 'match', opponent: 'FC Nachbarort', location: null }))
     expect(m.title).toBe('Neues Spiel · U17')

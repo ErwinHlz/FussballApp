@@ -19,7 +19,7 @@
     "loadFailedOne": "Event could not be loaded.",
     "createLabel": "Create event",
     "newTraining": "Training",
-    "newSeries": "Series",
+    "newSeries": "Training series",
     "newMatch": "Match",
     "training": "Training",
     "match": "Match",
@@ -106,7 +106,8 @@
       "newTitle": {
         "training": "New training",
         "series": "New training series",
-        "match": "New match"
+        "match": "New match",
+        "event": "New event"
       },
       "editTitle": "Edit event",
       "date": "Date",
@@ -130,10 +131,18 @@
       "meetTime": "Meeting time",
       "meetLocation": "Meeting point",
       "venueLocation": "Venue",
-      "saveFailed": "Saving failed. Please check your input."
+      "saveFailed": "Saving failed. Please check your input.",
+      "eventTitle": "Title",
+      "eventTitlePlaceholder": "e.g. Team evening, indoor tournament, parents meeting"
     },
     "matchVs": "vs. {opponent}",
-    "detailTitle": "Event"
+    "detailTitle": "Event",
+    "event": "Event",
+    "newEvent": "Event",
+    "newTrainingHint": "A single training session",
+    "newSeriesHint": "Trainings on fixed weekdays over several weeks",
+    "newMatchHint": "Match with opponent, meeting point and squad",
+    "newEventHint": "Team evening, tournament, meeting and anything else"
   },
   "training": {
     "title": "Training",

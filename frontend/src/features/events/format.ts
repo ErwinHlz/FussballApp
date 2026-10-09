@@ -12,8 +12,11 @@ export function useEventFormat() {
   const time = (iso: string) => formatDate(iso, locale.value, 'p')
   const dateTime = (iso: string) => formatDate(iso, locale.value, 'Pp')
 
-  function title(event: Pick<EventRow, 'type' | 'opponent' | 'is_home'>) {
+  function title(
+    event: Pick<EventRow, 'type' | 'opponent' | 'is_home'> & { title?: string | null },
+  ) {
     if (event.type === 'training') return t('events.training')
+    if (event.type === 'event') return event.title ?? t('events.event')
     return t('events.matchVs', { opponent: event.opponent })
   }
 

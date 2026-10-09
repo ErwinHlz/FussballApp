@@ -112,6 +112,10 @@ const myNomination = computed(
     --event-color: var(--color-match);
   }
 
+  &--event {
+    --event-color: var(--color-event);
+  }
+
   &--cancelled {
     --event-color: var(--color-border);
 

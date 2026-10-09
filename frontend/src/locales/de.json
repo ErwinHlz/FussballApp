@@ -19,7 +19,7 @@
     "loadFailedOne": "Termin konnte nicht geladen werden.",
     "createLabel": "Termin anlegen",
     "newTraining": "Training",
-    "newSeries": "Serie",
+    "newSeries": "Trainingsserie",
     "newMatch": "Spiel",
     "training": "Training",
     "match": "Spiel",
@@ -106,7 +106,8 @@
       "newTitle": {
         "training": "Neues Training",
         "series": "Neue Trainingsserie",
-        "match": "Neues Spiel"
+        "match": "Neues Spiel",
+        "event": "Neues Event"
       },
       "editTitle": "Termin bearbeiten",
       "date": "Datum",
@@ -130,10 +131,18 @@
       "meetTime": "Treffzeit",
       "meetLocation": "Treffpunkt",
       "venueLocation": "Spielort",
-      "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben."
+      "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben.",
+      "eventTitle": "Titel",
+      "eventTitlePlaceholder": "z. B. Teamabend, Hallenturnier, Elternabend"
     },
     "matchVs": "vs. {opponent}",
-    "detailTitle": "Termin"
+    "detailTitle": "Termin",
+    "event": "Event",
+    "newEvent": "Event",
+    "newTrainingHint": "Einzelnes Training an einem Tag",
+    "newSeriesHint": "Trainings an festen Wochentagen über mehrere Wochen",
+    "newMatchHint": "Spiel mit Gegner, Treffpunkt und Kader",
+    "newEventHint": "Teamabend, Turnier, Versammlung und alles andere"
   },
   "training": {
     "title": "Training",

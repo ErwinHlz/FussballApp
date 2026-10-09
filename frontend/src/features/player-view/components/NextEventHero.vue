@@ -100,6 +100,10 @@ const showPlan = computed(
     --event-color: var(--color-match);
   }
 
+  &--event {
+    --event-color: var(--color-event);
+  }
+
   &__eyebrow {
     font-size: $font-xs;
     font-weight: 800;

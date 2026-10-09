@@ -22,6 +22,7 @@ import {
 } from '../logic'
 import {
   combineDateTime,
+  eventSchema,
   matchSchema,
   parseDeadline,
   seriesSchema,
@@ -29,7 +30,7 @@ import {
 } from '../schemas'
 import { useCreateEvent, useCreateSeries, useEvent, useUpdateEvent } from '../composables/useEvents'
 
-type Kind = 'training' | 'series' | 'match'
+type Kind = 'training' | 'series' | 'match' | 'event'
 
 const props = defineProps<{ kind?: Kind; eventId?: string }>()
 
@@ -50,7 +51,13 @@ const updateEvent = useUpdateEvent()
 
 const schema = computed(() =>
   toTypedSchema(
-    kind.value === 'series' ? seriesSchema : kind.value === 'match' ? matchSchema : trainingSchema,
+    kind.value === 'series'
+      ? seriesSchema
+      : kind.value === 'match'
+        ? matchSchema
+        : kind.value === 'event'
+          ? eventSchema
+          : trainingSchema,
   ),
 )
 
@@ -86,6 +93,7 @@ const weekdays = field('weekdays')
 const validFrom = field('validFrom')
 const validUntil = field('validUntil')
 const opponent = field('opponent')
+const eventTitle = field('title')
 const venue = field('venue')
 const competition = field('competition')
 
@@ -117,6 +125,7 @@ watch(
         notes: event.notes ?? '',
         deadline: hoursBefore === null ? 'none' : String(hoursBefore),
         opponent: event.opponent ?? '',
+        title: event.title ?? '',
         venue: event.is_home === false ? 'away' : 'home',
         competition: event.competition ?? 'league',
       },
@@ -226,7 +235,8 @@ const onSubmit = handleSubmit(async (raw) => {
   } else {
     const startsAt = combineDateTime(String(v.date), String(v.startTime))
     input = {
-      type: 'training',
+      type: kind.value === 'event' ? 'event' : 'training',
+      ...(kind.value === 'event' ? { title: String(v.title).trim() } : {}),
       starts_at: startsAt.toISOString(),
       ends_at: new Date(startsAt.getTime() + Number(v.durationMin) * 60000).toISOString(),
       location: text('location'),
@@ -255,6 +265,16 @@ const onSubmit = handleSubmit(async (raw) => {
     <p v-if="existing?.isPending.value">{{ t('common.loading') }}</p>
 
     <form v-else class="event-form__form" novalidate @submit="onSubmit">
+      <!-- Team event -->
+      <BaseInput
+        v-if="kind === 'event'"
+        v-model="eventTitle"
+        :label="t('events.form.eventTitle')"
+        :placeholder="t('events.form.eventTitlePlaceholder')"
+        required
+        :error="err('title')"
+      />
+
       <!-- Match -->
       <template v-if="kind === 'match'">
         <BaseInput
