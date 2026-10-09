@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import BaseBadge from '@/components/BaseBadge.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import YouTubeEmbed from '../components/YouTubeEmbed.vue'
+import BibBadge from '@/features/player-view/components/BibBadge.vue'
+import { useEventGroups } from '@/features/groups/composables/useGroups'
+import { useMyMember } from '@/features/events/composables/useEvents'
 import { playersLabel } from '../logic'
 import { useCopyDrill, useDeleteDrill, useDrill } from '../composables/useDrills'
 
@@ -13,6 +16,7 @@ const props = defineProps<{ drillId: string }>()
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const { activeTeam, myTeams } = useActiveTeam()
 const drill = useDrill(() => props.drillId)
 const copyDrill = useCopyDrill()
@@ -20,6 +24,18 @@ const deleteDrill = useDeleteDrill()
 const confirmDelete = ref(false)
 
 const d = computed(() => drill.data.value)
+
+// Opened from a training (?event=…&ed=…): show the player's group for this drill.
+const fromEventId = computed(() => (typeof route.query.event === 'string' ? route.query.event : ''))
+const fromEventDrillId = computed(() => (typeof route.query.ed === 'string' ? route.query.ed : ''))
+const eventGroups = useEventGroups(fromEventId, () => !!fromEventId.value)
+const { myMember } = useMyMember(() => activeTeam.value?.team_id ?? null)
+const myGroup = computed(() => {
+  const ed = eventGroups.data.value?.find((x) => x.id === fromEventDrillId.value)
+  return (
+    ed?.groups.find((g) => !!myMember.value && g.member_ids.includes(myMember.value.id)) ?? null
+  )
+})
 const isPublic = computed(() => d.value?.team_id === null)
 // Coach rights for the drill's team (own drills) or the active team (copying public ones).
 const canEdit = computed(() => {
@@ -68,6 +84,11 @@ async function remove() {
         </div>
         <h1>{{ d.title }}</h1>
       </header>
+
+      <p v-if="myGroup" class="drill__my-group" role="status">
+        {{ t('player.yourGroupHere') }}
+        <BibBadge :color="myGroup.color" :name="myGroup.name" size="lg" />
+      </p>
 
       <dl class="drill__facts">
         <div v-if="d.duration_min">
@@ -148,6 +169,18 @@ async function remove() {
     display: flex;
     flex-wrap: wrap;
     gap: $space-1;
+  }
+
+  &__my-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-3;
+    border-radius: $radius-lg;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-weight: 700;
   }
 
   &__facts {

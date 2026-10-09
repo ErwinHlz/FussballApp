@@ -44,8 +44,8 @@ function item(id: string, title: string, minutes: number): PlanItem {
 
 function mountSection(planStatus: 'draft' | 'published', isCoach: boolean) {
   return mount(PlanSection, {
-    props: { event: event(planStatus), isCoach, members: [] },
-    global: { plugins: [i18n], stubs: { RouterLink: RouterLinkStub } },
+    props: { event: event(planStatus), isCoach, members: [], myMemberId: 'me' },
+    global: { plugins: [i18n], stubs: { RouterLink: RouterLinkStub, MyTrainingFlow: true } },
   })
 }
 
@@ -62,21 +62,12 @@ describe('PlanSection', () => {
     expect(queryEnabled.value).toBe(false)
   })
 
-  it('shows the published plan to players in order with total time', () => {
+  it('shows players their own training flow once published', () => {
     const wrapper = mountSection('published', false)
 
-    const rows = wrapper
-      .findAll('li')
-      .map((li) => [
-        li.find('.plan-section__index').text(),
-        li.find('.plan-section__drill').text(),
-        li.find('.plan-section__minutes').text(),
-      ])
-    expect(rows).toEqual([
-      ['1', 'Aufwärmen', '10 Min.'],
-      ['2', 'Rondo', '20 Min.'],
-    ])
-    expect(wrapper.text()).toContain('30 Min. geplant')
+    const flow = wrapper.findComponent({ name: 'MyTrainingFlow' })
+    expect(flow.exists()).toBe(true)
+    expect(flow.props()).toEqual({ eventId: 'e1', memberId: 'me' })
     expect(wrapper.text()).not.toContain('Plan bearbeiten')
   })
 

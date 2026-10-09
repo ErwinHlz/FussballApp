@@ -7,11 +7,17 @@ import BaseCard from '@/components/BaseCard.vue'
 import type { TeamMember } from '@/features/teams/api'
 import type { TeamEvent } from '@/features/events/logic'
 import LateDeclines from './LateDeclines.vue'
+import MyTrainingFlow from '@/features/player-view/components/MyTrainingFlow.vue'
 import { itemMinutes, planTotalMinutes } from '../logic'
 import { usePlan } from '../composables/usePlan'
 
 /** Training plan block on the event detail page: summary for coaches, the plan for players. */
-const props = defineProps<{ event: TeamEvent; isCoach: boolean; members: TeamMember[] }>()
+const props = defineProps<{
+  event: TeamEvent
+  isCoach: boolean
+  members: TeamMember[]
+  myMemberId?: string | null
+}>()
 
 const { t } = useI18n()
 const isPublished = computed(() => props.event.plan_status === 'published')
@@ -35,7 +41,9 @@ const total = computed(() => planTotalMinutes(items.value))
 
     <LateDeclines v-if="isCoach" :event="event" :members="members" />
 
-    <ol v-if="items.length" class="plan-section__list">
+    <MyTrainingFlow v-if="!isCoach" :event-id="event.id" :member-id="myMemberId ?? null" />
+
+    <ol v-else-if="items.length" class="plan-section__list">
       <li v-for="(item, index) in items" :key="item.id" class="plan-section__item">
         <span class="plan-section__index">{{ index + 1 }}</span>
         <RouterLink
@@ -49,10 +57,12 @@ const total = computed(() => planTotalMinutes(items.value))
         }}</span>
       </li>
     </ol>
-    <p v-else-if="plan.isSuccess.value" class="plan-section__muted">
+    <p v-else-if="isCoach && plan.isSuccess.value" class="plan-section__muted">
       {{ t('plan.empty') }}
     </p>
-    <p v-if="items.length" class="plan-section__muted">{{ t('plan.total', { n: total }) }}</p>
+    <p v-if="isCoach && items.length" class="plan-section__muted">
+      {{ t('plan.total', { n: total }) }}
+    </p>
 
     <RouterLink
       v-if="isCoach"

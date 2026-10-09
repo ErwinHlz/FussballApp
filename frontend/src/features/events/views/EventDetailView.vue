@@ -163,6 +163,7 @@ async function remove() {
         :event="e"
         :is-coach="isCoach"
         :members="members.data.value ?? []"
+        :my-member-id="myMember?.id ?? null"
       />
 
       <!-- Nomination (visible to everyone) -->

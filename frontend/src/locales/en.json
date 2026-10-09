@@ -496,5 +496,25 @@
       "orange": "Orange",
       "white": "White"
     }
+  },
+  "player": {
+    "upNext": "Up next",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "inDays": "in {n} days",
+    "meet": "Meeting point",
+    "areYouIn": "Are you in?",
+    "details": "All details",
+    "moreEvents": "More events",
+    "planNotYet": "The training plan has not been published yet.",
+    "yourGroupAll": "Your group today:",
+    "yourGroupHere": "Your group for this drill:",
+    "nomination": {
+      "starter": "You are in the starting XI",
+      "bench": "You are on the bench",
+      "reserve": "You are a reserve",
+      "notNominated": "You are not nominated this time",
+      "pending": "The squad has not been announced yet"
+    }
   }
 }

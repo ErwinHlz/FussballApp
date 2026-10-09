@@ -6,6 +6,8 @@ import BaseButton from '@/components/BaseButton.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import EventCard from '../components/EventCard.vue'
+import NextEventHero from '@/features/player-view/components/NextEventHero.vue'
+import { nextEvent } from '@/features/player-view/logic'
 import { splitEvents, unansweredEvents } from '../logic'
 import { useMyMember, useTeamEvents } from '../composables/useEvents'
 
@@ -16,6 +18,8 @@ const events = useTeamEvents(teamId)
 const { members, myMember } = useMyMember(teamId)
 
 const lists = computed(() => splitEvents(events.data.value ?? []))
+const hero = computed(() => nextEvent(lists.value.upcoming))
+const moreUpcoming = computed(() => lists.value.upcoming.filter((e) => e.id !== hero.value?.id))
 const unanswered = computed(() =>
   unansweredEvents(lists.value.upcoming, myMember.value?.id ?? null),
 )
@@ -68,8 +72,18 @@ function scrollToFirstUnanswered() {
     </p>
 
     <template v-else>
-      <ul v-if="lists.upcoming.length" class="events__list" role="list">
-        <li v-for="event in lists.upcoming" :id="`event-${event.id}`" :key="event.id">
+      <NextEventHero
+        v-if="hero"
+        :id="`event-${hero.id}`"
+        :event="hero"
+        :my-member="myMember"
+        :is-coach="isCoach"
+      />
+      <h2 v-if="hero && moreUpcoming.length" class="events__subtitle">
+        {{ t('player.moreEvents') }}
+      </h2>
+      <ul v-if="moreUpcoming.length" class="events__list" role="list">
+        <li v-for="event in moreUpcoming" :id="`event-${event.id}`" :key="event.id">
           <EventCard
             :event="event"
             :my-member="myMember"
@@ -79,7 +93,7 @@ function scrollToFirstUnanswered() {
         </li>
       </ul>
       <EmptyState
-        v-else
+        v-else-if="!hero"
         icon="calendar"
         :title="t('events.empty')"
         :text="isCoach ? t('events.emptyHintCoach') : t('events.emptyHint')"
@@ -141,6 +155,10 @@ function scrollToFirstUnanswered() {
     background: var(--color-warning);
     color: #fff;
     font-weight: 800;
+  }
+
+  &__subtitle {
+    font-size: $font-lg;
   }
 
   &__list {

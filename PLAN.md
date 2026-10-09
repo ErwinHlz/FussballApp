@@ -322,11 +322,11 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** Trainer teilt für jede Übung alle zugesagten Spieler in farbige Gruppen ein.
 
 ### Phase 8 – Spieleransicht
-- [ ] Startseite für Spieler: nächster Termin oben (Training oder Spiel), mit Zu- und Absage-Buttons
-- [ ] **Training:** Ablauf der Einheit, pro Übung die eigene Gruppe und Leibchenfarbe hervorgehoben
-- [ ] **Spiel:** Gegner, Treffpunkt und Treffzeit, Anstoß, Nominierungsstatus
-- [ ] Übungsdetail: Beschreibung, Video, (ab Phase 9) Animation
-- [ ] Die Ansicht muss in unter 10 Sekunden erfassbar sein: wenig Text, große Farben, klare Reihenfolge
+- [x] Startseite für Spieler: nächster Termin oben (Training oder Spiel), mit Zu- und Absage-Buttons
+- [x] **Training:** Ablauf der Einheit, pro Übung die eigene Gruppe und Leibchenfarbe hervorgehoben
+- [x] **Spiel:** Gegner, Treffpunkt und Treffzeit, Anstoß, Nominierungsstatus
+- [x] Übungsdetail: Beschreibung, Video, (ab Phase 9) Animation
+- [x] Die Ansicht muss in unter 10 Sekunden erfassbar sein: wenig Text, große Farben, klare Reihenfolge
 
 **Abnahme:** Spieler öffnet die App, sieht sofort den nächsten Termin, seine Gruppe bzw. Nominierung und sagt zu.
 
