@@ -7,7 +7,7 @@ import AttendanceControl from '@/features/events/components/AttendanceControl.vu
 import { useEventFormat } from '@/features/events/format'
 import type { TeamEvent } from '@/features/events/logic'
 import MyTrainingFlow from './MyTrainingFlow.vue'
-import { nominationState, relativeDay } from '../logic'
+import { relativeDay } from '../logic'
 
 /** "Up next": everything a player needs within seconds. */
 const props = defineProps<{ event: TeamEvent; myMember: TeamMember | null; isCoach: boolean }>()
@@ -26,7 +26,6 @@ const when = computed(() => {
 const myAttendance = computed(
   () => props.event.attendances.find((a) => a.member_id === props.myMember?.id) ?? null,
 )
-const nomination = computed(() => nominationState(props.event, props.myMember?.id ?? null))
 const showPlan = computed(
   () => props.event.type === 'training' && props.event.plan_status === 'published',
 )
@@ -47,7 +46,7 @@ const showPlan = computed(
       <p v-if="event.location" class="hero__muted">📍 {{ event.location }}</p>
     </header>
 
-    <!-- Match: meeting point and nomination first -->
+    <!-- Match: meeting point first -->
     <template v-if="event.type === 'match'">
       <div class="hero__facts">
         <div v-if="event.meet_at || event.meet_location" class="hero__fact hero__fact--main">
@@ -62,17 +61,6 @@ const showPlan = computed(
           <span class="hero__fact-value">{{ fmt.time(event.starts_at) }}</span>
         </div>
       </div>
-      <p
-        v-if="myMember"
-        class="hero__nomination"
-        :class="`hero__nomination--${nomination}`"
-        role="status"
-      >
-        <span aria-hidden="true">{{
-          ['starter', 'bench', 'reserve'].includes(nomination) ? '★' : '·'
-        }}</span>
-        {{ t(`player.nomination.${nomination}`) }}
-      </p>
     </template>
 
     <!-- Training: flow with own group -->
@@ -168,24 +156,6 @@ const showPlan = computed(
     font-size: $font-lg;
     font-weight: 800;
     overflow-wrap: anywhere;
-  }
-
-  &__nomination {
-    display: flex;
-    align-items: center;
-    gap: $space-2;
-    padding: $space-3;
-    border-radius: $radius-md;
-    font-size: $font-lg;
-    font-weight: 800;
-    background: var(--color-surface-muted);
-
-    &--starter,
-    &--bench,
-    &--reserve {
-      background: var(--color-match);
-      color: #fff;
-    }
   }
 
   &__answer {

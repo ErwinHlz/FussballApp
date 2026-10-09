@@ -49,7 +49,7 @@ function mountHero(event: TeamEvent) {
 }
 
 describe('NextEventHero (match)', () => {
-  it('shows opponent, meeting point and time, kick-off and nomination at a glance', () => {
+  it('shows opponent, meeting point and time and kick-off at a glance', () => {
     i18n.global.locale.value = 'de'
     const wrapper = mountHero(match())
     const text = wrapper.text()
@@ -59,13 +59,8 @@ describe('NextEventHero (match)', () => {
     expect(text).toContain('13:45')
     expect(text).toContain('Vereinsheim')
     expect(text).toContain('15:00')
-    expect(wrapper.get('.hero__nomination').text()).toContain('Du stehst in der Startelf')
+    expect(wrapper.find('.hero__nomination').exists()).toBe(false)
     expect(wrapper.findAll('.attendance__button')).toHaveLength(3)
-  })
-
-  it('tells the player when the squad is not announced yet', () => {
-    const wrapper = mountHero(match({ match_squad: [] }))
-    expect(wrapper.get('.hero__nomination').text()).toContain('Der Kader wird noch bekanntgegeben')
   })
 })
 

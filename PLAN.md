@@ -324,7 +324,7 @@ Gespeichert in `drills.animation` als JSON:
 ### Phase 8 – Spieleransicht
 - [x] Startseite für Spieler: nächster Termin oben (Training oder Spiel), mit Zu- und Absage-Buttons
 - [x] **Training:** Ablauf der Einheit, pro Übung die eigene Gruppe und Leibchenfarbe hervorgehoben
-- [x] **Spiel:** Gegner, Treffpunkt und Treffzeit, Anstoß, Nominierungsstatus
+- [x] **Spiel:** Gegner, Treffpunkt und Treffzeit, Anstoß (Nominierungsstatus auf Wunsch nicht auf der Startkarte, nur auf der Termin-Detailseite)
 - [x] Übungsdetail: Beschreibung, Video, (ab Phase 9) Animation
 - [x] Die Ansicht muss in unter 10 Sekunden erfassbar sein: wenig Text, große Farben, klare Reihenfolge
 

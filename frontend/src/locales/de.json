@@ -508,13 +508,6 @@
     "moreEvents": "Weitere Termine",
     "planNotYet": "Der Trainingsplan ist noch nicht veröffentlicht.",
     "yourGroupAll": "Deine Gruppe heute:",
-    "yourGroupHere": "Deine Gruppe bei dieser Übung:",
-    "nomination": {
-      "starter": "Du stehst in der Startelf",
-      "bench": "Du bist auf der Bank",
-      "reserve": "Du bist Reserve",
-      "notNominated": "Du bist diesmal nicht nominiert",
-      "pending": "Der Kader wird noch bekanntgegeben"
-    }
+    "yourGroupHere": "Deine Gruppe bei dieser Übung:"
   }
 }

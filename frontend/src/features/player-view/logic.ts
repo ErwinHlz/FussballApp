@@ -1,5 +1,5 @@
 import { differenceInCalendarDays } from 'date-fns'
-import type { SquadRole, TeamEvent } from '@/features/events/logic'
+import type { TeamEvent } from '@/features/events/logic'
 import { eventEnd } from '@/features/events/logic'
 import type { DrillGroups, SavedGroup } from '@/features/groups/api'
 
@@ -23,18 +23,6 @@ export function relativeDay(
   if (days === 1) return { kind: 'tomorrow', days }
   if (days < 7) return { kind: 'inDays', days }
   return { kind: 'date', days }
-}
-
-export type NominationState = SquadRole | 'notNominated' | 'pending'
-
-/** pending = the coach has not nominated anyone yet. */
-export function nominationState(
-  event: Pick<TeamEvent, 'match_squad'>,
-  memberId: string | null,
-): NominationState {
-  if (!event.match_squad.length) return 'pending'
-  const entry = event.match_squad.find((s) => s.member_id === memberId)
-  return entry?.role ?? 'notNominated'
 }
 
 /** For each drill of the training: the group the member is in (if any). */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { TeamEvent } from '@/features/events/logic'
 import type { DrillGroups } from '@/features/groups/api'
-import { myGroupsByDrill, nextEvent, nominationState, relativeDay } from '../logic'
+import { myGroupsByDrill, nextEvent, relativeDay } from '../logic'
 
 const local = (d: number, h = 19) => new Date(2030, 0, d, h, 0)
 
@@ -51,16 +51,6 @@ describe('relativeDay', () => {
     [local(20, 19), 'date'],
   ])('%s -> %s', (date, kind) => {
     expect(relativeDay(date.toISOString(), now).kind).toBe(kind)
-  })
-})
-
-describe('nominationState', () => {
-  const squad = [{ member_id: 'me', role: 'bench' }] as TeamEvent['match_squad']
-
-  it('distinguishes nominated, not nominated and not yet decided', () => {
-    expect(nominationState({ match_squad: squad }, 'me')).toBe('bench')
-    expect(nominationState({ match_squad: squad }, 'other')).toBe('notNominated')
-    expect(nominationState({ match_squad: [] }, 'me')).toBe('pending')
   })
 })
 
