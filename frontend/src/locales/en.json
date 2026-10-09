@@ -771,5 +771,29 @@
     "until": "Until",
     "seasonFrom": "Valid from",
     "seasonUntil": "Valid until"
+  },
+  "branding": {
+    "title": "Logo & club color",
+    "intro": "Upload the club logo. Rondo detects its colors and themes the app in the club color for all members.",
+    "upload": "Upload logo",
+    "replace": "Replace logo",
+    "remove": "Remove logo",
+    "logoAlt": "Club logo",
+    "hint": "PNG, JPG or WebP, ideally with a transparent background.",
+    "color": "Accent color",
+    "logoColor": "Logo color {color}",
+    "custom": "Choose your own color",
+    "default": "Default (green)",
+    "noColors": "No strong color was found in the logo. Choose your own color or keep the default.",
+    "previewButton": "Attend",
+    "previewLink": "Show more",
+    "adjusted": "The color is adjusted slightly so text stays readable.",
+    "saved": "Saved – the app now appears in the club color.",
+    "errors": {
+      "type": "Please choose a PNG, JPG or WebP image.",
+      "size": "The image is too large (10 MB max).",
+      "read": "The image could not be read.",
+      "save": "Saving failed. Please try again."
+    }
   }
 }

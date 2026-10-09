@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, watchEffect } from 'vue'
+import { computed, nextTick, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppIcon, { type IconName } from '@/components/AppIcon.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useMyClubs } from '@/features/teams/composables/useTeams'
+import { applyClubTheme, clubLogoUrl } from '@/lib/clubTheme'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -13,6 +14,17 @@ const { myTeams, activeTeam } = useActiveTeam()
 const myClubs = useMyClubs()
 
 type Tab = { key: string; to: RouteLocationRaw; match: string[]; icon: IconName; labelKey: string }
+
+// The app takes on the colors of the active team's club.
+watch(
+  () => activeTeam.value?.club_accent_color ?? null,
+  (accent) => applyClubTheme(accent),
+  { immediate: true },
+)
+onUnmounted(() => applyClubTheme(null))
+const logoUrl = computed(() =>
+  activeTeam.value?.club_logo_path ? clubLogoUrl(activeTeam.value.club_logo_path) : null,
+)
 
 const adminClubs = computed(() => (myClubs.data.value ?? []).filter((c) => c.role === 'admin'))
 
@@ -111,6 +123,7 @@ watchEffect(() => {
           <AppIcon name="chevronLeft" :size="24" />
         </button>
         <RouterLink :to="{ name: 'teams' }" class="app-header__team">
+          <img v-if="logoUrl" :src="logoUrl" alt="" class="app-header__logo" />
           <span class="app-header__text">
             <template v-if="activeTeam">
               <span class="app-header__club">{{ activeTeam.club_name }}</span>
@@ -179,6 +192,13 @@ watchEffect(() => {
     align-items: center;
     max-width: 720px;
     margin: 0 auto;
+  }
+
+  &__logo {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
   }
 
   &__back {

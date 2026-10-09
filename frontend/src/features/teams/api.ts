@@ -1,11 +1,16 @@
 import { supabase } from '@/lib/supabase'
+import { LOGO_BUCKET } from '@/lib/clubTheme'
 import type { Database, Tables } from '@/types/database'
 
 type Functions = Database['public']['Functions']
 
 export type TeamRole = Database['public']['Enums']['team_role']
 export type ClubRole = Database['public']['Enums']['club_role']
-export type MyTeam = Functions['my_teams']['Returns'][number]
+// Generated types mark function results as non-null; clubs without branding return null.
+export type MyTeam = Omit<
+  Functions['my_teams']['Returns'][number],
+  'club_logo_path' | 'club_accent_color'
+> & { club_logo_path: string | null; club_accent_color: string | null }
 export type MyClub = Functions['my_clubs']['Returns'][number]
 export type InviteInfo = Functions['get_team_invite']['Returns'][number]
 export type Club = Tables<'clubs'>
@@ -143,6 +148,40 @@ export async function fetchInviteInfo(token: string): Promise<InviteInfo | null>
 
 export async function acceptInvite(token: string): Promise<string> {
   const { data, error } = await supabase.rpc('accept_team_invite', { p_token: token })
+  if (error) throw error
+  return data
+}
+
+// ---------------------------------------------------------------------------
+// Branding (logo in the public bucket "club-logos", path <club>/<file>)
+// ---------------------------------------------------------------------------
+
+export async function uploadClubLogo(clubId: string, file: Blob): Promise<string> {
+  const extension = file.type === 'image/webp' ? 'webp' : file.type === 'image/jpeg' ? 'jpg' : 'png'
+  const path = `${clubId}/${crypto.randomUUID()}.${extension}`
+  const { error } = await supabase.storage
+    .from(LOGO_BUCKET)
+    .upload(path, file, { contentType: file.type, cacheControl: '31536000' })
+  if (error) throw error
+  return path
+}
+
+export async function removeClubLogoFile(path: string): Promise<void> {
+  const { error } = await supabase.storage.from(LOGO_BUCKET).remove([path])
+  if (error) throw error
+}
+
+export async function setClubBranding(input: {
+  clubId: string
+  logoPath: string | null
+  accentColor: string | null
+}): Promise<Club> {
+  const { data, error } = await supabase.rpc('set_club_branding', {
+    p_club_id: input.clubId,
+    // The generated types mark the arguments as non-null; the function accepts null.
+    p_logo_path: input.logoPath as string,
+    p_accent_color: input.accentColor as string,
+  })
   if (error) throw error
   return data
 }

@@ -14,8 +14,11 @@ import {
   fetchMyTeams,
   fetchTeamInvites,
   fetchTeamMembers,
+  removeClubLogoFile,
   revokeInvite,
+  setClubBranding,
   setClubMemberRole,
+  uploadClubLogo,
 } from '../api'
 
 export const teamKeys = {
@@ -150,5 +153,39 @@ export function useAcceptInvite() {
         queryClient.invalidateQueries({ queryKey: ['my-teams'] }),
         queryClient.invalidateQueries({ queryKey: ['my-clubs'] }),
       ]),
+  })
+}
+
+/** Uploads a new logo (optional) and saves logo + color; the old file is removed afterwards. */
+export function useSaveClubBranding() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      clubId: string
+      currentLogoPath: string | null
+      newLogo: Blob | null
+      removeLogo: boolean
+      accentColor: string | null
+    }) => {
+      const logoPath = input.newLogo
+        ? await uploadClubLogo(input.clubId, input.newLogo)
+        : input.removeLogo
+          ? null
+          : input.currentLogoPath
+      const club = await setClubBranding({
+        clubId: input.clubId,
+        logoPath,
+        accentColor: input.accentColor,
+      })
+      if (input.currentLogoPath && input.currentLogoPath !== logoPath) {
+        // Best effort: an orphaned file only costs storage.
+        await removeClubLogoFile(input.currentLogoPath).catch(() => undefined)
+      }
+      return club
+    },
+    onSuccess: (club) => {
+      queryClient.setQueryData(teamKeys.club(club.id), club)
+      return queryClient.invalidateQueries({ queryKey: ['my-teams'] })
+    },
   })
 }

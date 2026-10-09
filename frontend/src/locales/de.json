@@ -771,5 +771,29 @@
     "until": "Bis",
     "seasonFrom": "Gültig ab",
     "seasonUntil": "Gültig bis"
+  },
+  "branding": {
+    "title": "Logo & Vereinsfarbe",
+    "intro": "Lade das Vereinslogo hoch. Rondo erkennt die Farben und färbt die App für alle Mitglieder in der Vereinsfarbe.",
+    "upload": "Logo hochladen",
+    "replace": "Logo ersetzen",
+    "remove": "Logo entfernen",
+    "logoAlt": "Vereinslogo",
+    "hint": "PNG, JPG oder WebP, am besten mit transparentem Hintergrund.",
+    "color": "Akzentfarbe",
+    "logoColor": "Farbe aus dem Logo {color}",
+    "custom": "Eigene Farbe wählen",
+    "default": "Standard (Grün)",
+    "noColors": "Im Logo wurde keine kräftige Farbe gefunden. Wähle eine eigene Farbe oder bleib beim Standard.",
+    "previewButton": "Zusagen",
+    "previewLink": "Mehr anzeigen",
+    "adjusted": "Die Farbe wird für gute Lesbarkeit leicht angepasst.",
+    "saved": "Gespeichert – die App erscheint jetzt in der Vereinsfarbe.",
+    "errors": {
+      "type": "Bitte ein Bild im Format PNG, JPG oder WebP wählen.",
+      "size": "Das Bild ist zu groß (höchstens 10 MB).",
+      "read": "Das Bild konnte nicht gelesen werden.",
+      "save": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+    }
   }
 }

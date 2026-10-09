@@ -115,14 +115,14 @@ isOneToOne: false
                   ]
                 },"clubs": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"id": string,"name": string,"timezone": string
+                    "accent_color": string | null,"created_at": string,"created_by": string | null,"id": string,"logo_path": string | null,"name": string,"timezone": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string,"timezone"?: string
+                    "accent_color"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"logo_path"?: string | null,"name": string,"timezone"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string,"timezone"?: string
+                    "accent_color"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"logo_path"?: string | null,"name"?: string,"timezone"?: string
                   }
                   Relationships: [
                     {
@@ -574,6 +574,9 @@ isOneToOne: false
               "auth": string,"endpoint": string,"event_id": string,"event_type": Database["public"]['Enums']["event_type"],"is_home": boolean,"kind": string,"locale": string,"location": string,"opponent": string,"outbox_id": number,"p256dh": string,"payload": Json,"starts_at": string,"subscription_id": string,"team_name": string
             }[]
                            },
+"club_logo_club_id":
+{ Args: { "p_name": string }; Returns: string
+                           },
 "club_team_names":
 { Args: { "p_club_id": string }; Returns: {
               "id": string,"name": string
@@ -612,9 +615,11 @@ isOneToOne: false
                            },
 "create_club":
 { Args: { "p_name": string }; Returns: {
-              "created_at": string,
+              "accent_color": string | null,
+"created_at": string,
 "created_by": string | null,
 "id": string,
+"logo_path": string | null,
 "name": string,
 "timezone": string
             }
@@ -730,7 +735,7 @@ isOneToOne: false
                            },
 "my_teams":
 { Args: Record<PropertyKey, never>; Returns: {
-              "club_id": string,"club_name": string,"is_club_admin": boolean,"team_id": string,"team_name": string,"team_role": Database["public"]['Enums']["team_role"],"team_season": string
+              "club_accent_color": string,"club_id": string,"club_logo_path": string,"club_name": string,"is_club_admin": boolean,"team_id": string,"team_name": string,"team_role": Database["public"]['Enums']["team_role"],"team_season": string
             }[]
                            },
 "release_slot_date":
@@ -761,6 +766,22 @@ isOneToOne: false
                           SetofOptions: {
         from: "*"
         to: "attendances"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"set_club_branding":
+{ Args: { "p_accent_color": string,"p_club_id": string,"p_logo_path": string }; Returns: {
+              "accent_color": string | null,
+"created_at": string,
+"created_by": string | null,
+"id": string,
+"logo_path": string | null,
+"name": string,
+"timezone": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "clubs"
         isOneToOne: true
         isSetofReturn: false
       } },

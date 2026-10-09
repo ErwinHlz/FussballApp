@@ -11,6 +11,8 @@ function team(id: string): MyTeam {
     club_name: 'Club',
     team_role: 'player',
     is_club_admin: false,
+    club_logo_path: null,
+    club_accent_color: null,
   }
 }
 

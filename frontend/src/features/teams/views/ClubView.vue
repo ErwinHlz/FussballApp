@@ -9,6 +9,7 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseCard from '@/components/BaseCard.vue'
 import BaseInput from '@/components/BaseInput.vue'
 import { useAuthStore } from '@/stores/auth'
+import ClubBrandingPanel from '../components/ClubBrandingPanel.vue'
 import InvitePanel from '../components/InvitePanel.vue'
 import { teamSchema } from '../schemas'
 import type { ClubMember } from '../api'
@@ -73,6 +74,15 @@ function toggleAdmin(member: ClubMember) {
         <p class="club__eyebrow">{{ t('clubs.club') }}</p>
         <h1>{{ club.data.value?.name }}</h1>
       </header>
+
+      <!-- Logo and color -->
+      <section class="club__section" aria-labelledby="club-branding">
+        <h2 id="club-branding" class="club__subtitle">{{ t('branding.title') }}</h2>
+        <p class="club__muted">{{ t('branding.intro') }}</p>
+        <BaseCard v-if="club.data.value">
+          <ClubBrandingPanel :club="club.data.value" />
+        </BaseCard>
+      </section>
 
       <!-- Shared pitch schedule -->
       <section class="club__section" aria-labelledby="club-schedule">
@@ -265,6 +275,7 @@ function toggleAdmin(member: ClubMember) {
 
   &__member {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: $space-2;
     padding: $space-2 $space-2 $space-2 $space-4;
@@ -275,7 +286,7 @@ function toggleAdmin(member: ClubMember) {
   }
 
   &__member-name {
-    flex: 1;
+    flex: 1 1 8rem;
     min-width: 0;
     overflow-wrap: anywhere;
   }
