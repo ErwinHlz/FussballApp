@@ -277,6 +277,7 @@ const onSubmit = handleSubmit(async (raw) => {
           v-model="weekdays"
           :label="t('events.form.weekdays')"
           :options="weekdayOptions"
+          :columns="7"
           multiple
         />
         <p v-if="err('weekdays')" class="event-form__error" role="alert">{{ err('weekdays') }}</p>

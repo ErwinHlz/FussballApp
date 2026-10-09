@@ -100,9 +100,12 @@ const previous = computed(() => {
   const prev = drills.value[currentIndex.value - 1]
   return prev ? drafts[prev.id] : undefined
 })
-const warnings = computed(() =>
-  current.value ? groupWarnings(current.value.groups, attendances.value) : null,
-)
+// Drills without groups (e.g. warm-up together) need no "not in a group" warning.
+const warnings = computed(() => {
+  if (!current.value) return null
+  const w = groupWarnings(current.value.groups, attendances.value)
+  return current.value.groups.length ? w : { ...w, unassigned: [] }
+})
 const anyDirty = computed(() => drills.value.some((d) => isDirty(d.id)))
 
 function selectDrill(id: string) {
@@ -491,8 +494,8 @@ function names(ids: string[]) {
   }
 
   &__tools {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: $space-2;
   }
 

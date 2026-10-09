@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseBadge from '@/components/BaseBadge.vue'
 import type { TeamMember } from '@/features/teams/api'
 import AttendanceControl from '@/features/events/components/AttendanceControl.vue'
+import EventBadges from '@/features/events/components/EventBadges.vue'
 import { useEventFormat } from '@/features/events/format'
 import type { TeamEvent } from '@/features/events/logic'
 import MyTrainingFlow from './MyTrainingFlow.vue'
@@ -36,9 +36,7 @@ const showPlan = computed(
     <p class="hero__eyebrow">{{ t('player.upNext') }}</p>
 
     <header class="hero__header">
-      <BaseBadge :tone="event.type">
-        {{ event.type === 'training' ? t('events.training') : t('events.match') }}
-      </BaseBadge>
+      <EventBadges :event="event" />
       <h2 id="hero-title" class="hero__title">{{ fmt.title(event) }}</h2>
       <p class="hero__when">
         <strong>{{ when }}</strong> · {{ fmt.timeRange(event) }}

@@ -11,6 +11,7 @@ import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import AttendanceControl from '../components/AttendanceControl.vue'
 import AttendanceOverview from '../components/AttendanceOverview.vue'
 import MatchSquadEditor from '../components/MatchSquadEditor.vue'
+import EventBadges from '../components/EventBadges.vue'
 import PlanSection from '@/features/training-plan/components/PlanSection.vue'
 import { useEventFormat } from '../format'
 import { SQUAD_ROLES } from '../logic'
@@ -91,12 +92,7 @@ async function remove() {
     <template v-else>
       <header class="event-detail__header" :class="`event-detail__header--${e.type}`">
         <div class="event-detail__badges">
-          <BaseBadge :tone="e.type">
-            {{ e.type === 'training' ? t('events.training') : t('events.match') }}
-          </BaseBadge>
-          <BaseBadge v-if="e.competition" tone="neutral">
-            {{ t(`events.competition.${e.competition}`) }}
-          </BaseBadge>
+          <EventBadges :event="e" show-competition />
           <BaseBadge v-if="e.series_id" tone="neutral">{{ t('events.fromSeries') }}</BaseBadge>
         </div>
         <h1 :class="{ 'event-detail__struck': e.is_cancelled }">{{ fmt.title(e) }}</h1>

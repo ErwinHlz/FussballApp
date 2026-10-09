@@ -13,14 +13,7 @@ import { useEvent, useMyMember } from '@/features/events/composables/useEvents'
 import CopyPlanModal from '../components/CopyPlanModal.vue'
 import DrillPickerModal from '../components/DrillPickerModal.vue'
 import LateDeclines from '../components/LateDeclines.vue'
-import {
-  durationFit,
-  eventMinutes,
-  itemMinutes,
-  moveItem,
-  planTotalMinutes,
-  type PlanItem,
-} from '../logic'
+import { durationFit, eventMinutes, moveItem, planTotalMinutes, type PlanItem } from '../logic'
 import {
   useAddPlanDrill,
   usePlan,
@@ -260,9 +253,6 @@ function togglePublish() {
             >
               {{ t('groups.short') }}
             </RouterLink>
-            <span class="plan__muted plan-item__effective">
-              {{ t('plan.minutesShort', { n: itemMinutes(item) }) }}
-            </span>
             <button
               type="button"
               class="plan-item__action plan-item__action--danger"

@@ -14,9 +14,7 @@ export function useEventFormat() {
 
   function title(event: Pick<EventRow, 'type' | 'opponent' | 'is_home'>) {
     if (event.type === 'training') return t('events.training')
-    return event.is_home === false
-      ? t('events.matchAway', { opponent: event.opponent })
-      : t('events.matchHome', { opponent: event.opponent })
+    return t('events.matchVs', { opponent: event.opponent })
   }
 
   function timeRange(event: Pick<EventRow, 'starts_at' | 'ends_at'>) {

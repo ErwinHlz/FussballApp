@@ -186,6 +186,19 @@ describe('lists and summaries', () => {
     expect(summary.none.map((e) => e.member.id)).toEqual(['b'])
   })
 
+  it('does not count coaches without an answer as missing', () => {
+    const members = [member({ id: 'p' }), member({ id: 'c', role: 'coach' })]
+    expect(summarizeAttendance(members, []).none.map((e) => e.member.id)).toEqual(['p'])
+    expect(summarizeAttendance(members, [attendance('c', 'yes')]).yes).toHaveLength(1)
+  })
+
+  it('reminds only about events within the next 7 days', () => {
+    const now = local(2030, 1, 1, 12)
+    const soon = event({ id: 'soon', starts_at: local(2030, 1, 7, 19).toISOString() })
+    const later = event({ id: 'later', starts_at: local(2030, 1, 20, 19).toISOString() })
+    expect(unansweredEvents([soon, later], 'me', now).map((e) => e.id)).toEqual(['soon'])
+  })
+
   it('lists open events the player has not answered', () => {
     const now = local(2030, 1, 9, 12)
     const events = [

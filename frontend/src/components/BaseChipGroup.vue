@@ -7,8 +7,10 @@ const props = withDefaults(
     options: { value: T; label: string }[]
     multiple?: boolean
     hideLabel?: boolean
+    /** Equal-width chips in one row (e.g. weekdays). */
+    columns?: number
   }>(),
-  { multiple: false, hideLabel: false },
+  { multiple: false, hideLabel: false, columns: undefined },
 )
 
 // Single select: T, multi select: T[].
@@ -39,7 +41,13 @@ function toggle(value: T) {
     >
       {{ label }}
     </span>
-    <div class="chip-group__chips" role="group" :aria-labelledby="labelId">
+    <div
+      class="chip-group__chips"
+      :class="{ 'chip-group__chips--grid': columns }"
+      :style="columns ? { '--columns': columns } : undefined"
+      role="group"
+      :aria-labelledby="labelId"
+    >
       <button
         v-for="option in options"
         :key="option.value"
@@ -84,6 +92,17 @@ function toggle(value: T) {
     display: flex;
     flex-wrap: wrap;
     gap: $space-2;
+
+    &--grid {
+      display: grid;
+      grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+      gap: $space-1;
+    }
+  }
+
+  &__chips--grid &__chip {
+    justify-content: center;
+    padding-inline: 0;
   }
 
   &__chip {

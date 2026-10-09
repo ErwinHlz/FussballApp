@@ -98,7 +98,7 @@ async function remove() {
 
       <dl class="drill__facts">
         <div v-if="d.duration_min">
-          <dt>{{ t('drills.form.duration') }}</dt>
+          <dt>{{ t('drills.duration') }}</dt>
           <dd>{{ t('drills.minutes', { n: d.duration_min }) }}</dd>
         </div>
         <div v-if="playersLabel(d)">

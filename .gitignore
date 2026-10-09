@@ -9,3 +9,8 @@ coverage/
 .env
 .env.local
 .env.*.local
+
+# Playwright
+e2e/__screens__/
+test-results/
+playwright-report/

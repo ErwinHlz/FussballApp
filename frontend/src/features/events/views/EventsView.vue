@@ -23,7 +23,9 @@ const moreUpcoming = computed(() => lists.value.upcoming.filter((e) => e.id !== 
 const unanswered = computed(() =>
   unansweredEvents(lists.value.upcoming, myMember.value?.id ?? null),
 )
-const memberCount = computed(() => members.data.value?.length ?? 0)
+const playerIds = computed(() =>
+  (members.data.value ?? []).filter((m) => m.role === 'player').map((m) => m.id),
+)
 
 const createLinks = [
   { kind: 'training', icon: 'whistle', labelKey: 'events.newTraining' },
@@ -88,7 +90,7 @@ function scrollToFirstUnanswered() {
             :event="event"
             :my-member="myMember"
             :is-coach="isCoach"
-            :member-count="memberCount"
+            :player-ids="playerIds"
           />
         </li>
       </ul>
@@ -109,7 +111,7 @@ function scrollToFirstUnanswered() {
               :event="event"
               :my-member="null"
               :is-coach="isCoach"
-              :member-count="memberCount"
+              :player-ids="playerIds"
             />
           </li>
         </ul>

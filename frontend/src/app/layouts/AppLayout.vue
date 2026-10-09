@@ -51,6 +51,13 @@ const tabs = computed<Tab[]>(() => {
   return result
 })
 
+/** Back to where the user came from; direct visits (deep links) go to the parent page. */
+function goBack() {
+  const hasHistory = typeof window !== 'undefined' && window.history.state?.back
+  if (hasHistory) router.back()
+  else if (route.meta.back) void router.push({ name: route.meta.back })
+}
+
 function isActive(tab: Tab) {
   return tab.match.some((prefix) => route.path.startsWith(prefix))
 }
@@ -66,19 +73,30 @@ watchEffect(() => {
 <template>
   <div class="app-layout">
     <header class="app-header">
-      <RouterLink :to="{ name: 'teams' }" class="app-header__team">
-        <span class="app-header__text">
-          <template v-if="activeTeam">
-            <span class="app-header__club">{{ activeTeam.club_name }}</span>
-            <span class="app-header__name">{{ activeTeam.team_name }}</span>
-          </template>
-          <span v-else class="app-header__name">{{ t('app.name') }}</span>
-        </span>
-        <span class="app-header__switch">
-          <AppIcon name="swap" :size="18" />
-          <span class="app-header__switch-label">{{ t('teams.switch') }}</span>
-        </span>
-      </RouterLink>
+      <div class="app-header__inner">
+        <button
+          v-if="route.meta.back"
+          type="button"
+          class="app-header__back"
+          :aria-label="t('common.back')"
+          @click="goBack"
+        >
+          <AppIcon name="chevronLeft" :size="24" />
+        </button>
+        <RouterLink :to="{ name: 'teams' }" class="app-header__team">
+          <span class="app-header__text">
+            <template v-if="activeTeam">
+              <span class="app-header__club">{{ activeTeam.club_name }}</span>
+              <span class="app-header__name">{{ activeTeam.team_name }}</span>
+            </template>
+            <span v-else class="app-header__name">{{ t('app.name') }}</span>
+          </span>
+          <span class="app-header__switch">
+            <AppIcon name="swap" :size="18" />
+            <span class="app-header__switch-label">{{ t('teams.switch') }}</span>
+          </span>
+        </RouterLink>
+      </div>
     </header>
 
     <main class="app-layout__main">
@@ -125,15 +143,36 @@ watchEffect(() => {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
 
+  &__inner {
+    display: flex;
+    align-items: center;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  &__back {
+    @include touch-target;
+    @include focus-visible;
+
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    margin-left: $space-1;
+    border: 0;
+    border-radius: $radius-md;
+    background: transparent;
+    color: var(--color-primary);
+  }
+
   &__team {
     @include focus-visible;
 
     display: flex;
+    flex: 1;
     align-items: center;
     gap: $space-3;
-    max-width: 720px;
+    min-width: 0;
     min-height: 56px;
-    margin: 0 auto;
     padding: $space-2 $space-4;
     color: inherit;
     text-decoration: none;

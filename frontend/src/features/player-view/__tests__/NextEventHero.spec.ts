@@ -54,7 +54,8 @@ describe('NextEventHero (match)', () => {
     const wrapper = mountHero(match())
     const text = wrapper.text()
 
-    expect(wrapper.get('#hero-title').text()).toBe('@ FC Gegner')
+    expect(wrapper.get('#hero-title').text()).toBe('vs. FC Gegner')
+    expect(text).toContain('Auswärts')
     expect(text).toContain('Treffpunkt')
     expect(text).toContain('13:45')
     expect(text).toContain('Vereinsheim')

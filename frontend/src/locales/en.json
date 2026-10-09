@@ -23,8 +23,6 @@
     "newMatch": "Match",
     "training": "Training",
     "match": "Match",
-    "matchHome": "vs. {opponent}",
-    "matchAway": "{'@'} {opponent}",
     "home": "Home",
     "away": "Away",
     "time": "Time",
@@ -133,7 +131,9 @@
       "meetLocation": "Meeting point",
       "venueLocation": "Venue",
       "saveFailed": "Saving failed. Please check your input."
-    }
+    },
+    "matchVs": "vs. {opponent}",
+    "detailTitle": "Event"
   },
   "training": {
     "title": "Training",
@@ -215,7 +215,8 @@
     "loading": "Loading …",
     "retry": "Try again",
     "you": "you",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "back": "Back"
   },
   "roles": {
     "admin": "Club admin",
@@ -423,7 +424,9 @@
         "tooLarge": "The video is too large (max. {max}). Please trim or compress it.",
         "empty": "The file is empty."
       }
-    }
+    },
+    "duration": "Duration",
+    "detailTitle": "Drill"
   },
   "plan": {
     "title": "Training plan",

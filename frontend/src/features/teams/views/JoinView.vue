@@ -36,7 +36,8 @@ async function join() {
 
 function maybeAutoJoin() {
   if (route.query.accept === '1' && auth.isAuthenticated && isValid.value && accept.isIdle.value) {
-    void join()
+    // Errors are shown via accept.isError; do not leave the promise unhandled.
+    join().catch(() => undefined)
   }
 }
 

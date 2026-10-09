@@ -57,6 +57,16 @@ vergessen“) landen lokal im Postfach unter http://127.0.0.1:54324.
 | `npm run lint`      | ESLint                              |
 | `npm run format`    | Prettier                            |
 | `npm run test`      | Vitest (einmalig), `test:watch` für Watch-Modus |
+| `npm run test:e2e`  | Browser-Tests (Playwright, Handy-Ansicht 375 px) |
+| `npm run test:screens` | Screenshots aller Hauptseiten nach `e2e/__screens__/` |
+
+## Tests
+
+- **Unit- und Komponententests:** `npm run test` in `frontend/`
+- **Zugriffsregeln (RLS) der Datenbank:** `npm run test:db` in `backend/`
+- **Browser-Tests:** einmalig `npx playwright install chromium`, dann bei laufendem Backend
+  `npm run test:e2e` in `frontend/`. Jeder Test legt sich einen eigenen Demo-Verein mit
+  Testkonten (`…@example.test`) an; die App startet dafür automatisch auf Port 5180.
 
 ## WSL
 

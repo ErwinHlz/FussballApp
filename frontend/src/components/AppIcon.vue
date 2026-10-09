@@ -13,6 +13,7 @@ const paths = {
   check: 'M5 12l5 5L20 7',
   shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z',
   chevronRight: 'M9 6l6 6-6 6',
+  chevronLeft: 'M15 6l-6 6 6 6',
   swap: 'M7 7h13M16 3l4 4-4 4M17 17H4M8 21l-4-4 4-4',
   link: 'M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1',
   x: 'M6 6l12 12M18 6L6 18',

@@ -23,8 +23,6 @@
     "newMatch": "Spiel",
     "training": "Training",
     "match": "Spiel",
-    "matchHome": "vs. {opponent}",
-    "matchAway": "{'@'} {opponent}",
     "home": "Heim",
     "away": "Auswärts",
     "time": "Zeit",
@@ -133,7 +131,9 @@
       "meetLocation": "Treffpunkt",
       "venueLocation": "Spielort",
       "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben."
-    }
+    },
+    "matchVs": "vs. {opponent}",
+    "detailTitle": "Termin"
   },
   "training": {
     "title": "Training",
@@ -215,7 +215,8 @@
     "loading": "Lädt …",
     "retry": "Erneut versuchen",
     "you": "du",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "back": "Zurück"
   },
   "roles": {
     "admin": "Vereins-Admin",
@@ -423,7 +424,9 @@
         "tooLarge": "Das Video ist zu groß (höchstens {max}). Bitte kürzen oder komprimieren.",
         "empty": "Die Datei ist leer."
       }
-    }
+    },
+    "duration": "Dauer",
+    "detailTitle": "Übung"
   },
   "plan": {
     "title": "Trainingsplan",

@@ -6,12 +6,14 @@ import type { TeamMember } from '@/features/teams/api'
 import { useEventFormat } from '../format'
 import type { TeamEvent } from '../logic'
 import AttendanceControl from './AttendanceControl.vue'
+import EventBadges from './EventBadges.vue'
 
 const props = defineProps<{
   event: TeamEvent
   myMember: TeamMember | null
   isCoach: boolean
-  memberCount: number
+  /** Squad players (coaches are not counted as missing answers). */
+  playerIds: string[]
 }>()
 
 const { t } = useI18n()
@@ -21,9 +23,15 @@ const myAttendance = computed(
   () => props.event.attendances.find((a) => a.member_id === props.myMember?.id) ?? null,
 )
 const counts = computed(() => {
+  const players = new Set(props.playerIds)
   const c = { yes: 0, maybe: 0, no: 0 }
-  for (const a of props.event.attendances) c[a.status]++
-  return { ...c, none: Math.max(0, props.memberCount - props.event.attendances.length) }
+  let answered = 0
+  for (const a of props.event.attendances) {
+    if (!players.has(a.member_id)) continue
+    c[a.status]++
+    answered++
+  }
+  return { ...c, none: Math.max(0, players.size - answered) }
 })
 const myNomination = computed(
   () => props.event.match_squad.find((s) => s.member_id === props.myMember?.id) ?? null,
@@ -42,11 +50,8 @@ const myNomination = computed(
       </span>
       <span class="event-card__body">
         <span class="event-card__top">
-          <BaseBadge :tone="event.type">
-            {{ event.type === 'training' ? t('events.training') : t('events.match') }}
-          </BaseBadge>
-          <BaseBadge v-if="event.is_cancelled" tone="danger">{{ t('events.cancelled') }}</BaseBadge>
-          <BaseBadge v-else-if="myNomination" tone="info">
+          <EventBadges :event="event" />
+          <BaseBadge v-if="!event.is_cancelled && myNomination" tone="info">
             {{ t(`events.squadRole.${myNomination.role}`) }}
           </BaseBadge>
         </span>

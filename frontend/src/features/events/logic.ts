@@ -132,19 +132,29 @@ export function summarizeAttendance(
   const summary: AttendanceSummary = { yes: [], maybe: [], no: [], none: [] }
   for (const member of members) {
     const attendance = byMember.get(member.id) ?? null
+    // Coaches who did not answer are not "missing" players.
+    if (!attendance && member.role === 'coach') continue
     summary[attendance?.status ?? 'none'].push({ member, attendance })
   }
   return summary
 }
 
-/** Upcoming, open events the member has not answered yet (for the in-app reminder). */
+/** Only events within this many days trigger the in-app reminder. */
+export const REMINDER_DAYS = 7
+
+/** Open events in the next days the member has not answered yet (in-app reminder). */
 export function unansweredEvents(
   events: TeamEvent[],
   memberId: string | null,
   now: Date = new Date(),
+  horizonDays: number = REMINDER_DAYS,
 ): TeamEvent[] {
   if (!memberId) return []
+  const horizon = addHours(now, horizonDays * 24)
   return events.filter(
-    (e) => responseState(e, now) === 'open' && !e.attendances.some((a) => a.member_id === memberId),
+    (e) =>
+      new Date(e.starts_at) <= horizon &&
+      responseState(e, now) === 'open' &&
+      !e.attendances.some((a) => a.member_id === memberId),
   )
 }
