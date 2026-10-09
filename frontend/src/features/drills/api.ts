@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { Json, TablesInsert } from '@/types/database'
 import type { Drill } from './logic'
+import { VIDEO_BUCKET } from './video'
 
 export type DrillInput = Pick<
   TablesInsert<'drills'>,
@@ -51,8 +52,10 @@ export async function updateDrill(drillId: string, input: DrillInput): Promise<D
   return data
 }
 
-export async function deleteDrill(drillId: string): Promise<void> {
-  const { error } = await supabase.from('drills').delete().eq('id', drillId)
+/** Deletes a drill; its video file is removed first so no orphaned files stay in storage. */
+export async function deleteDrill(drill: Pick<Drill, 'id' | 'video_path'>): Promise<void> {
+  if (drill.video_path) await removeVideoFile(drill.video_path)
+  const { error } = await supabase.from('drills').delete().eq('id', drill.id)
   if (error) throw error
 }
 
@@ -78,4 +81,37 @@ export async function updateDrillAnimation(
     .single()
   if (error) throw error
   return data
+}
+
+// ---------------------------------------------------------------------------
+// Videos (Storage bucket "drill-videos", path <team>/<drill>/<file>)
+// ---------------------------------------------------------------------------
+
+export async function createVideoUploadUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage.from(VIDEO_BUCKET).createSignedUploadUrl(path)
+  if (error) throw error
+  return data.signedUrl
+}
+
+export async function setDrillVideoPath(drillId: string, path: string | null): Promise<Drill> {
+  const { data, error } = await supabase
+    .from('drills')
+    .update({ video_path: path })
+    .eq('id', drillId)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function removeVideoFile(path: string): Promise<void> {
+  const { error } = await supabase.storage.from(VIDEO_BUCKET).remove([path])
+  if (error) throw error
+}
+
+/** Short-lived URL for playback (the bucket is private). */
+export async function signedVideoUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage.from(VIDEO_BUCKET).createSignedUrl(path, 3600)
+  if (error) throw error
+  return data.signedUrl
 }

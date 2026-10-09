@@ -6,6 +6,8 @@ import BaseBadge from '@/components/BaseBadge.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import YouTubeEmbed from '../components/YouTubeEmbed.vue'
+import DrillVideo from '../components/DrillVideo.vue'
+import DrillVideoUpload from '../components/DrillVideoUpload.vue'
 import AnimationPlayer from '@/features/board/components/AnimationPlayer.vue'
 import { parseAnimation } from '@/features/board/schema'
 import BibBadge from '@/features/player-view/components/BibBadge.vue'
@@ -65,7 +67,8 @@ async function remove() {
     confirmDelete.value = true
     return
   }
-  await deleteDrill.mutateAsync(props.drillId)
+  if (!d.value) return
+  await deleteDrill.mutateAsync(d.value)
   await router.replace({ name: 'drills' })
 }
 </script>
@@ -119,6 +122,7 @@ async function remove() {
         />
       </section>
 
+      <DrillVideo v-if="d.video_path" :path="d.video_path" :title="d.title" />
       <YouTubeEmbed v-if="d.video_url" :url="d.video_url" :title="d.title" />
 
       <p v-if="d.description" class="drill__description">{{ d.description }}</p>
@@ -133,6 +137,10 @@ async function remove() {
           {{ t('drills.copyToTeam', { team: activeTeam?.team_name }) }}
         </BaseButton>
         <template v-if="canEdit">
+          <section class="drill__upload" :aria-label="t('drills.upload.title')">
+            <h2 class="drill__subtitle">{{ t('drills.upload.title') }}</h2>
+            <DrillVideoUpload :drill="d" />
+          </section>
           <RouterLink
             v-slot="{ navigate }"
             custom
@@ -188,6 +196,18 @@ async function remove() {
     display: flex;
     flex-wrap: wrap;
     gap: $space-1;
+  }
+
+  &__upload {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+    padding-bottom: $space-3;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  &__subtitle {
+    font-size: $font-md;
   }
 
   &__my-group {

@@ -345,9 +345,9 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** Trainer erstellt eine Animation für eine Übung, Spieler können sie abspielen.
 
 ### Phase 10 – Video-Upload
-- [ ] Supabase Storage Bucket `drill-videos` mit RLS (nur Teammitglieder lesen, nur Trainer schreiben)
-- [ ] Upload mit Fortschrittsanzeige, Größenlimit (z. B. 50 MB), erlaubte Formate
-- [ ] Wiedergabe im Übungsdetail
+- [x] Supabase Storage Bucket `drill-videos` mit RLS (nur Teammitglieder lesen, nur Trainer schreiben)
+- [x] Upload mit Fortschrittsanzeige, Größenlimit (z. B. 50 MB), erlaubte Formate
+- [x] Wiedergabe im Übungsdetail
 
 **Abnahme:** Trainer lädt ein kurzes Video hoch, Spieler sehen es.
 

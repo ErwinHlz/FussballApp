@@ -404,6 +404,25 @@
       "video": "YouTube link (optional)",
       "videoHint": "youtube.com/watch?v=…, youtu.be/… or Shorts",
       "saveFailed": "Saving failed. Please check your input."
+    },
+    "upload": {
+      "title": "Own video",
+      "choose": "Upload video",
+      "replace": "Replace video",
+      "hint": "MP4, WebM or MOV, at most {max}. Short clips work best (under 1 minute).",
+      "progress": "Upload progress",
+      "uploading": "Uploading … {n} %",
+      "done": "Video uploaded",
+      "failed": "Upload failed. Please check your connection and try again.",
+      "cancelled": "Upload cancelled.",
+      "remove": "Remove video",
+      "removeConfirm": "Really remove the video?",
+      "loadFailed": "Video could not be loaded.",
+      "problems": {
+        "type": "This format is not supported. Please choose MP4, WebM or MOV.",
+        "tooLarge": "The video is too large (max. {max}). Please trim or compress it.",
+        "empty": "The file is empty."
+      }
     }
   },
   "plan": {

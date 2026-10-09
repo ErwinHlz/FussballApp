@@ -404,6 +404,25 @@
       "video": "YouTube-Link (optional)",
       "videoHint": "youtube.com/watch?v=…, youtu.be/… oder Shorts",
       "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben."
+    },
+    "upload": {
+      "title": "Eigenes Video",
+      "choose": "Video hochladen",
+      "replace": "Video ersetzen",
+      "hint": "MP4, WebM oder MOV, höchstens {max}. Am besten kurz (unter 1 Minute).",
+      "progress": "Upload-Fortschritt",
+      "uploading": "Wird hochgeladen … {n} %",
+      "done": "Video hochgeladen",
+      "failed": "Upload fehlgeschlagen. Bitte prüfe die Verbindung und versuche es erneut.",
+      "cancelled": "Upload abgebrochen.",
+      "remove": "Video entfernen",
+      "removeConfirm": "Video wirklich entfernen?",
+      "loadFailed": "Video konnte nicht geladen werden.",
+      "problems": {
+        "type": "Dieses Format wird nicht unterstützt. Bitte MP4, WebM oder MOV wählen.",
+        "tooLarge": "Das Video ist zu groß (höchstens {max}). Bitte kürzen oder komprimieren.",
+        "empty": "Die Datei ist leer."
+      }
     }
   },
   "plan": {
