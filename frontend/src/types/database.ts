@@ -473,6 +473,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"tactic_boards": {
+                  Row: {
+                    "animation": NonNullable<Json>,"created_at": string,"created_by": string | null,"id": string,"team_id": string,"title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "animation": NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"id"?: string,"team_id": string,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "animation"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"id"?: string,"team_id"?: string,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "tactic_boards_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tactic_boards_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"team_invites": {
                   Row: {
                     "created_at": string,"created_by": string | null,"expires_at": string,"id": string,"revoked_at": string | null,"role": Database["public"]['Enums']["team_role"],"team_id": string,"token": string
@@ -790,6 +816,9 @@ isOneToOne: false
                            },
 "is_training_event":
 { Args: { "p_event_id": string }; Returns: boolean
+                           },
+"is_valid_animation":
+{ Args: { "p": Json }; Returns: boolean
                            },
 "link_team_member":
 { Args: { "p_account_member_id": string,"p_manual_member_id": string }; Returns: {

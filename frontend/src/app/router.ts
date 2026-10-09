@@ -153,6 +153,19 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/training-plan/views/TrainingView.vue'),
       },
       {
+        path: 'boards',
+        name: 'tactic-boards',
+        meta: { requiresTeam: true, title: 'boards.title', back: 'training' },
+        component: () => import('@/features/board/views/BoardsView.vue'),
+      },
+      {
+        path: 'boards/:boardId',
+        name: 'tactic-board',
+        props: true,
+        meta: { requiresTeam: true, title: 'boards.eyebrow', back: 'tactic-boards' },
+        component: () => import('@/features/board/views/TacticBoardView.vue'),
+      },
+      {
         path: 'templates',
         name: 'templates',
         meta: { requiresTeam: true, title: 'templates.title', back: 'training' },

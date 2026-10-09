@@ -33,7 +33,7 @@ describe('AnimationPlayer', () => {
       global: { plugins: [i18n] },
     })
     expect(wrapper.find('svg').attributes('aria-label')).toBe('Rondo')
-    expect(wrapper.find('.board__label').text()).toBe('7')
+    expect(wrapper.find('.token__label').text()).toBe('7')
     expect(wrapper.find('.board__arrow--dribble').exists()).toBe(true)
     expect(transformOf(wrapper)).toBe('translate(0 0)')
     expect(wrapper.find('.player__play').attributes('aria-label')).toBe('Abspielen')
@@ -67,6 +67,7 @@ vi.mock('@/features/drills/composables/useDrills', () => ({
     isError: ref(false),
   }),
 }))
+vi.mock('../composables/useSquadNames', () => ({ useSquadNames: () => ref([]) }))
 vi.mock('@/features/teams/composables/useActiveTeam', () => ({
   useActiveTeam: () => ({
     myTeams: { data: ref([{ team_id: 't1', team_role: 'coach', is_club_admin: false }]) },
@@ -88,6 +89,8 @@ async function mountEditor() {
 
 const button = (w: Awaited<ReturnType<typeof mountEditor>>, text: string) =>
   w.findAll('button').find((b) => b.text().includes(text))!
+const paletteItem = (w: Awaited<ReturnType<typeof mountEditor>>, key: string) =>
+  w.get(`[data-palette="${key}"]`)
 
 describe('BoardEditorView', () => {
   beforeEach(() => {
@@ -99,11 +102,11 @@ describe('BoardEditorView', () => {
   it('adds a player, moves it with the keyboard in a new keyframe and saves a valid animation', async () => {
     const wrapper = await mountEditor()
 
-    await button(wrapper, '+ Spieler').trigger('click')
+    await paletteItem(wrapper, 'player').trigger('click')
     const player = wrapper.get('.board__object')
     expect(player.attributes('aria-label')).toBe('Spieler 1')
 
-    await button(wrapper, '+ Keyframe').trigger('click')
+    await button(wrapper, '+ Schritt').trigger('click')
     await wrapper.get('.board__object').trigger('keydown', { key: 'ArrowRight', shiftKey: true })
     await wrapper.get('.board__object').trigger('keydown', { key: 'ArrowDown' })
 
@@ -120,7 +123,7 @@ describe('BoardEditorView', () => {
 
   it('removes an object with the erase tool', async () => {
     const wrapper = await mountEditor()
-    await button(wrapper, '+ Ball').trigger('click')
+    await paletteItem(wrapper, 'ball').trigger('click')
     expect(wrapper.findAll('.board__object')).toHaveLength(1)
 
     await button(wrapper, 'Löschen').trigger('click')

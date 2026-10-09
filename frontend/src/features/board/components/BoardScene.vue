@@ -2,6 +2,7 @@
 import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { arrowPath, FIELD_SIZE, fromSvg, objectRadius, toSvg } from '../geometry'
+import BoardToken from './BoardToken.vue'
 import type { Positions } from '../interpolate'
 import type { Annotation, BoardObject, FieldType, Point } from '../schema'
 
@@ -50,6 +51,34 @@ function point(event: PointerEvent): Point {
   if (!svg || !matrix) return [50, 50]
   const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
   return fromSvg(props.field, p.x, p.y)
+}
+
+/** Field percent for a screen point, or null outside the field (drops from the palette). */
+function clientToField(clientX: number, clientY: number): Point | null {
+  const svg = svgRef.value
+  if (!svg) return null
+  const rect = svg.getBoundingClientRect()
+  if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom)
+    return null
+  const matrix = typeof svg.getScreenCTM === 'function' ? svg.getScreenCTM() : null
+  if (!matrix) return [50, 50]
+  const p = new DOMPoint(clientX, clientY).matrixTransform(matrix.inverse())
+  return fromSvg(props.field, p.x, p.y)
+}
+defineExpose({ clientToField })
+
+// Zones lie under everything, the ball on top.
+const LAYER: Partial<Record<BoardObject['type'], number>> = { zone: 0, text: 3, ball: 4 }
+const layered = computed(() =>
+  [...props.objects].sort((a, b) => (LAYER[a.type] ?? 2) - (LAYER[b.type] ?? 2)),
+)
+
+/** Selection/hit size: zones by their area, everything else by the base radius. */
+function extent(o: BoardObject): number {
+  if (o.type === 'zone') return Math.max(o.w ?? 10, o.h ?? 10) / 2 + r.value * 0.4
+  if (o.type === 'ladder') return r.value * 3.2
+  if (o.type === 'goal') return r.value * 2.4
+  return r.value * 1.6
 }
 
 function pos(id: string): [number, number] | null {
@@ -171,14 +200,14 @@ const markings = computed(() => {
           `board__arrow--${a.style}`,
           { 'board__arrow--draft': draftArrow && index === arrows.length - 1 },
         ]"
-        :marker-end="`url(#${uid}-head)`"
+        :marker-end="a.style === 'line' ? undefined : `url(#${uid}-head)`"
         @pointerdown.stop="interactive && emit('arrowDown', index, $event)"
       />
     </g>
 
     <!-- Objects -->
     <g
-      v-for="o in objects"
+      v-for="o in layered"
       v-show="pos(o.id)"
       :key="o.id"
       class="board__object"
@@ -188,38 +217,38 @@ const markings = computed(() => {
       :role="interactive ? 'button' : undefined"
       :aria-label="interactive ? objectLabel(o) : undefined"
       :aria-pressed="interactive ? o.id === selectedId : undefined"
+      :data-object="o.id"
       @pointerdown.stop="interactive && emit('objectDown', o.id, point($event), $event)"
       @keydown="interactive && emit('objectKey', o.id, $event)"
     >
-      <template v-if="o.type === 'player'">
-        <circle :r="r * 1.1" :fill="o.color ?? '#3b82f6'" class="board__player" />
-        <text v-if="o.label" class="board__label" :font-size="r * 1.1" dy="0.35em">
-          {{ o.label }}
-        </text>
-      </template>
-      <circle v-else-if="o.type === 'ball'" :r="r * 0.55" class="board__ball" />
-      <path
-        v-else-if="o.type === 'cone'"
-        :d="`M 0 ${-r * 0.8} L ${r * 0.7} ${r * 0.6} L ${-r * 0.7} ${r * 0.6} Z`"
-        :fill="o.color ?? '#f97316'"
-        class="board__cone"
-      />
-      <rect
-        v-else-if="o.type === 'goal'"
-        :x="-r * 2.2"
-        :y="-r * 0.5"
-        :width="r * 4.4"
-        :height="r"
-        class="board__goal"
-      />
+      <BoardToken :object="o" :r="r" />
       <circle
         v-if="o.id === selectedId"
-        :r="r * 1.6"
+        :r="extent(o)"
         class="board__selection"
         pointer-events="none"
       />
-      <!-- Larger invisible hit area for touch -->
-      <circle v-if="interactive" :r="r * 1.8" class="board__hit" />
+      <!-- Larger invisible hit area for touch; zones are grabbed anywhere on their area -->
+      <g
+        v-if="interactive && o.type === 'zone'"
+        :transform="o.rotation ? `rotate(${o.rotation})` : undefined"
+      >
+        <ellipse
+          v-if="o.shape === 'circle'"
+          :rx="(o.w ?? 10) / 2"
+          :ry="(o.h ?? 10) / 2"
+          class="board__hit"
+        />
+        <rect
+          v-else
+          :x="-(o.w ?? 10) / 2"
+          :y="-(o.h ?? 10) / 2"
+          :width="o.w ?? 10"
+          :height="o.h ?? 10"
+          class="board__hit"
+        />
+      </g>
+      <circle v-else-if="interactive" :r="Math.max(r * 1.8, extent(o) * 0.8)" class="board__hit" />
     </g>
   </svg>
 </template>
@@ -268,6 +297,10 @@ const markings = computed(() => {
       stroke: #fff;
     }
 
+    &--line {
+      stroke: rgb(255 255 255 / 90%);
+    }
+
     &--draft {
       opacity: 0.7;
     }
@@ -296,38 +329,6 @@ const markings = computed(() => {
 
   &__object:focus-visible:not(&__object--selected) &__hit {
     fill: rgb(255 255 255 / 25%);
-  }
-
-  &__player {
-    stroke: rgb(0 0 0 / 45%);
-    stroke-width: 0.3;
-  }
-
-  &__label {
-    fill: #fff;
-    font-weight: 800;
-    text-anchor: middle;
-    paint-order: stroke;
-    stroke: rgb(0 0 0 / 45%);
-    stroke-width: 0.25;
-    pointer-events: none;
-  }
-
-  &__ball {
-    fill: #fff;
-    stroke: #111;
-    stroke-width: 0.25;
-  }
-
-  &__cone {
-    stroke: rgb(0 0 0 / 40%);
-    stroke-width: 0.2;
-  }
-
-  &__goal {
-    fill: rgb(255 255 255 / 25%);
-    stroke: #fff;
-    stroke-width: 0.35;
   }
 
   &__hit {

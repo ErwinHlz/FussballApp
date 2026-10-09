@@ -27,11 +27,18 @@ export function objectRadius(field: FieldType): number {
   return Math.min(w, h) * 0.045
 }
 
+/** Where a carried ball sits relative to its carrier (field percent): at the right foot. */
+export function ballOffset(field: FieldType): Point {
+  const { w, h } = FIELD_SIZE[field]
+  const m = objectRadius(field) * 1.15
+  return [(m / w) * 100, (m / h) * 100 * 0.6]
+}
+
 /** SVG path for an arrow: straight for run/pass, a wave for dribbling. */
 export function arrowPath(field: FieldType, from: Point, to: Point, style: ArrowStyle): string {
   const [x1, y1] = toSvg(field, from)
   const [x2, y2] = toSvg(field, to)
-  if (style !== 'dribble') return `M ${x1} ${y1} L ${x2} ${y2}`
+  if (style !== 'dribble') return `M ${x1} ${y1} L ${x2} ${y2}` // run, pass, line
 
   const length = Math.hypot(x2 - x1, y2 - y1)
   if (length === 0) return `M ${x1} ${y1}`

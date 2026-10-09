@@ -5,10 +5,51 @@ import { z } from 'zod'
  * Coordinates are percentages (0–100) of the field, so it fits every screen size.
  */
 export const FIELD_TYPES = ['full', 'half', 'quarter'] as const
-export const OBJECT_TYPES = ['player', 'ball', 'cone', 'goal'] as const
-export const ARROW_STYLES = ['run', 'pass', 'dribble'] as const
+export const OBJECT_TYPES = [
+  // People
+  'player',
+  'goalkeeper',
+  'coach',
+  'ball',
+  // Equipment
+  'cone',
+  'disc',
+  'pole',
+  'dummy',
+  'minigoal',
+  'goal',
+  'ladder',
+  'ring',
+  // Zones and markings
+  'zone',
+  'text',
+] as const
+export const ARROW_STYLES = ['run', 'pass', 'dribble', 'line'] as const
+export const ZONE_SHAPES = ['rect', 'circle'] as const
 
-export const MAX_OBJECTS = 40
+/** Objects that can carry the ball. */
+export const BALL_CARRIERS: readonly ObjectType[] = ['player', 'goalkeeper', 'coach']
+/** Objects whose orientation matters. */
+export const ROTATABLE: readonly ObjectType[] = [
+  'dummy',
+  'minigoal',
+  'goal',
+  'ladder',
+  'zone',
+  'text',
+]
+/** Objects that take a color. */
+export const COLORED: readonly ObjectType[] = [
+  'player',
+  'goalkeeper',
+  'cone',
+  'disc',
+  'pole',
+  'ring',
+  'zone',
+]
+
+export const MAX_OBJECTS = 60
 export const MAX_KEYFRAMES = 30
 export const MAX_DURATION_MS = 60_000
 
@@ -20,12 +61,25 @@ export const boardObjectSchema = z.object({
   id: z.string().min(1).max(20),
   type: z.enum(OBJECT_TYPES),
   color: color.optional(),
+  /** Jersey number (players). */
   label: z.string().max(3).optional(),
+  /** Name shown below a player, e.g. from the squad. */
+  name: z.string().max(16).optional(),
+  /** Degrees, clockwise. */
+  rotation: z.number().int().min(0).max(359).optional(),
+  /** Zone size in meters. */
+  w: z.number().min(1).max(105).optional(),
+  h: z.number().min(1).max(105).optional(),
+  shape: z.enum(ZONE_SHAPES).optional(),
+  /** Text objects. */
+  text: z.string().max(40).optional(),
 })
 
 export const keyframeSchema = z.object({
   t: z.number().int().min(0).max(MAX_DURATION_MS),
   positions: z.record(z.string(), pointSchema),
+  /** Ball id -> carrier id (null = loose). Missing balls keep their last carrier. */
+  holders: z.record(z.string(), z.string().nullable()).optional(),
 })
 
 export const annotationSchema = z.object({
@@ -74,6 +128,15 @@ export const animationSchema = z
           ctx.addIssue({ code: 'custom', message: `unknown object ${id}`, path: ['keyframes', i] })
         }
       }
+      for (const [ball, carrier] of Object.entries(k.holders ?? {})) {
+        if (!ids.has(ball) || (carrier !== null && !ids.has(carrier))) {
+          ctx.addIssue({
+            code: 'custom',
+            message: `unknown holder ${ball}`,
+            path: ['keyframes', i],
+          })
+        }
+      }
     })
   })
 
@@ -83,6 +146,7 @@ export type Keyframe = z.infer<typeof keyframeSchema>
 export type Annotation = z.infer<typeof annotationSchema>
 export type Animation = z.infer<typeof animationSchema>
 export type FieldType = (typeof FIELD_TYPES)[number]
+export type ObjectType = (typeof OBJECT_TYPES)[number]
 export type ArrowStyle = (typeof ARROW_STYLES)[number]
 
 /** Parses stored JSON; returns null for missing or invalid animations (never throws). */
