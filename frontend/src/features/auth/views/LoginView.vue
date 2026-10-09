@@ -38,6 +38,9 @@ const onSubmit = handleSubmit(async (values) => {
 
 <template>
   <AuthShell :title="t('auth.signIn')">
+    <template v-if="route.query.deleted" #before>
+      <p class="deleted" role="status">{{ t('account.deleted') }}</p>
+    </template>
     <form class="auth-form" novalidate @submit="onSubmit">
       <BaseInput
         v-model="email"
@@ -72,3 +75,14 @@ const onSubmit = handleSubmit(async (values) => {
     </template>
   </AuthShell>
 </template>
+
+<style scoped lang="scss">
+.deleted {
+  padding: $space-3;
+  border-radius: $radius-md;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  text-align: center;
+  font-weight: 600;
+}
+</style>

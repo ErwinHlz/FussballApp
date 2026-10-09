@@ -344,7 +344,8 @@
     "drillDuration": "Please 1 to 180 minutes",
     "players": "Please 1 to 40",
     "playersRange": "Max. must be at least min.",
-    "youtube": "Please enter a YouTube link"
+    "youtube": "Please enter a YouTube link",
+    "consent": "Please confirm"
   },
   "drills": {
     "title": "Drills",
@@ -678,5 +679,34 @@
     "unsupported": "This browser does not support notifications.",
     "ios": "On iPhone: tap \"Share\" → \"Add to Home Screen\" and open Rondo from there. Then you can turn on notifications.",
     "unconfigured": "Notifications are not set up for this installation yet."
+  },
+  "account": {
+    "title": "Data & account",
+    "exportText": "Download everything Rondo has stored about you as a file. You can also delete your account at any time.",
+    "export": "Download my data",
+    "exportFailed": "Download failed. Please try again.",
+    "delete": "Delete account",
+    "deleteTitle": "Delete account permanently?",
+    "deleteText": "This cannot be undone. The following will be deleted:",
+    "deleteItems": {
+      "memberships": "your account, profile and your entries in all squads",
+      "answers": "all answers, nominations, absences and devices",
+      "clubs": "clubs only you use, with all their content"
+    },
+    "confirmLabel": "Type {word} to confirm",
+    "confirmWord": "DELETE",
+    "soleAdmin": "You are the only admin of a club others still use. Make someone else admin first.",
+    "deleteFailed": "Deleting failed. Please try again.",
+    "deleteFinal": "Delete permanently",
+    "deleted": "Your account has been deleted."
+  },
+  "legal": {
+    "privacy": "Privacy policy",
+    "imprint": "Legal notice",
+    "template": "Template: the highlighted parts must be completed and legally reviewed before launch.",
+    "germanOnly": "This text is only available in German.",
+    "consent": "I have read the {privacy} and I am at least 16 years old or my parents agree.",
+    "navLabel": "Legal",
+    "privacyPolicy": "privacy policy"
   }
 }

@@ -27,6 +27,8 @@ async function mountAt(component: object, path: string) {
       { path: '/login', name: 'login', component: LoginView },
       { path: '/register', name: 'register', component: RegisterView },
       { path: '/forgot-password', name: 'forgot-password', component: Stub },
+      { path: '/privacy', name: 'privacy', component: Stub },
+      { path: '/imprint', name: 'imprint', component: Stub },
       { path: '/:any(.*)*', component: Stub },
     ],
   })
@@ -39,6 +41,10 @@ async function mountAt(component: object, path: string) {
 async function fill(wrapper: Awaited<ReturnType<typeof mountAt>>['wrapper'], values: string[]) {
   const inputs = wrapper.findAll('input')
   for (const [index, value] of values.entries()) await inputs[index]!.setValue(value)
+}
+
+async function acceptConsent(wrapper: Awaited<ReturnType<typeof mountAt>>['wrapper']) {
+  await wrapper.get('input[type="checkbox"]').setValue(true)
 }
 
 describe('LoginView', () => {
@@ -94,6 +100,7 @@ describe('RegisterView', () => {
     const { wrapper } = await mountAt(RegisterView, '/register')
 
     await fill(wrapper, ['Alex', 'alex@example.test', 'long-enough', 'different-one'])
+    await acceptConsent(wrapper)
     await wrapper.get('form').trigger('submit')
 
     await vi.waitFor(() => expect(wrapper.text()).toContain('stimmen nicht überein'))
@@ -104,6 +111,7 @@ describe('RegisterView', () => {
     const { wrapper, router } = await mountAt(RegisterView, '/register?redirect=/join/abc?accept=1')
 
     await fill(wrapper, ['Alex', 'alex@example.test', 'long-enough', 'long-enough'])
+    await acceptConsent(wrapper)
     await wrapper.get('form').trigger('submit')
     await vi.waitFor(() => expect(signUpMutate).toHaveBeenCalled())
     await flushPromises()
@@ -117,11 +125,23 @@ describe('RegisterView', () => {
     expect(router.currentRoute.value.fullPath).toBe('/join/abc?accept=1')
   })
 
+  it('requires the privacy and age consent', async () => {
+    const { wrapper } = await mountAt(RegisterView, '/register')
+
+    await fill(wrapper, ['Alex', 'alex@example.test', 'long-enough', 'long-enough'])
+    await wrapper.get('form').trigger('submit')
+
+    await vi.waitFor(() => expect(wrapper.text()).toContain('Bitte bestätigen'))
+    expect(signUpMutate).not.toHaveBeenCalled()
+    expect(wrapper.get('.consent a[href="/privacy"]').text()).toBe('Datenschutzerklärung')
+  })
+
   it('asks to confirm the email when no session is returned', async () => {
     signUpMutate.mockResolvedValue({ signedIn: false })
     const { wrapper } = await mountAt(RegisterView, '/register')
 
     await fill(wrapper, ['Alex', 'alex@example.test', 'long-enough', 'long-enough'])
+    await acceptConsent(wrapper)
     await wrapper.get('form').trigger('submit')
 
     await vi.waitFor(() => expect(wrapper.find('[role="status"]').exists()).toBe(true))

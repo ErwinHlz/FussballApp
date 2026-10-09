@@ -95,3 +95,22 @@ export async function updateProfile(userId: string, patch: ProfileUpdate): Promi
   if (error) throw error
   return data
 }
+
+/** GDPR Art. 15/20: everything stored about the signed-in user, as JSON. */
+export async function exportMyData(): Promise<unknown> {
+  const { data, error } = await supabase.rpc('export_my_data')
+  if (error) throw error
+  return data
+}
+
+/** GDPR Art. 17: deletes the account and the personal data; the local session is ended. */
+export async function deleteMyAccount(): Promise<void> {
+  const { error } = await supabase.rpc('delete_my_account')
+  if (error) throw error
+  // The user no longer exists; drop the local session without calling the server.
+  await supabase.auth.signOut({ scope: 'local' })
+}
+
+export function isSoleAdminError(error: unknown): boolean {
+  return (error as { hint?: string } | null)?.hint === 'sole_admin'
+}

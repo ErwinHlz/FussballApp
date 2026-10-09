@@ -115,14 +115,14 @@ isOneToOne: false
                   ]
                 },"clubs": {
                   Row: {
-                    "created_at": string,"created_by": string,"id": string,"name": string
+                    "created_at": string,"created_by": string | null,"id": string,"name": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string,"id"?: string,"name": string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string,"id"?: string,"name"?: string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string
                   }
                   Relationships: [
                     {
@@ -371,14 +371,14 @@ isOneToOne: false
                   ]
                 },"team_invites": {
                   Row: {
-                    "created_at": string,"created_by": string,"expires_at": string,"id": string,"revoked_at": string | null,"role": Database["public"]['Enums']["team_role"],"team_id": string,"token": string
+                    "created_at": string,"created_by": string | null,"expires_at": string,"id": string,"revoked_at": string | null,"role": Database["public"]['Enums']["team_role"],"team_id": string,"token": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string,"expires_at"?: string,"id"?: string,"revoked_at"?: string | null,"role": Database["public"]['Enums']["team_role"],"team_id": string,"token"?: string
+                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"revoked_at"?: string | null,"role": Database["public"]['Enums']["team_role"],"team_id": string,"token"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string,"expires_at"?: string,"id"?: string,"revoked_at"?: string | null,"role"?: Database["public"]['Enums']["team_role"],"team_id"?: string,"token"?: string
+                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"revoked_at"?: string | null,"role"?: Database["public"]['Enums']["team_role"],"team_id"?: string,"token"?: string
                   }
                   Relationships: [
                     {
@@ -423,14 +423,14 @@ isOneToOne: false
                   ]
                 },"teams": {
                   Row: {
-                    "club_id": string,"created_at": string,"created_by": string,"id": string,"name": string,"season": string | null
+                    "club_id": string,"created_at": string,"created_by": string | null,"id": string,"name": string,"season": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "club_id": string,"created_at"?: string,"created_by"?: string,"id"?: string,"name": string,"season"?: string | null
+                    "club_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string,"season"?: string | null
                   }
                   Update: {
-                    "club_id"?: string,"created_at"?: string,"created_by"?: string,"id"?: string,"name"?: string,"season"?: string | null
+                    "club_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string,"season"?: string | null
                   }
                   Relationships: [
                     {
@@ -498,7 +498,7 @@ isOneToOne: false
 "create_club":
 { Args: { "p_name": string }; Returns: {
               "created_at": string,
-"created_by": string,
+"created_by": string | null,
 "id": string,
 "name": string
             }
@@ -530,6 +530,9 @@ isOneToOne: false
 "delete_absence":
 { Args: { "p_absence_id": string }; Returns: undefined
                            },
+"delete_my_account":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "drill_group_event_id":
 { Args: { "p_group_id": string }; Returns: string
                            },
@@ -556,6 +559,9 @@ isOneToOne: false
                            },
 "event_team_id":
 { Args: { "p_event_id": string }; Returns: string
+                           },
+"export_my_data":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "get_team_invite":
 { Args: { "p_token": string }; Returns: {

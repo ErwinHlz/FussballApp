@@ -31,6 +31,10 @@ export const registerSchema = z
     email,
     password: newPassword,
     passwordConfirm: z.string({ required_error: 'validation.required' }),
+    // Privacy policy read and age 16+ or parental consent (Art. 8 GDPR).
+    consent: z.literal(true, {
+      errorMap: () => ({ message: 'validation.consent' }),
+    }),
   })
   .refine((v) => v.password === v.passwordConfirm, {
     message: 'validation.passwordMismatch',

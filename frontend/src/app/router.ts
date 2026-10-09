@@ -51,6 +51,21 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/features/teams/views/JoinView.vue'),
   },
   {
+    // Public legal pages, reachable signed in and out.
+    path: '/privacy',
+    name: 'privacy',
+    props: { document: 'privacy' },
+    meta: { title: 'legal.privacy' },
+    component: () => import('@/features/legal/views/LegalView.vue'),
+  },
+  {
+    path: '/imprint',
+    name: 'imprint',
+    props: { document: 'imprint' },
+    meta: { title: 'legal.imprint' },
+    component: () => import('@/features/legal/views/LegalView.vue'),
+  },
+  {
     path: '/',
     component: AppLayout,
     meta: { requiresAuth: true },

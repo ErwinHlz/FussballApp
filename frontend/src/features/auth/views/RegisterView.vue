@@ -24,6 +24,7 @@ const [displayName] = defineField('displayName')
 const [email] = defineField('email')
 const [password] = defineField('password')
 const [passwordConfirm] = defineField('passwordConfirm')
+const [consent] = defineField('consent')
 
 const confirmationSentTo = ref<string | null>(null)
 const redirectPath = computed(() => safeRedirect(route.query.redirect))
@@ -92,6 +93,27 @@ const onSubmit = handleSubmit(async (values) => {
         required
         :error="errors.passwordConfirm ? t(errors.passwordConfirm) : undefined"
       />
+      <div class="consent">
+        <label class="consent__label">
+          <input
+            v-model="consent"
+            class="consent__box"
+            type="checkbox"
+            :aria-invalid="!!errors.consent"
+            :aria-describedby="errors.consent ? 'consent-error' : undefined"
+          />
+          <i18n-t keypath="legal.consent" tag="span">
+            <template #privacy>
+              <RouterLink :to="{ name: 'privacy' }" target="_blank">{{
+                t('legal.privacyPolicy')
+              }}</RouterLink>
+            </template>
+          </i18n-t>
+        </label>
+        <p v-if="errors.consent" id="consent-error" class="auth-form__error">
+          {{ t(errors.consent) }}
+        </p>
+      </div>
       <p v-if="errorMessage" class="auth-form__error" role="alert">{{ errorMessage }}</p>
       <BaseButton type="submit" size="lg" block :loading="signUp.isPending.value">
         {{ t('auth.createAccount') }}
@@ -104,3 +126,33 @@ const onSubmit = handleSubmit(async (values) => {
     </template>
   </AuthShell>
 </template>
+
+<style scoped lang="scss">
+.consent {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+
+  &__label {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-3;
+    font-size: $font-sm;
+    line-height: 1.5;
+  }
+
+  &__box {
+    @include focus-visible;
+
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+    accent-color: var(--color-primary);
+  }
+
+  a {
+    font-weight: 600;
+  }
+}
+</style>

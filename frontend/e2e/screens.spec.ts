@@ -43,6 +43,12 @@ test('screens: player', async ({ page }) => {
   await page.goto('/profile')
   await page.getByText('Meine Vereine').waitFor()
   await shot(page, '15-profile')
+  await page.getByRole('button', { name: 'Konto löschen' }).click()
+  await page.getByRole('dialog').waitFor()
+  await page.waitForTimeout(400)
+  await page.screenshot({ path: 'e2e/__screens__/16-delete-account.png' })
+  await page.goto('/privacy')
+  await shot(page, '17-privacy')
 })
 
 test('screens: coach', async ({ page }) => {

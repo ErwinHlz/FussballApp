@@ -13,6 +13,7 @@ import { useMyClubs } from '@/features/teams/composables/useTeams'
 import { useQuery } from '@tanstack/vue-query'
 import AbsenceForm from '@/features/absences/components/AbsenceForm.vue'
 import NotificationSettings from '../components/NotificationSettings.vue'
+import AccountSection from '../components/AccountSection.vue'
 import AbsenceList from '@/features/absences/components/AbsenceList.vue'
 import { fetchMyMemberIds } from '@/features/absences/api'
 import { useMyAbsences } from '@/features/absences/composables/useAbsences'
@@ -148,6 +149,17 @@ const onSubmit = handleSubmit(async (values) => {
       </ul>
     </section>
 
+    <section class="profile__clubs" aria-labelledby="profile-account">
+      <h2 id="profile-account" class="profile__subtitle">{{ t('account.title') }}</h2>
+      <BaseCard>
+        <AccountSection />
+      </BaseCard>
+      <nav class="profile__legal" :aria-label="t('legal.navLabel')">
+        <RouterLink :to="{ name: 'privacy' }">{{ t('legal.privacy') }}</RouterLink>
+        <RouterLink :to="{ name: 'imprint' }">{{ t('legal.imprint') }}</RouterLink>
+      </nav>
+    </section>
+
     <BaseButton
       variant="secondary"
       block
@@ -238,6 +250,21 @@ const onSubmit = handleSubmit(async (values) => {
 
   &__error {
     color: var(--color-danger);
+  }
+
+  &__legal {
+    display: flex;
+    gap: $space-4;
+    font-size: $font-sm;
+
+    a {
+      @include focus-visible;
+
+      display: inline-flex;
+      align-items: center;
+      min-height: $touch-target;
+      color: var(--color-text-muted);
+    }
   }
 
   &__saved {

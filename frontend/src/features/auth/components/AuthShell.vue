@@ -26,6 +26,11 @@ const { t } = useI18n()
     <div v-if="$slots.footer" class="auth-shell__footer">
       <slot name="footer" />
     </div>
+
+    <nav class="auth-shell__legal" :aria-label="t('legal.navLabel')">
+      <RouterLink :to="{ name: 'privacy' }">{{ t('legal.privacy') }}</RouterLink>
+      <RouterLink :to="{ name: 'imprint' }">{{ t('legal.imprint') }}</RouterLink>
+    </nav>
   </main>
 </template>
 
@@ -82,6 +87,22 @@ const { t } = useI18n()
       align-items: center;
       min-height: $touch-target;
       font-weight: 600;
+    }
+  }
+
+  &__legal {
+    display: flex;
+    justify-content: center;
+    gap: $space-4;
+    font-size: $font-sm;
+
+    a {
+      @include focus-visible;
+
+      display: inline-flex;
+      align-items: center;
+      min-height: $touch-target;
+      color: var(--color-text-muted);
     }
   }
 }

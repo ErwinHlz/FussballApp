@@ -84,6 +84,11 @@ bash scripts/npm.sh run dev
 
 Für das Backend muss in Docker Desktop die WSL-Integration aktiviert sein.
 
+## Live schalten
+
+Supabase-Cloud, Hosting, Push, Mails und Rechtstexte: siehe [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Die CI in `.github/workflows/ci.yml` prüft jeden Push.
+
 ## Secrets
 
 Supabase-Schlüssel gehören ausschließlich in `frontend/.env.local` (gitignored).

@@ -344,7 +344,8 @@
     "drillDuration": "Bitte 1 bis 180 Minuten",
     "players": "Bitte 1 bis 40",
     "playersRange": "Max. muss mindestens so groß wie Min. sein",
-    "youtube": "Bitte einen YouTube-Link angeben"
+    "youtube": "Bitte einen YouTube-Link angeben",
+    "consent": "Bitte bestätigen"
   },
   "drills": {
     "title": "Übungen",
@@ -678,5 +679,34 @@
     "unsupported": "Dieser Browser unterstützt keine Benachrichtigungen.",
     "ios": "Auf dem iPhone: Tippe auf „Teilen“ → „Zum Home-Bildschirm“ und öffne Rondo von dort. Dann kannst du Benachrichtigungen aktivieren.",
     "unconfigured": "Benachrichtigungen sind für diese Installation noch nicht eingerichtet."
+  },
+  "account": {
+    "title": "Daten & Konto",
+    "exportText": "Lade alle Daten, die Rondo über dich gespeichert hat, als Datei herunter. Du kannst dein Konto auch jederzeit löschen.",
+    "export": "Meine Daten herunterladen",
+    "exportFailed": "Download fehlgeschlagen. Bitte versuche es erneut.",
+    "delete": "Konto löschen",
+    "deleteTitle": "Konto endgültig löschen?",
+    "deleteText": "Das kann nicht rückgängig gemacht werden. Gelöscht werden:",
+    "deleteItems": {
+      "memberships": "dein Konto, Profil und deine Einträge in allen Kadern",
+      "answers": "alle Zu- und Absagen, Nominierungen, Abwesenheiten und Geräte",
+      "clubs": "Vereine, die nur du nutzt, mit allen Inhalten"
+    },
+    "confirmLabel": "Tippe {word} zur Bestätigung",
+    "confirmWord": "LÖSCHEN",
+    "soleAdmin": "Du bist der einzige Admin eines Vereins, den noch andere nutzen. Mach zuerst jemand anderen zum Admin.",
+    "deleteFailed": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
+    "deleteFinal": "Endgültig löschen",
+    "deleted": "Dein Konto wurde gelöscht."
+  },
+  "legal": {
+    "privacy": "Datenschutz",
+    "imprint": "Impressum",
+    "template": "Vorlage: Die markierten Stellen müssen vor dem Start ausgefüllt und rechtlich geprüft werden.",
+    "germanOnly": "Dieser Text ist nur auf Deutsch verfügbar.",
+    "consent": "Ich habe die {privacy} gelesen und bin mindestens 16 Jahre alt oder meine Erziehungsberechtigten sind einverstanden.",
+    "navLabel": "Rechtliches",
+    "privacyPolicy": "Datenschutzerklärung"
   }
 }
