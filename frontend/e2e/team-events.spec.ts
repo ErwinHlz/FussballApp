@@ -11,6 +11,9 @@ test('coach adds a team event with the + button, the player answers it', async (
 
   const coach = await (await browser.newContext()).newPage()
   await login(coach, demo.coach.email)
+  await coach.getByRole('button', { name: 'Filter' }).click()
+  await coach.screenshot({ path: 'e2e/__screens__/79-events-head.png' })
+  await coach.getByRole('button', { name: 'Filter' }).click()
   await coach.getByRole('button', { name: 'Termin anlegen' }).click()
   const sheet = coach.getByRole('dialog')
   for (const option of ['Training', 'Trainingsserie', 'Spiel', 'Event']) {
@@ -39,4 +42,36 @@ test('coach adds a team event with the + button, the player answers it', async (
   const card = player.locator('article, li').filter({ hasText: 'Teamabend' }).first()
   await expect(card).toBeVisible()
   await player.screenshot({ path: 'e2e/__screens__/81-events-with-event.png', fullPage: true })
+})
+
+test('a player attends all open dates, filters the list and jumps back to the top', async ({
+  page,
+}) => {
+  const demo = await seedDemo()
+  await login(page, demo.player.email)
+  await expect(page.getByRole('button', { name: '+' })).toHaveCount(0)
+
+  // Filter: only matches.
+  await page.getByRole('button', { name: 'Filter' }).click()
+  await page.getByRole('button', { name: 'Spiel', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Filter (1 aktiv)' })).toBeVisible()
+  await expect(page.getByText('vs. FC Nachbarort').first()).toBeVisible()
+  await expect(page.locator('.event-card--training')).toHaveCount(0)
+  await page.screenshot({ path: 'e2e/__screens__/82-events-filter.png' })
+  await page.getByRole('button', { name: 'Filter zurücksetzen' }).click()
+
+  // Attend all open dates at once.
+  await page.getByRole('button', { name: 'Alle zusagen' }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toContainText('offene Termine')
+  await dialog.getByRole('button', { name: /^Zusagen/ }).click()
+  await expect(page.getByRole('status')).toContainText('zugesagt')
+  await expect(page.getByRole('button', { name: 'Alle zusagen' })).toHaveCount(0)
+  await expect(page.getByText('noch nicht beantwortet')).toHaveCount(0)
+
+  // Back to top after scrolling down.
+  await expect(page.getByRole('button', { name: 'Nach oben' })).toHaveCount(0)
+  await page.mouse.wheel(0, 3000)
+  await page.getByRole('button', { name: 'Nach oben' }).click()
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(50)
 })

@@ -2,15 +2,27 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useLocalStorage, usePreferredReducedMotion, useWindowScroll } from '@vueuse/core'
 import AppIcon from '@/components/AppIcon.vue'
+import BaseButton from '@/components/BaseButton.vue'
+import BaseChipGroup from '@/components/BaseChipGroup.vue'
 import BaseModal from '@/components/BaseModal.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import EventCard from '../components/EventCard.vue'
 import NextEventHero from '@/features/player-view/components/NextEventHero.vue'
 import { nextEvent } from '@/features/player-view/logic'
-import { splitEvents, unansweredEvents } from '../logic'
-import { useMyMember, useTeamEvents } from '../composables/useEvents'
+import {
+  activeFilterCount,
+  attendAllCandidates,
+  DEFAULT_EVENT_FILTER,
+  filterEvents,
+  splitEvents,
+  unansweredEvents,
+  type EventFilter,
+  type EventTypeFilter,
+} from '../logic'
+import { useAttendAll, useMyMember, useTeamEvents } from '../composables/useEvents'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -19,12 +31,70 @@ const teamId = computed(() => activeTeam.value?.team_id ?? null)
 const events = useTeamEvents(teamId)
 const { members, myMember } = useMyMember(teamId)
 
-const lists = computed(() => splitEvents(events.data.value ?? []))
+const memberId = computed(() => myMember.value?.id ?? null)
+
+// Filters are a per-device convenience (remembered in the browser).
+const filter = useLocalStorage<EventFilter>(
+  'rondo.eventFilter',
+  { ...DEFAULT_EVENT_FILTER },
+  { mergeDefaults: true },
+)
+const filtersOpen = ref(false)
+const filterCount = computed(() => activeFilterCount(filter.value))
+const typeOptions = computed(() =>
+  (['all', 'training', 'match', 'event'] as const).map((value) => ({
+    value,
+    label: t(`events.filter.types.${value}`),
+  })),
+)
+const filterType = computed({
+  get: () => filter.value.type,
+  set: (value: EventTypeFilter | EventTypeFilter[] | undefined) => {
+    if (typeof value === 'string') filter.value = { ...filter.value, type: value }
+  },
+})
+function setOnlyUnanswered(event: Event) {
+  filter.value = { ...filter.value, onlyUnanswered: (event.target as HTMLInputElement).checked }
+}
+function resetFilter() {
+  filter.value = { ...DEFAULT_EVENT_FILTER }
+}
+
+const allUpcoming = computed(() => splitEvents(events.data.value ?? []).upcoming)
+const lists = computed(() =>
+  splitEvents(filterEvents(events.data.value ?? [], filter.value, memberId.value)),
+)
 const hero = computed(() => nextEvent(lists.value.upcoming))
 const moreUpcoming = computed(() => lists.value.upcoming.filter((e) => e.id !== hero.value?.id))
-const unanswered = computed(() =>
-  unansweredEvents(lists.value.upcoming, myMember.value?.id ?? null),
+const unanswered = computed(() => unansweredEvents(allUpcoming.value, memberId.value))
+const filteredAway = computed(
+  () => !!events.data.value?.length && !lists.value.upcoming.length && filterCount.value > 0,
 )
+
+// "Attend all": every shown date that is still open and not answered yet.
+const attendCandidates = computed(() => attendAllCandidates(lists.value.upcoming, memberId.value))
+const attendAll = useAttendAll()
+const attendOpen = ref(false)
+const attendNotice = ref<string | null>(null)
+
+async function confirmAttendAll() {
+  const result = await attendAll.mutateAsync({
+    eventIds: attendCandidates.value.map((e) => e.id),
+    memberId: memberId.value!,
+  })
+  attendOpen.value = false
+  attendNotice.value = result.skipped
+    ? t('events.attendAll.doneSkipped', { n: result.saved, skipped: result.skipped })
+    : t('events.attendAll.done', result.saved)
+}
+
+// Back to top: appears after scrolling down.
+const { y } = useWindowScroll()
+const reducedMotion = usePreferredReducedMotion()
+const showToTop = computed(() => y.value > 500)
+function toTop() {
+  window.scrollTo({ top: 0, behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth' })
+}
 const playerIds = computed(() =>
   (members.data.value ?? []).filter((m) => m.role === 'player').map((m) => m.id),
 )
@@ -59,8 +129,75 @@ function scrollToFirstUnanswered() {
 </script>
 
 <template>
-  <section class="events" :class="{ 'events--with-fab': isCoach }">
-    <h1>{{ t('events.title') }}</h1>
+  <section class="events">
+    <header class="events__head">
+      <h1>{{ t('events.title') }}</h1>
+      <div class="events__actions">
+        <button
+          v-if="attendCandidates.length"
+          type="button"
+          class="events__action events__action--text"
+          @click="attendOpen = true"
+        >
+          <AppIcon name="check" :size="18" />
+          {{ t('events.attendAll.button') }}
+        </button>
+        <button
+          type="button"
+          class="events__action"
+          :class="{ 'events__action--on': filtersOpen || filterCount > 0 }"
+          :aria-expanded="filtersOpen"
+          aria-controls="events-filters"
+          :aria-label="
+            filterCount
+              ? t('events.filter.labelActive', { n: filterCount })
+              : t('events.filter.label')
+          "
+          @click="filtersOpen = !filtersOpen"
+        >
+          <AppIcon name="filter" :size="20" />
+          <span v-if="filterCount" class="events__badge" aria-hidden="true">{{ filterCount }}</span>
+        </button>
+        <button
+          v-if="isCoach"
+          type="button"
+          class="events__action events__action--primary"
+          :aria-label="t('events.createLabel')"
+          :title="t('events.createLabel')"
+          @click="createOpen = true"
+        >
+          <AppIcon name="plus" :size="24" />
+        </button>
+      </div>
+    </header>
+
+    <section
+      v-if="filtersOpen"
+      id="events-filters"
+      class="events__filters"
+      :aria-label="t('events.filter.label')"
+    >
+      <BaseChipGroup
+        v-model="filterType"
+        :label="t('events.filter.type')"
+        :options="typeOptions"
+        :columns="4"
+      />
+      <label v-if="memberId" class="events__check">
+        <input
+          type="checkbox"
+          class="events__box"
+          :checked="filter.onlyUnanswered"
+          @change="setOnlyUnanswered"
+        />
+        {{ t('events.filter.onlyUnanswered') }}
+      </label>
+      <BaseButton v-if="filterCount" variant="ghost" @click="resetFilter">
+        {{ t('events.filter.reset') }}
+      </BaseButton>
+    </section>
+
+    <p v-if="attendNotice" class="events__notice" role="status">✓ {{ attendNotice }}</p>
 
     <button
       v-if="unanswered.length"
@@ -99,6 +236,16 @@ function scrollToFirstUnanswered() {
         </li>
       </ul>
       <EmptyState
+        v-else-if="!hero && filteredAway"
+        icon="filter"
+        :title="t('events.filter.emptyTitle')"
+        :text="t('events.filter.emptyText')"
+      >
+        <BaseButton variant="secondary" @click="resetFilter">
+          {{ t('events.filter.reset') }}
+        </BaseButton>
+      </EmptyState>
+      <EmptyState
         v-else-if="!hero"
         icon="calendar"
         :title="t('events.empty')"
@@ -122,18 +269,6 @@ function scrollToFirstUnanswered() {
       </details>
     </template>
 
-    <!-- New date: floating button for coaches -->
-    <button
-      v-if="isCoach"
-      type="button"
-      class="events__fab"
-      :aria-label="t('events.createLabel')"
-      :title="t('events.createLabel')"
-      @click="createOpen = true"
-    >
-      <AppIcon name="plus" :size="28" />
-    </button>
-
     <BaseModal v-model:open="createOpen" :title="t('events.createLabel')">
       <ul class="events__options" role="list">
         <li v-for="option in createOptions" :key="option.kind">
@@ -154,6 +289,34 @@ function scrollToFirstUnanswered() {
         </li>
       </ul>
     </BaseModal>
+
+    <BaseModal v-model:open="attendOpen" :title="t('events.attendAll.title')">
+      <p>{{ t('events.attendAll.text', attendCandidates.length) }}</p>
+      <p class="events__muted">{{ t('events.attendAll.hint') }}</p>
+      <p v-if="attendAll.isError.value" class="events__error" role="alert">
+        {{ t('events.attendAll.failed') }}
+      </p>
+      <template #footer>
+        <BaseButton variant="secondary" @click="attendOpen = false">
+          {{ t('common.cancel') }}
+        </BaseButton>
+        <BaseButton :loading="attendAll.isPending.value" @click="confirmAttendAll">
+          {{ t('events.attendAll.confirm', attendCandidates.length) }}
+        </BaseButton>
+      </template>
+    </BaseModal>
+
+    <!-- Back to top -->
+    <button
+      v-if="showToTop"
+      type="button"
+      class="events__totop"
+      :aria-label="t('events.toTop')"
+      :title="t('events.toTop')"
+      @click="toTop"
+    >
+      <AppIcon name="arrowUp" :size="22" />
+    </button>
   </section>
 </template>
 
@@ -163,32 +326,133 @@ function scrollToFirstUnanswered() {
   flex-direction: column;
   gap: $space-4;
 
-  // Room so the floating button never covers the last card's answer buttons.
-  &--with-fab {
-    padding-bottom: 72px;
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-2;
   }
 
-  // Bottom right above the tab bar, aligned with the centered content on wide screens.
-  &__fab {
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  &__action {
+    @include focus-visible;
+
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-1;
+    min-width: $touch-target;
+    height: $touch-target;
+    padding: 0 $space-2;
+    border: 1px solid var(--color-border);
+    border-radius: $radius-full;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-weight: 700;
+    cursor: pointer;
+
+    &--text {
+      padding: 0 $space-2 0 6px;
+      border-color: color-mix(in srgb, var(--color-success) 45%, var(--color-border));
+      color: var(--color-success);
+      font-size: $font-sm;
+    }
+
+    &--on {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    &--primary {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+      color: var(--color-primary-contrast);
+
+      &:hover {
+        background: var(--color-primary-hover);
+      }
+    }
+  }
+
+  &__badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    display: grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: $radius-full;
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    font-size: $font-xs;
+    font-weight: 800;
+  }
+
+  &__filters {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    padding: $space-3;
+    border: 1px solid var(--color-border);
+    border-radius: $radius-lg;
+    background: var(--color-surface);
+  }
+
+  &__check {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    min-height: $touch-target;
+    font-weight: 600;
+  }
+
+  &__box {
+    @include focus-visible;
+
+    width: 22px;
+    height: 22px;
+    accent-color: var(--color-primary);
+  }
+
+  &__notice {
+    color: var(--color-success);
+    font-weight: 600;
+  }
+
+  // Back to top: small and see-through so it never hides content.
+  &__totop {
     @include focus-visible;
 
     position: fixed;
     right: max($space-4, calc((100vw - 720px) / 2 + #{$space-4}));
-    bottom: calc(#{$bottom-nav-height} + #{$space-4} + env(safe-area-inset-bottom, 0px));
+    bottom: calc(#{$bottom-nav-height} + #{$space-3} + env(safe-area-inset-bottom, 0px));
     z-index: 20;
     display: grid;
     place-items: center;
-    width: 56px;
-    height: 56px;
-    border: 0;
+    width: $touch-target;
+    height: $touch-target;
+    border: 1px solid var(--color-border);
     border-radius: $radius-full;
-    background: var(--color-primary);
-    color: var(--color-primary-contrast);
-    box-shadow: var(--shadow-lg);
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(6px);
+    opacity: 0.85;
     cursor: pointer;
 
-    &:hover {
-      background: var(--color-primary-hover);
+    &:hover,
+    &:focus-visible {
+      opacity: 1;
     }
   }
 

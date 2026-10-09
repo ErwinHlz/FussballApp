@@ -142,7 +142,33 @@
     "newTrainingHint": "Einzelnes Training an einem Tag",
     "newSeriesHint": "Trainings an festen Wochentagen über mehrere Wochen",
     "newMatchHint": "Spiel mit Gegner, Treffpunkt und Kader",
-    "newEventHint": "Teamabend, Turnier, Versammlung und alles andere"
+    "newEventHint": "Teamabend, Turnier, Versammlung und alles andere",
+    "toTop": "Nach oben",
+    "attendAll": {
+      "button": "Alle zusagen",
+      "title": "Allen Terminen zusagen?",
+      "text": "Du sagst für {n} offenen Termin zu. | Du sagst für {n} offene Termine zu.",
+      "hint": "Termine, auf die du schon geantwortet hast, und Absagen durch Abwesenheiten bleiben unverändert. Du kannst jede Antwort später ändern.",
+      "confirm": "Zusagen ({n})",
+      "done": "Für {n} Termin zugesagt. | Für {n} Termine zugesagt.",
+      "doneSkipped": "Für {n} Termine zugesagt, {skipped} waren inzwischen geschlossen.",
+      "failed": "Zusagen fehlgeschlagen. Bitte versuche es erneut."
+    },
+    "filter": {
+      "label": "Filter",
+      "labelActive": "Filter ({n} aktiv)",
+      "type": "Art",
+      "types": {
+        "all": "Alle",
+        "training": "Training",
+        "match": "Spiel",
+        "event": "Event"
+      },
+      "onlyUnanswered": "Nur unbeantwortete",
+      "reset": "Filter zurücksetzen",
+      "emptyTitle": "Keine passenden Termine",
+      "emptyText": "Für diesen Filter gibt es keine kommenden Termine."
+    }
   },
   "training": {
     "title": "Training",

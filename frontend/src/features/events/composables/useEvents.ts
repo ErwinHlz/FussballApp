@@ -168,3 +168,22 @@ export function useSetMatchSquad() {
     onSuccess: invalidate,
   })
 }
+
+/** Says yes to several dates at once; returns how many answers were saved. */
+export function useAttendAll() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { eventIds: string[]; memberId: string }) => {
+      const results = await Promise.allSettled(
+        input.eventIds.map((eventId) =>
+          setAttendance({ eventId, memberId: input.memberId, status: 'yes' }),
+        ),
+      )
+      const saved = results.filter((r) => r.status === 'fulfilled').length
+      // Dates that closed in the meantime are skipped; only a total failure is an error.
+      if (saved === 0 && input.eventIds.length > 0) throw new Error('no answer saved')
+      return { saved, skipped: input.eventIds.length - saved }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: eventKeys.all }),
+  })
+}

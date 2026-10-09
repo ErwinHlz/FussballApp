@@ -142,7 +142,33 @@
     "newTrainingHint": "A single training session",
     "newSeriesHint": "Trainings on fixed weekdays over several weeks",
     "newMatchHint": "Match with opponent, meeting point and squad",
-    "newEventHint": "Team evening, tournament, meeting and anything else"
+    "newEventHint": "Team evening, tournament, meeting and anything else",
+    "toTop": "Back to top",
+    "attendAll": {
+      "button": "Attend all",
+      "title": "Attend all dates?",
+      "text": "You will attend {n} open date. | You will attend {n} open dates.",
+      "hint": "Dates you already answered and declines from absences stay as they are. You can change every answer later.",
+      "confirm": "Attend ({n})",
+      "done": "Attending {n} date. | Attending {n} dates.",
+      "doneSkipped": "Attending {n} dates, {skipped} had closed in the meantime.",
+      "failed": "Saving failed. Please try again."
+    },
+    "filter": {
+      "label": "Filter",
+      "labelActive": "Filter ({n} active)",
+      "type": "Type",
+      "types": {
+        "all": "All",
+        "training": "Training",
+        "match": "Match",
+        "event": "Event"
+      },
+      "onlyUnanswered": "Only unanswered",
+      "reset": "Reset filter",
+      "emptyTitle": "No matching dates",
+      "emptyText": "There are no upcoming dates for this filter."
+    }
   },
   "training": {
     "title": "Training",

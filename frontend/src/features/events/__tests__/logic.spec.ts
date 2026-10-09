@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { member } from '@/features/squad/__tests__/squad.spec'
 import {
+  activeFilterCount,
+  attendAllCandidates,
+  DEFAULT_EVENT_FILTER,
+  filterEvents,
   canRespond,
   deadlineFromHours,
   generateMultiWeekdayOccurrences,
@@ -213,5 +217,48 @@ describe('lists and summaries', () => {
     ]
     expect(unansweredEvents(events, 'me', now).map((e) => e.id)).toEqual(['open'])
     expect(unansweredEvents(events, null, now)).toEqual([])
+  })
+})
+
+describe('event filters', () => {
+  const now = new Date('2026-10-09T10:00:00Z')
+  const answered = {
+    id: 'a',
+    event_id: 'x',
+    member_id: 'me',
+    status: 'yes',
+    reason: null,
+    reason_note: null,
+    updated_at: now.toISOString(),
+    updated_by: null,
+    source_absence_id: null,
+  } as TeamEvent['attendances'][number]
+  const events = [
+    event({ id: 't1', type: 'training', starts_at: '2026-10-12T16:00:00Z' }),
+    event({ id: 'm1', type: 'match', opponent: 'FC', starts_at: '2026-10-13T13:00:00Z' }),
+    event({ id: 'e1', type: 'event', title: 'Teamabend', starts_at: '2026-12-01T18:00:00Z' }),
+    event({
+      id: 't2',
+      type: 'training',
+      starts_at: '2026-10-14T16:00:00Z',
+      attendances: [answered],
+    }),
+    event({ id: 'closed', type: 'training', starts_at: '2026-10-09T09:00:00Z' }),
+  ]
+
+  it('filters by type and by own answer', () => {
+    expect(
+      filterEvents(events, { type: 'training', onlyUnanswered: false }, 'me').map((e) => e.id),
+    ).toEqual(['t1', 't2', 'closed'])
+    expect(
+      filterEvents(events, { type: 'all', onlyUnanswered: true }, 'me').map((e) => e.id),
+    ).toEqual(['t1', 'm1', 'e1', 'closed'])
+    expect(activeFilterCount({ type: 'event', onlyUnanswered: true })).toBe(2)
+    expect(activeFilterCount(DEFAULT_EVENT_FILTER)).toBe(0)
+  })
+
+  it('answers all open dates without an answer, also far ahead', () => {
+    expect(attendAllCandidates(events, 'me', now).map((e) => e.id)).toEqual(['t1', 'm1', 'e1'])
+    expect(attendAllCandidates(events, null, now)).toEqual([])
   })
 })

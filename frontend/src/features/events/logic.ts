@@ -158,3 +158,37 @@ export function unansweredEvents(
       !e.attendances.some((a) => a.member_id === memberId),
   )
 }
+
+export type EventTypeFilter = 'all' | Database['public']['Enums']['event_type']
+export type EventFilter = { type: EventTypeFilter; onlyUnanswered: boolean }
+export const DEFAULT_EVENT_FILTER: EventFilter = { type: 'all', onlyUnanswered: false }
+
+/** Number of active filter options (shown on the filter button). */
+export function activeFilterCount(filter: EventFilter): number {
+  return (filter.type !== 'all' ? 1 : 0) + (filter.onlyUnanswered ? 1 : 0)
+}
+
+/** Events matching the filter; "unanswered" means without an answer of this member. */
+export function filterEvents(
+  events: TeamEvent[],
+  filter: EventFilter,
+  memberId: string | null,
+): TeamEvent[] {
+  return events.filter(
+    (e) =>
+      (filter.type === 'all' || e.type === filter.type) &&
+      (!filter.onlyUnanswered || !memberId || !e.attendances.some((a) => a.member_id === memberId)),
+  )
+}
+
+/** Dates "attend all" answers: open for answers and not answered by the member yet. */
+export function attendAllCandidates(
+  events: TeamEvent[],
+  memberId: string | null,
+  now: Date = new Date(),
+): TeamEvent[] {
+  if (!memberId) return []
+  return events.filter(
+    (e) => responseState(e, now) === 'open' && !e.attendances.some((a) => a.member_id === memberId),
+  )
+}
