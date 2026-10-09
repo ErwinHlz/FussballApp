@@ -74,6 +74,34 @@ function toggleAdmin(member: ClubMember) {
         <h1>{{ club.data.value?.name }}</h1>
       </header>
 
+      <!-- Shared pitch schedule -->
+      <section class="club__section" aria-labelledby="club-schedule">
+        <h2 id="club-schedule" class="club__subtitle">{{ t('schedule.title') }}</h2>
+        <p class="club__muted">{{ t('schedule.openHint') }}</p>
+        <div class="club__links">
+          <RouterLink
+            v-slot="{ navigate }"
+            custom
+            :to="{ name: 'club-schedule', params: { clubId } }"
+          >
+            <BaseButton variant="secondary" block @click="navigate">
+              <template #icon><AppIcon name="calendar" :size="18" /></template>
+              {{ t('schedule.title') }}
+            </BaseButton>
+          </RouterLink>
+          <RouterLink
+            v-slot="{ navigate }"
+            custom
+            :to="{ name: 'club-schedule-setup', params: { clubId } }"
+          >
+            <BaseButton variant="secondary" block @click="navigate">
+              <template #icon><AppIcon name="building" :size="18" /></template>
+              {{ t('schedule.setup') }}
+            </BaseButton>
+          </RouterLink>
+        </div>
+      </section>
+
       <!-- Teams -->
       <section class="club__section" aria-labelledby="club-teams">
         <h2 id="club-teams" class="club__subtitle">{{ t('clubs.teams') }}</h2>
@@ -208,6 +236,12 @@ function toggleAdmin(member: ClubMember) {
     display: flex;
     flex-direction: column;
     gap: $space-3;
+  }
+
+  &__links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $space-2;
   }
 
   &__team-head {

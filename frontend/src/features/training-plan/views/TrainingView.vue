@@ -80,6 +80,21 @@ const list = computed(() =>
         </BaseButton>
       </RouterLink>
     </BaseCard>
+
+    <BaseCard v-if="activeTeam" class="training__library">
+      <h2 class="training__subtitle">{{ t('schedule.open') }}</h2>
+      <p class="training__muted">{{ t('schedule.openHint') }}</p>
+      <RouterLink
+        v-slot="{ navigate }"
+        custom
+        :to="{ name: 'club-schedule', params: { clubId: activeTeam.club_id } }"
+      >
+        <BaseButton variant="secondary" block @click="navigate">
+          <template #icon><AppIcon name="calendar" :size="18" /></template>
+          {{ t('schedule.title') }}
+        </BaseButton>
+      </RouterLink>
+    </BaseCard>
   </section>
 </template>
 

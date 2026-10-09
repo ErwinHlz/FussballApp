@@ -36,6 +36,7 @@ function event(overrides: Partial<TeamEvent>): TeamEvent {
     plan_published_at: null,
     created_by: null,
     reminder_sent_at: null,
+    booking_id: null,
     opponent: null,
     is_home: null,
     competition: null,

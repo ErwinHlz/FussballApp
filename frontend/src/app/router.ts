@@ -177,6 +177,20 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/teams/views/TeamsView.vue'),
       },
       {
+        path: 'clubs/:clubId/schedule',
+        name: 'club-schedule',
+        props: true,
+        meta: { title: 'schedule.title', back: 'training' },
+        component: () => import('@/features/schedule/views/ScheduleView.vue'),
+      },
+      {
+        path: 'clubs/:clubId/schedule/setup',
+        name: 'club-schedule-setup',
+        props: true,
+        meta: { title: 'schedule.setup', back: 'teams' },
+        component: () => import('@/features/schedule/views/ScheduleSetupView.vue'),
+      },
+      {
         path: 'clubs/:clubId',
         name: 'club',
         props: true,

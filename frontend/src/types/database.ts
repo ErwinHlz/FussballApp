@@ -115,14 +115,14 @@ isOneToOne: false
                   ]
                 },"clubs": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"id": string,"name": string
+                    "created_at": string,"created_by": string | null,"id": string,"name": string,"timezone": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string,"timezone"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string,"timezone"?: string
                   }
                   Relationships: [
                     {
@@ -233,17 +233,23 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "cancel_reason": string | null,"competition": string | null,"created_at": string,"created_by": string | null,"ends_at": string | null,"id": string,"is_cancelled": boolean,"is_home": boolean | null,"location": string | null,"meet_at": string | null,"meet_location": string | null,"notes": string | null,"opponent": string | null,"plan_published_at": string | null,"plan_status": Database["public"]['Enums']["plan_status"],"reminder_sent_at": string | null,"response_deadline": string | null,"series_id": string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
+                    "booking_id": string | null,"cancel_reason": string | null,"competition": string | null,"created_at": string,"created_by": string | null,"ends_at": string | null,"id": string,"is_cancelled": boolean,"is_home": boolean | null,"location": string | null,"meet_at": string | null,"meet_location": string | null,"notes": string | null,"opponent": string | null,"plan_published_at": string | null,"plan_status": Database["public"]['Enums']["plan_status"],"reminder_sent_at": string | null,"response_deadline": string | null,"series_id": string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
                   }
                   ComputedFields: never
                   Insert: {
-                    "cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
+                    "booking_id"?: string | null,"cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
                   }
                   Update: {
-                    "cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at"?: string,"team_id"?: string,"type"?: Database["public"]['Enums']["event_type"]
+                    "booking_id"?: string | null,"cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at"?: string,"team_id"?: string,"type"?: Database["public"]['Enums']["event_type"]
                   }
                   Relationships: [
                     {
+      foreignKeyName: "events_booking_id_fkey"
+      columns: ["booking_id"]
+isOneToOne: false
+      referencedRelation: "slot_bookings"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "events_created_by_fkey"
       columns: ["created_by"]
 isOneToOne: false
@@ -335,6 +341,46 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"pitch_slots": {
+                  Row: {
+                    "club_id": string,"created_at": string,"end_time": string,"id": string,"pitch_id": string,"start_time": string,"valid_from": string,"valid_until": string,"weekday": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "club_id": string,"created_at"?: string,"end_time": string,"id"?: string,"pitch_id": string,"start_time": string,"valid_from": string,"valid_until": string,"weekday": number
+                  }
+                  Update: {
+                    "club_id"?: string,"created_at"?: string,"end_time"?: string,"id"?: string,"pitch_id"?: string,"start_time"?: string,"valid_from"?: string,"valid_until"?: string,"weekday"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pitch_slots_pitch_id_club_id_fkey"
+      columns: ["pitch_id","club_id"]
+isOneToOne: false
+      referencedRelation: "pitches"
+      referencedColumns: ["id","club_id"]
+    }
+                  ]
+                },"pitches": {
+                  Row: {
+                    "club_id": string,"created_at": string,"id": string,"name": string,"sort_order": number,"splittable": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "club_id": string,"created_at"?: string,"id"?: string,"name": string,"sort_order"?: number,"splittable"?: boolean
+                  }
+                  Update: {
+                    "club_id"?: string,"created_at"?: string,"id"?: string,"name"?: string,"sort_order"?: number,"splittable"?: boolean
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pitches_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "clubs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "avatar_url": string | null,"created_at": string,"display_name": string,"id": string
@@ -366,6 +412,64 @@ isOneToOne: false
       columns: ["user_id"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"slot_booking_exceptions": {
+                  Row: {
+                    "booking_id": string,"date": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "booking_id": string,"date": string
+                  }
+                  Update: {
+                    "booking_id"?: string,"date"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "slot_booking_exceptions_booking_id_fkey"
+      columns: ["booking_id"]
+isOneToOne: false
+      referencedRelation: "slot_bookings"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"slot_bookings": {
+                  Row: {
+                    "club_id": string,"created_at": string,"created_by": string | null,"id": string,"part": Database["public"]['Enums']["pitch_part"],"slot_id": string,"team_id": string,"valid_from": string,"valid_until": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "club_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"part": Database["public"]['Enums']["pitch_part"],"slot_id": string,"team_id": string,"valid_from": string,"valid_until": string
+                  }
+                  Update: {
+                    "club_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"part"?: Database["public"]['Enums']["pitch_part"],"slot_id"?: string,"team_id"?: string,"valid_from"?: string,"valid_until"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "slot_bookings_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "clubs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "slot_bookings_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "slot_bookings_slot_id_fkey"
+      columns: ["slot_id"]
+isOneToOne: false
+      referencedRelation: "pitch_slots"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "slot_bookings_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
       referencedColumns: ["id"]
     }
                   ]
@@ -459,9 +563,20 @@ isOneToOne: false
 "apply_absence":
 { Args: { "p_absence_id": string,"p_include_closed": boolean }; Returns: number
                            },
+"book_slot":
+{ Args: { "p_from": string,"p_part": Database["public"]['Enums']["pitch_part"],"p_slot_id": string,"p_team_id": string,"p_until"?: string }; Returns: Json
+                           },
+"booking_club_id":
+{ Args: { "p_booking_id": string }; Returns: string
+                           },
 "claim_push_messages":
 { Args: { "p_limit"?: number }; Returns: {
               "auth": string,"endpoint": string,"event_id": string,"event_type": Database["public"]['Enums']["event_type"],"is_home": boolean,"kind": string,"locale": string,"location": string,"opponent": string,"outbox_id": number,"p256dh": string,"payload": Json,"starts_at": string,"subscription_id": string,"team_name": string
+            }[]
+                           },
+"club_team_names":
+{ Args: { "p_club_id": string }; Returns: {
+              "id": string,"name": string
             }[]
                            },
 "copy_drill":
@@ -500,7 +615,8 @@ isOneToOne: false
               "created_at": string,
 "created_by": string | null,
 "id": string,
-"name": string
+"name": string,
+"timezone": string
             }
                           SetofOptions: {
         from: "*"
@@ -541,6 +657,9 @@ isOneToOne: false
                            },
 "drill_video_team_id":
 { Args: { "p_name": string }; Returns: string
+                           },
+"end_slot_booking":
+{ Args: { "p_booking_id": string,"p_from": string }; Returns: undefined
                            },
 "enqueue_nomination":
 { Args: { "p_event_id": string,"p_member_ids": (string)[] }; Returns: undefined
@@ -614,6 +733,9 @@ isOneToOne: false
               "club_id": string,"club_name": string,"is_club_admin": boolean,"team_id": string,"team_name": string,"team_role": Database["public"]['Enums']["team_role"],"team_season": string
             }[]
                            },
+"release_slot_date":
+{ Args: { "p_booking_id": string,"p_date": string }; Returns: undefined
+                           },
 "reorder_event_drills":
 { Args: { "p_event_id": string,"p_ids": (string)[] }; Returns: undefined
                            },
@@ -669,7 +791,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "attendance_status": "yes"|"no"|"maybe","club_role": "admin"|"member","event_type": "training"|"match","member_status": "active"|"injured"|"inactive","plan_status": "draft"|"published","squad_role": "starter"|"bench"|"reserve","team_role": "coach"|"player"
+            "attendance_status": "yes"|"no"|"maybe","club_role": "admin"|"member","event_type": "training"|"match","member_status": "active"|"injured"|"inactive","pitch_part": "full"|"a"|"b","plan_status": "draft"|"published","squad_role": "starter"|"bench"|"reserve","team_role": "coach"|"player"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -789,7 +911,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "attendance_status": ["yes", "no", "maybe"],"club_role": ["admin", "member"],"event_type": ["training", "match"],"member_status": ["active", "injured", "inactive"],"plan_status": ["draft", "published"],"squad_role": ["starter", "bench", "reserve"],"team_role": ["coach", "player"]
+            "attendance_status": ["yes", "no", "maybe"],"club_role": ["admin", "member"],"event_type": ["training", "match"],"member_status": ["active", "injured", "inactive"],"pitch_part": ["full", "a", "b"],"plan_status": ["draft", "published"],"squad_role": ["starter", "bench", "reserve"],"team_role": ["coach", "player"]
           }
         }
 } as const
