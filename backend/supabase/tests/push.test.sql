@@ -4,6 +4,11 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(16);
 
+-- Isolate from data left by other runs (e.g. browser tests): only this test's events and
+-- messages count. Rolled back at the end like everything else.
+update public.events set reminder_sent_at = now() where reminder_sent_at is null;
+update public.notification_outbox set processed_at = now() where processed_at is null;
+
 insert into auth.users (id, email, raw_user_meta_data) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'coach.a@example.test', '{"display_name": "Coach A"}'),
   ('bbbbbbbb-0000-0000-0000-000000000002', 'player.p@example.test', '{"display_name": "Player P"}'),

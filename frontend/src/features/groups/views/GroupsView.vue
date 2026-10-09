@@ -713,8 +713,4 @@ function names(ids: string[]) {
     text-decoration: none;
   }
 }
-
-.visually-hidden {
-  @include visually-hidden;
-}
 </style>

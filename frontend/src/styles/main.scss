@@ -16,3 +16,8 @@
     color-scheme: dark;
   }
 }
+
+// Text for screen readers only (used across views).
+.visually-hidden {
+  @include visually-hidden;
+}

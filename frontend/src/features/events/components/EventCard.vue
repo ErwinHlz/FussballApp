@@ -203,8 +203,4 @@ const myNomination = computed(
     color: var(--color-no);
   }
 }
-
-.visually-hidden {
-  @include visually-hidden;
-}
 </style>

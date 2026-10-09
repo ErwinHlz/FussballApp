@@ -649,8 +649,4 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
     color: var(--color-danger);
   }
 }
-
-.visually-hidden {
-  @include visually-hidden;
-}
 </style>

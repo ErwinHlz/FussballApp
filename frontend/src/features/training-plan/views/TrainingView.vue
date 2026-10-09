@@ -81,6 +81,17 @@ const list = computed(() =>
       </RouterLink>
     </BaseCard>
 
+    <BaseCard v-if="isCoach" class="training__library">
+      <h2 class="training__subtitle">{{ t('templates.title') }}</h2>
+      <p class="training__muted">{{ t('templates.teaser') }}</p>
+      <RouterLink v-slot="{ navigate }" custom :to="{ name: 'templates' }">
+        <BaseButton variant="secondary" block @click="navigate">
+          <template #icon><AppIcon name="copy" :size="18" /></template>
+          {{ t('templates.open') }}
+        </BaseButton>
+      </RouterLink>
+    </BaseCard>
+
     <BaseCard v-if="activeTeam" class="training__library">
       <h2 class="training__subtitle">{{ t('schedule.open') }}</h2>
       <p class="training__muted">{{ t('schedule.openHint') }}</p>

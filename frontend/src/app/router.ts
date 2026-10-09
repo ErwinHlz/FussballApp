@@ -153,6 +153,19 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/training-plan/views/TrainingView.vue'),
       },
       {
+        path: 'templates',
+        name: 'templates',
+        meta: { requiresTeam: true, title: 'templates.title', back: 'training' },
+        component: () => import('@/features/templates/views/TemplatesView.vue'),
+      },
+      {
+        path: 'templates/:templateId',
+        name: 'template',
+        props: true,
+        meta: { requiresTeam: true, title: 'templates.eyebrow', back: 'templates' },
+        component: () => import('@/features/templates/views/TemplateView.vue'),
+      },
+      {
         path: 'squad',
         name: 'squad',
         meta: { requiresTeam: true, title: 'squad.title' },

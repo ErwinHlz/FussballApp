@@ -551,6 +551,58 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"template_drills": {
+                  Row: {
+                    "coach_notes": string | null,"created_at": string,"drill_id": string,"duration_min": number | null,"id": string,"position": number,"template_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "coach_notes"?: string | null,"created_at"?: string,"drill_id": string,"duration_min"?: number | null,"id"?: string,"position"?: number,"template_id": string
+                  }
+                  Update: {
+                    "coach_notes"?: string | null,"created_at"?: string,"drill_id"?: string,"duration_min"?: number | null,"id"?: string,"position"?: number,"template_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "template_drills_drill_id_fkey"
+      columns: ["drill_id"]
+isOneToOne: false
+      referencedRelation: "drills"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "template_drills_template_id_fkey"
+      columns: ["template_id"]
+isOneToOne: false
+      referencedRelation: "training_templates"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"training_templates": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"description": string,"id": string,"shared": boolean,"team_id": string,"title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"description"?: string,"id"?: string,"shared"?: boolean,"team_id": string,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"description"?: string,"id"?: string,"shared"?: boolean,"team_id"?: string,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "training_templates_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "training_templates_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -563,11 +615,17 @@ isOneToOne: false
 "apply_absence":
 { Args: { "p_absence_id": string,"p_include_closed": boolean }; Returns: number
                            },
+"apply_training_template":
+{ Args: { "p_event_id": string,"p_template_id": string }; Returns: number
+                           },
 "book_slot":
 { Args: { "p_from": string,"p_part": Database["public"]['Enums']["pitch_part"],"p_slot_id": string,"p_team_id": string,"p_until"?: string }; Returns: Json
                            },
 "booking_club_id":
 { Args: { "p_booking_id": string }; Returns: string
+                           },
+"can_read_template":
+{ Args: { "p_template_id": string }; Returns: boolean
                            },
 "claim_push_messages":
 { Args: { "p_limit"?: number }; Returns: {
@@ -629,6 +687,23 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"create_template_from_event":
+{ Args: { "p_event_id": string,"p_shared"?: boolean,"p_title": string }; Returns: {
+              "created_at": string,
+"created_by": string | null,
+"description": string,
+"id": string,
+"shared": boolean,
+"team_id": string,
+"title": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "training_templates"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "create_training_series":
 { Args: { "p_deadline_hours"?: number,"p_duration_min": number,"p_location": string,"p_start_time": string,"p_starts_at": (string)[],"p_team_id": string,"p_valid_from": string,"p_valid_until": string,"p_weekday": number }; Returns: {
               "created_at": string,
@@ -656,6 +731,9 @@ isOneToOne: false
                            },
 "drill_group_event_id":
 { Args: { "p_group_id": string }; Returns: string
+                           },
+"drill_usable_by_team":
+{ Args: { "p_drill_id": string,"p_team_id": string }; Returns: boolean
                            },
 "drill_video_path_valid":
 { Args: { "p_name": string }; Returns: boolean
@@ -695,6 +773,9 @@ isOneToOne: false
 "is_club_admin":
 { Args: { "p_club_id": string }; Returns: boolean
                            },
+"is_club_coach":
+{ Args: { "p_club_id": string }; Returns: boolean
+                           },
 "is_club_member":
 { Args: { "p_club_id": string }; Returns: boolean
                            },
@@ -728,6 +809,11 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"list_training_templates":
+{ Args: { "p_team_id": string }; Returns: {
+              "description": string,"drill_count": number,"id": string,"is_own": boolean,"shared": boolean,"team_id": string,"team_name": string,"title": string,"total_minutes": number,"updated_at": string
+            }[]
+                           },
 "my_clubs":
 { Args: Record<PropertyKey, never>; Returns: {
               "club_id": string,"club_name": string,"role": Database["public"]['Enums']["club_role"]
@@ -743,6 +829,9 @@ isOneToOne: false
                            },
 "reorder_event_drills":
 { Args: { "p_event_id": string,"p_ids": (string)[] }; Returns: undefined
+                           },
+"reorder_template_drills":
+{ Args: { "p_ids": (string)[],"p_template_id": string }; Returns: undefined
                            },
 "request_test_push":
 { Args: Record<PropertyKey, never>; Returns: undefined
@@ -809,6 +898,14 @@ isOneToOne: false
 { Args: { "p_from": string,"p_team_id": string,"p_to": string }; Returns: {
               "event_id": string,"maybe_count": number,"no_count": number,"players": number,"starts_at": string,"yes_count": number
             }[]
+                           },
+"template_items":
+{ Args: { "p_template_id": string }; Returns: {
+              "coach_notes": string,"drill_category": string,"drill_duration_min": number,"drill_id": string,"drill_team_id": string,"drill_title": string,"duration_min": number,"id": string,"item_position": number
+            }[]
+                           },
+"template_team_id":
+{ Args: { "p_template_id": string }; Returns: string
                            }
           }
           Enums: {

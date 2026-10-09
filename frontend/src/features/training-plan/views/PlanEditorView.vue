@@ -10,6 +10,8 @@ import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import type { Drill } from '@/features/drills/logic'
 import { useEventFormat } from '@/features/events/format'
 import { useEvent, useMyMember } from '@/features/events/composables/useEvents'
+import SaveAsTemplateModal from '@/features/templates/components/SaveAsTemplateModal.vue'
+import TemplatePickerModal from '@/features/templates/components/TemplatePickerModal.vue'
 import CopyPlanModal from '../components/CopyPlanModal.vue'
 import DrillPickerModal from '../components/DrillPickerModal.vue'
 import LateDeclines from '../components/LateDeclines.vue'
@@ -41,6 +43,9 @@ const setStatus = useSetPlanStatus()
 
 const pickerOpen = ref(false)
 const copyOpen = ref(false)
+const templateOpen = ref(false)
+const saveTemplateOpen = ref(false)
+const templateNotice = ref<string | null>(null)
 const openNotes = ref<string | null>(null)
 const announcement = ref('')
 
@@ -283,6 +288,8 @@ function togglePublish() {
       <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
       <p v-if="anyError" class="plan__error" role="alert">{{ t('plan.saveFailed') }}</p>
 
+      <p v-if="templateNotice" class="plan__notice" role="status">✓ {{ templateNotice }}</p>
+
       <div class="plan__add">
         <BaseButton block :loading="addDrill.isPending.value" @click="pickerOpen = true">
           <template #icon><AppIcon name="plus" :size="18" /></template>
@@ -292,6 +299,13 @@ function togglePublish() {
           <template #icon><AppIcon name="copy" :size="18" /></template>
           {{ t('plan.copyFrom') }}
         </BaseButton>
+        <BaseButton variant="secondary" block @click="templateOpen = true">
+          <template #icon><AppIcon name="copy" :size="18" /></template>
+          {{ t('templates.fromTemplate') }}
+        </BaseButton>
+        <BaseButton v-if="items.length" variant="ghost" block @click="saveTemplateOpen = true">
+          {{ t('templates.saveAs') }}
+        </BaseButton>
       </div>
 
       <DrillPickerModal
@@ -300,6 +314,18 @@ function togglePublish() {
         :team-id="teamId"
         :used-drill-ids="items.map((i) => i.drill.id)"
         @pick="onPick"
+      />
+      <TemplatePickerModal
+        v-if="teamId"
+        v-model:open="templateOpen"
+        :team-id="teamId"
+        :event-id="eventId"
+        @applied="(n) => (templateNotice = t('plan.copied', n))"
+      />
+      <SaveAsTemplateModal
+        v-model:open="saveTemplateOpen"
+        :event-id="eventId"
+        @created="templateNotice = t('templates.savedAs')"
       />
       <CopyPlanModal
         v-if="teamId"
@@ -317,6 +343,11 @@ function togglePublish() {
   display: flex;
   flex-direction: column;
   gap: $space-4;
+
+  &__notice {
+    color: var(--color-success);
+    font-weight: 600;
+  }
 
   &__back {
     @include focus-visible;
@@ -558,9 +589,5 @@ function togglePublish() {
     color: var(--color-text-muted);
     white-space: pre-line;
   }
-}
-
-.visually-hidden {
-  @include visually-hidden;
 }
 </style>
