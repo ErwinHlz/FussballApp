@@ -509,5 +509,74 @@
     "planNotYet": "Der Trainingsplan ist noch nicht veröffentlicht.",
     "yourGroupAll": "Deine Gruppe heute:",
     "yourGroupHere": "Deine Gruppe bei dieser Übung:"
+  },
+  "board": {
+    "title": "Taktikboard",
+    "animation": "Animation",
+    "animationOf": "Animation: {title}",
+    "createAnimation": "Animation erstellen",
+    "editAnimation": "Animation bearbeiten",
+    "coachOnly": "Nur Trainer können Animationen für eigene Übungen bearbeiten. Kopiere eine Bibliotheksübung in deine Mannschaft, um sie anzupassen.",
+    "mode": "Modus",
+    "edit": "Bearbeiten",
+    "preview": "Vorschau",
+    "toolsLabel": "Werkzeuge",
+    "tools": {
+      "move": "Bewegen",
+      "run": "Laufweg",
+      "pass": "Pass",
+      "dribble": "Dribbling",
+      "erase": "Löschen"
+    },
+    "toolHints": {
+      "move": "Objekt ziehen oder antippen und mit den Pfeiltasten bewegen.",
+      "run": "Auf dem Feld von Start zu Ziel ziehen: gestrichelter Laufweg.",
+      "pass": "Auf dem Feld von Start zu Ziel ziehen: Pass.",
+      "dribble": "Auf dem Feld von Start zu Ziel ziehen: Dribbling (Welle).",
+      "erase": "Objekt oder Pfeil antippen, um es zu entfernen."
+    },
+    "sceneLabel": "Spielfeld, Keyframe {n}",
+    "timeline": "Zeitleiste",
+    "keyframeLabel": "Keyframe {n} bei {s} Sekunden",
+    "addKeyframe": "Keyframe",
+    "keyframeTime": "Zeitpunkt (s)",
+    "duration": "Gesamtdauer (s)",
+    "removeKeyframe": "Keyframe löschen",
+    "keyframeHint": "Wähle einen Keyframe und verschiebe Objekte. Dazwischen bewegen sie sich flüssig. Objekte, die du in einem Keyframe nicht bewegst, bleiben stehen.",
+    "addLabel": "Objekte hinzufügen",
+    "playerColor": "Farbe für neue Spieler",
+    "field": "Spielfeld",
+    "fields": {
+      "full": "Ganzes Feld",
+      "half": "Halbes Feld",
+      "quarter": "Viertelfeld"
+    },
+    "objects": {
+      "player": "Spieler",
+      "ball": "Ball",
+      "cone": "Hütchen",
+      "goal": "Tor"
+    },
+    "added": "{what} hinzugefügt",
+    "removed": "Entfernt",
+    "arrowAdded": "Pfeil hinzugefügt",
+    "keyframeAdded": "Keyframe hinzugefügt",
+    "limitReached": "Maximum erreicht.",
+    "invalid": "Die Animation ist ungültig. Prüfe die Zeitpunkte der Keyframes.",
+    "save": "Animation speichern",
+    "saved": "Animation gespeichert",
+    "saveFailed": "Animation konnte nicht gespeichert werden.",
+    "removeAnimation": "Animation entfernen",
+    "unsavedConfirm": "Die Animation ist nicht gespeichert. Trotzdem verlassen?",
+    "player": {
+      "play": "Abspielen",
+      "pause": "Pause",
+      "restart": "Zurück zum Anfang",
+      "position": "Zeitpunkt der Animation",
+      "secondsOf": "{s} von {total} Sekunden",
+      "speed": "Geschwindigkeit",
+      "loop": "Schleife",
+      "smooth": "Weich"
+    }
   }
 }

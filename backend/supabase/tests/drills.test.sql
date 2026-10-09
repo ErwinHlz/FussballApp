@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(12);
+select plan(15);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'admin.a@example.test', '{"display_name": "Admin A"}'),
@@ -89,6 +89,23 @@ select is(
   (select count(*)::int from public.drills where team_id is not null),
   0,
   'outsider cannot see foreign team drills'
+);
+
+-- ---- Animations (Phase 9) ---------------------------------------------------------------
+select pg_temp.act_as('aaaaaaaa-0000-0000-0000-000000000001');
+select ok(
+  (select animation ->> 'version' = '1' from public.drills where id = '0d000000-0000-4000-8000-000000000001'),
+  'the public Rondo has a demo animation'
+);
+select lives_ok(
+  $$ update public.drills set animation = '{"version":1,"field":"half","durationMs":6000,"objects":[],"keyframes":[{"t":0,"positions":{}}],"annotations":[]}'::jsonb
+     where id = (select id from ids where key = 'own') $$,
+  'coach saves an animation for a team drill'
+);
+select throws_ok(
+  $$ update public.drills set animation = '{"version":2,"field":"half","objects":[],"keyframes":[]}'::jsonb
+     where id = (select id from ids where key = 'own') $$,
+  '23514', null, 'malformed animations are rejected by the database'
 );
 
 select * from finish();

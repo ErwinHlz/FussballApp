@@ -6,6 +6,8 @@ import BaseBadge from '@/components/BaseBadge.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import YouTubeEmbed from '../components/YouTubeEmbed.vue'
+import AnimationPlayer from '@/features/board/components/AnimationPlayer.vue'
+import { parseAnimation } from '@/features/board/schema'
 import BibBadge from '@/features/player-view/components/BibBadge.vue'
 import { useEventGroups } from '@/features/groups/composables/useGroups'
 import { useMyMember } from '@/features/events/composables/useEvents'
@@ -24,6 +26,7 @@ const deleteDrill = useDeleteDrill()
 const confirmDelete = ref(false)
 
 const d = computed(() => drill.data.value)
+const animation = computed(() => parseAnimation(d.value?.animation))
 
 // Opened from a training (?event=…&ed=…): show the player's group for this drill.
 const fromEventId = computed(() => (typeof route.query.event === 'string' ? route.query.event : ''))
@@ -109,6 +112,13 @@ async function remove() {
         </div>
       </dl>
 
+      <section v-if="animation" class="drill__animation" :aria-label="t('board.animation')">
+        <AnimationPlayer
+          :animation="animation"
+          :title="t('board.animationOf', { title: d.title })"
+        />
+      </section>
+
       <YouTubeEmbed v-if="d.video_url" :url="d.video_url" :title="d.title" />
 
       <p v-if="d.description" class="drill__description">{{ d.description }}</p>
@@ -123,6 +133,15 @@ async function remove() {
           {{ t('drills.copyToTeam', { team: activeTeam?.team_name }) }}
         </BaseButton>
         <template v-if="canEdit">
+          <RouterLink
+            v-slot="{ navigate }"
+            custom
+            :to="{ name: 'drill-animation', params: { drillId: d.id } }"
+          >
+            <BaseButton variant="secondary" block @click="navigate">
+              {{ animation ? t('board.editAnimation') : t('board.createAnimation') }}
+            </BaseButton>
+          </RouterLink>
           <RouterLink
             v-slot="{ navigate }"
             custom

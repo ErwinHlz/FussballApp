@@ -106,6 +106,12 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/drills/views/DrillDetailView.vue'),
       },
       {
+        path: 'drills/:drillId/animation',
+        name: 'drill-animation',
+        props: true,
+        component: () => import('@/features/board/views/BoardEditorView.vue'),
+      },
+      {
         path: 'drills/:drillId/edit',
         name: 'drill-edit',
         props: true,

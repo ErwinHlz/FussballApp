@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { TablesInsert } from '@/types/database'
+import type { Json, TablesInsert } from '@/types/database'
 import type { Drill } from './logic'
 
 export type DrillInput = Pick<
@@ -61,6 +61,21 @@ export async function copyDrill(drillId: string, teamId: string): Promise<Drill>
     p_drill_id: drillId,
     p_team_id: teamId,
   })
+  if (error) throw error
+  return data
+}
+
+/** Saves (or removes, with null) the tactics board animation of a team drill. */
+export async function updateDrillAnimation(
+  drillId: string,
+  animation: Json | null,
+): Promise<Drill> {
+  const { data, error } = await supabase
+    .from('drills')
+    .update({ animation })
+    .eq('id', drillId)
+    .select()
+    .single()
   if (error) throw error
   return data
 }

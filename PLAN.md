@@ -217,6 +217,8 @@ Gespeichert in `drills.animation` als JSON:
 
 - Koordinaten in Prozent des Spielfelds (0–100), damit es auf jeder Bildschirmgröße passt.
 - Objekte ohne Position in einem Keyframe behalten die letzte bekannte Position.
+- Objekttypen: `player`, `ball`, `cone`, `goal` (Tor ergänzt, weil der Editor Tore platzieren soll).
+- Grenzen: max. 40 Objekte, 30 Keyframes, 60 s; erster Keyframe bei `t = 0`, Zeiten streng aufsteigend. Die Datenbank prüft Version, Feldtyp und Größe (Check-Constraint).
 - Zwischen Keyframes wird linear interpoliert (Easing optional).
 - Rendering mit SVG in einer Vue-Komponente, Abspielen per `requestAnimationFrame` (oder `useRafFn` aus VueUse).
 - Format mit Zod-Schema validieren, Typ daraus ableiten.
@@ -331,14 +333,14 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** Spieler öffnet die App, sieht sofort den nächsten Termin, seine Gruppe bzw. Nominierung und sagt zu.
 
 ### Phase 9 – Animiertes Taktikboard
-- [ ] Spielfeld als SVG-Komponente (ganzes, halbes, Viertelfeld)
-- [ ] Editor: Spieler, Ball, Hütchen, Tore platzieren und verschieben (Pointer Events, Touch)
-- [ ] Keyframes anlegen: Zeitleiste, Positionen pro Keyframe
-- [ ] Pfeile für Laufweg, Pass, Dribbling
-- [ ] Player-Komponente: Abspielen, Pause, Zurückspulen, Geschwindigkeit, Schleife
-- [ ] Speichern im Format aus Abschnitt 6, mit Zod validieren
-- [ ] Animation in der Spieleransicht einbinden
-- [ ] Unit-Tests für die Interpolation
+- [x] Spielfeld als SVG-Komponente (ganzes, halbes, Viertelfeld)
+- [x] Editor: Spieler, Ball, Hütchen, Tore platzieren und verschieben (Pointer Events, Touch)
+- [x] Keyframes anlegen: Zeitleiste, Positionen pro Keyframe
+- [x] Pfeile für Laufweg, Pass, Dribbling
+- [x] Player-Komponente: Abspielen, Pause, Zurückspulen, Geschwindigkeit, Schleife
+- [x] Speichern im Format aus Abschnitt 6, mit Zod validieren
+- [x] Animation in der Spieleransicht einbinden
+- [x] Unit-Tests für die Interpolation
 
 **Abnahme:** Trainer erstellt eine Animation für eine Übung, Spieler können sie abspielen.
 

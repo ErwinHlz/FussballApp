@@ -509,5 +509,74 @@
     "planNotYet": "The training plan has not been published yet.",
     "yourGroupAll": "Your group today:",
     "yourGroupHere": "Your group for this drill:"
+  },
+  "board": {
+    "title": "Tactics board",
+    "animation": "Animation",
+    "animationOf": "Animation: {title}",
+    "createAnimation": "Create animation",
+    "editAnimation": "Edit animation",
+    "coachOnly": "Only coaches can edit animations of their own drills. Copy a library drill to your team to adapt it.",
+    "mode": "Mode",
+    "edit": "Edit",
+    "preview": "Preview",
+    "toolsLabel": "Tools",
+    "tools": {
+      "move": "Move",
+      "run": "Run",
+      "pass": "Pass",
+      "dribble": "Dribble",
+      "erase": "Erase"
+    },
+    "toolHints": {
+      "move": "Drag an object, or tap it and move it with the arrow keys.",
+      "run": "Drag on the field from start to end: dashed run.",
+      "pass": "Drag on the field from start to end: pass.",
+      "dribble": "Drag on the field from start to end: dribble (wave).",
+      "erase": "Tap an object or arrow to remove it."
+    },
+    "sceneLabel": "Field, keyframe {n}",
+    "timeline": "Timeline",
+    "keyframeLabel": "Keyframe {n} at {s} seconds",
+    "addKeyframe": "Keyframe",
+    "keyframeTime": "Time (s)",
+    "duration": "Total duration (s)",
+    "removeKeyframe": "Delete keyframe",
+    "keyframeHint": "Pick a keyframe and move objects. They move smoothly in between. Objects you don't move in a keyframe stay where they are.",
+    "addLabel": "Add objects",
+    "playerColor": "Color for new players",
+    "field": "Field",
+    "fields": {
+      "full": "Full field",
+      "half": "Half field",
+      "quarter": "Quarter field"
+    },
+    "objects": {
+      "player": "Player",
+      "ball": "Ball",
+      "cone": "Cone",
+      "goal": "Goal"
+    },
+    "added": "{what} added",
+    "removed": "Removed",
+    "arrowAdded": "Arrow added",
+    "keyframeAdded": "Keyframe added",
+    "limitReached": "Maximum reached.",
+    "invalid": "The animation is invalid. Check the keyframe times.",
+    "save": "Save animation",
+    "saved": "Animation saved",
+    "saveFailed": "Animation could not be saved.",
+    "removeAnimation": "Remove animation",
+    "unsavedConfirm": "The animation is not saved. Leave anyway?",
+    "player": {
+      "play": "Play",
+      "pause": "Pause",
+      "restart": "Back to start",
+      "position": "Animation position",
+      "secondsOf": "{s} of {total} seconds",
+      "speed": "Speed",
+      "loop": "Loop",
+      "smooth": "Smooth"
+    }
   }
 }

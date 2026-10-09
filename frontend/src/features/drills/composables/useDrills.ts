@@ -7,8 +7,10 @@ import {
   fetchDrill,
   fetchDrills,
   updateDrill,
+  updateDrillAnimation,
   type DrillInput,
 } from '../api'
+import type { Json } from '@/types/database'
 
 export const drillKeys = {
   all: ['drills'] as const,
@@ -65,6 +67,15 @@ export function useCopyDrill() {
   return useMutation({
     mutationFn: ({ drillId, teamId }: { drillId: string; teamId: string }) =>
       copyDrill(drillId, teamId),
+    onSuccess: invalidate,
+  })
+}
+
+export function useSaveDrillAnimation() {
+  const invalidate = useInvalidateDrills()
+  return useMutation({
+    mutationFn: ({ drillId, animation }: { drillId: string; animation: Json | null }) =>
+      updateDrillAnimation(drillId, animation),
     onSuccess: invalidate,
   })
 }
