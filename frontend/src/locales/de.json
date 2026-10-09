@@ -600,5 +600,52 @@
       "loop": "Schleife",
       "smooth": "Weich"
     }
+  },
+  "stats": {
+    "title": "Statistik",
+    "mine": "Meine Statistik",
+    "range": "Zeitraum",
+    "ranges": {
+      "last30": "Letzte 30 Tage",
+      "season": "Diese Saison",
+      "all": "Gesamt"
+    },
+    "loadFailed": "Statistik konnte nicht geladen werden.",
+    "empty": "Noch keine Daten",
+    "emptyHint": "Sobald Trainings und Spiele stattgefunden haben, erscheinen hier die Zahlen.",
+    "me": "Deine Werte",
+    "team": "Mannschaft",
+    "players": "Spieler",
+    "sortLabel": "Sortierung",
+    "sort": {
+      "rate": "Nach Beteiligung",
+      "name": "Nach Name"
+    },
+    "trainingRate": "Trainingsbeteiligung",
+    "trainingRateOf": "Trainingsbeteiligung von {name}",
+    "teamAverage": "Mannschaft: {value}",
+    "trainingTime": "Trainingszeit",
+    "hours": "{n} Std.",
+    "trainingsOf": "{yes} von {total} Trainings",
+    "matches": "Spiele",
+    "matchesShort": "Spiele {yes}/{total}",
+    "nominations": "Startelf {starter} · Bank {bench} · Res. {reserve}",
+    "nominatedShort": "{n}× nominiert",
+    "answerRate": "Antwortquote",
+    "avgAttendance": "Ø Beteiligung",
+    "avgPlayers": "Ø Spieler pro Training",
+    "trainings": "Trainings",
+    "declines": "Absagen",
+    "chart": {
+      "title": "Beteiligung pro Training",
+      "asTable": "Als Tabelle",
+      "asChart": "Als Diagramm",
+      "latestOnly": "Die letzten {n} Trainings; alle in der Tabelle.",
+      "date": "Training",
+      "yes": "Zusagen",
+      "rate": "Beteiligung",
+      "yesOf": "{yes} von {players} Spielern",
+      "point": "{date}: {yes} von {players} Spielern ({rate} %)"
+    }
   }
 }

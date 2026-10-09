@@ -600,5 +600,52 @@
       "loop": "Loop",
       "smooth": "Smooth"
     }
+  },
+  "stats": {
+    "title": "Statistics",
+    "mine": "My statistics",
+    "range": "Period",
+    "ranges": {
+      "last30": "Last 30 days",
+      "season": "This season",
+      "all": "All time"
+    },
+    "loadFailed": "Statistics could not be loaded.",
+    "empty": "No data yet",
+    "emptyHint": "Numbers appear here once trainings and matches have taken place.",
+    "me": "Your numbers",
+    "team": "Team",
+    "players": "Players",
+    "sortLabel": "Sort",
+    "sort": {
+      "rate": "By attendance",
+      "name": "By name"
+    },
+    "trainingRate": "Training attendance",
+    "trainingRateOf": "Training attendance of {name}",
+    "teamAverage": "Team: {value}",
+    "trainingTime": "Training time",
+    "hours": "{n} h",
+    "trainingsOf": "{yes} of {total} trainings",
+    "matches": "Matches",
+    "matchesShort": "Matches {yes}/{total}",
+    "nominations": "Starting {starter} · Bench {bench} · Res. {reserve}",
+    "nominatedShort": "nominated {n}×",
+    "answerRate": "Answer rate",
+    "avgAttendance": "Avg. attendance",
+    "avgPlayers": "Avg. players per training",
+    "trainings": "Trainings",
+    "declines": "Declines",
+    "chart": {
+      "title": "Attendance per training",
+      "asTable": "Show table",
+      "asChart": "Show chart",
+      "latestOnly": "The latest {n} trainings; all in the table.",
+      "date": "Training",
+      "yes": "Yes",
+      "rate": "Attendance",
+      "yesOf": "{yes} of {players} players",
+      "point": "{date}: {yes} of {players} players ({rate} %)"
+    }
   }
 }

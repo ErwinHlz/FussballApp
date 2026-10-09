@@ -239,3 +239,55 @@ export async function seedDemo() {
 
   return { stamp, coach, player, club, team, training, match, memberId: id }
 }
+
+/**
+ * Local-only: gives a demo team a history for the statistics screens. Backdates the squad
+ * (players only count from when they joined) directly in the local database container and
+ * adds past trainings with answers through the API.
+ */
+export async function seedHistory(demo: Demo) {
+  const { execSync } = await import('node:child_process')
+  execSync(
+    `docker exec supabase_db_fussballapp psql -U postgres -c "update public.team_members set created_at = now() - interval '90 days' where team_id = '${demo.team.id}'"`,
+    { stdio: 'ignore' },
+  )
+  const names = ['Pia', 'Lena', 'Ali', 'Ben', 'Cem', 'Dana', 'Emil', 'Finn']
+  // Deterministic pattern: who said yes in each of the 8 past trainings.
+  const yes = [
+    'PLACDEF',
+    'PLAC-EF',
+    'PL-CDE-',
+    'P-ACD-F',
+    'PLAC-E-',
+    'PLA-DEF',
+    '-LACDEF',
+    'PLACDE-',
+  ]
+  for (const [week, pattern] of yes.entries()) {
+    const start = at(-(8 - week) * 7 + 1, 18, 30)
+    const training = must(
+      await demo.coach.sb
+        .from('events')
+        .insert({
+          team_id: demo.team.id,
+          type: 'training',
+          starts_at: start.toISOString(),
+          ends_at: new Date(start.getTime() + 90 * 60_000).toISOString(),
+          location: 'Sportpark, Platz 2',
+        })
+        .select()
+        .single(),
+    )
+    for (const name of names) {
+      const said = pattern.includes(name[0]!) && name !== 'Ben'
+      ok(
+        await demo.coach.sb.rpc('set_attendance', {
+          p_event_id: training.id,
+          p_member_id: demo.memberId(name),
+          p_status: said ? 'yes' : 'no',
+          p_reason: said ? undefined : name === 'Ben' ? 'injured' : 'work',
+        }),
+      )
+    }
+  }
+}

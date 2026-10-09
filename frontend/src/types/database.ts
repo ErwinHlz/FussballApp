@@ -441,6 +441,12 @@ isOneToOne: false
 "drill_group_event_id":
 { Args: { "p_group_id": string }; Returns: string
                            },
+"drill_video_path_valid":
+{ Args: { "p_name": string }; Returns: boolean
+                           },
+"drill_video_team_id":
+{ Args: { "p_name": string }; Returns: string
+                           },
 "event_drill_event_id":
 { Args: { "p_event_drill_id": string }; Returns: string
                            },
@@ -539,6 +545,16 @@ isOneToOne: false
                            },
 "team_club_id":
 { Args: { "p_team_id": string }; Returns: string
+                           },
+"team_member_stats":
+{ Args: { "p_from": string,"p_team_id": string,"p_to": string }; Returns: {
+              "answered": number,"bench": number,"decline_reasons": Json,"display_name": string,"events_total": number,"matches_total": number,"matches_yes": number,"member_id": string,"reserve": number,"role": Database["public"]['Enums']["team_role"],"starter": number,"training_minutes": number,"trainings_maybe": number,"trainings_no": number,"trainings_total": number,"trainings_yes": number,"user_id": string
+            }[]
+                           },
+"team_training_attendance":
+{ Args: { "p_from": string,"p_team_id": string,"p_to": string }; Returns: {
+              "event_id": string,"maybe_count": number,"no_count": number,"players": number,"starts_at": string,"yes_count": number
+            }[]
                            }
           }
           Enums: {

@@ -27,7 +27,13 @@ const tabs = computed<Tab[]>(() => {
       icon: 'whistle',
       labelKey: 'nav.training',
     },
-    { key: 'squad', to: '/squad', match: ['/squad'], icon: 'users', labelKey: 'nav.squad' },
+    {
+      key: 'squad',
+      to: '/squad',
+      match: ['/squad', '/stats'],
+      icon: 'users',
+      labelKey: 'nav.squad',
+    },
   ]
   const [onlyClub, ...others] = adminClubs.value
   if (onlyClub) {

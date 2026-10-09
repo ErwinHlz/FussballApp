@@ -4,7 +4,7 @@
  */
 import { test, type Page } from '@playwright/test'
 import { login } from './support/app'
-import { seedDemo } from './support/seed'
+import { seedDemo, seedHistory } from './support/seed'
 
 const shot = (page: Page, name: string) =>
   page.screenshot({ path: `e2e/__screens__/${name}.png`, fullPage: true })
@@ -110,4 +110,21 @@ test.describe('dark mode', () => {
     await page.getByRole('button', { name: 'Abspielen' }).waitFor()
     await shot(page, '42-dark-drill')
   })
+})
+
+test('screens: statistics', async ({ page }) => {
+  const demo = await seedDemo()
+  await seedHistory(demo)
+  await login(page, demo.coach.email, '/stats')
+  await page.getByText('Beteiligung pro Training').waitFor()
+  await shot(page, '50-stats-coach')
+
+  await page.getByRole('button', { name: 'Als Tabelle' }).click()
+  await shot(page, '51-stats-table')
+
+  await page.getByRole('link', { name: 'Profil' }).click()
+  await page.getByRole('button', { name: 'Abmelden' }).click()
+  await login(page, demo.player.email, '/stats')
+  await page.getByText('Deine Werte').waitFor()
+  await shot(page, '52-stats-player')
 })

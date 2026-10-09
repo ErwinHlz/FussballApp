@@ -144,6 +144,12 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/squad/views/SquadView.vue'),
       },
       {
+        path: 'stats',
+        name: 'stats',
+        meta: { requiresTeam: true, title: 'stats.title', back: 'squad' },
+        component: () => import('@/features/stats/views/StatsView.vue'),
+      },
+      {
         path: 'profile',
         name: 'profile',
         meta: { title: 'profile.title' },

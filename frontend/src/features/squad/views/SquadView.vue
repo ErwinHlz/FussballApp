@@ -82,7 +82,13 @@ function positionsLabel(member: TeamMember) {
 
 <template>
   <section class="squad">
-    <h1>{{ t('squad.title') }}</h1>
+    <div class="squad__header">
+      <h1>{{ t('squad.title') }}</h1>
+      <RouterLink :to="{ name: 'stats' }" class="squad__stats-link">
+        <AppIcon name="chart" :size="20" />
+        {{ isCoach ? t('stats.title') : t('stats.mine') }}
+      </RouterLink>
+    </div>
 
     <BaseCard v-if="isCoach && activeTeam" class="squad__actions">
       <div class="squad__action-buttons">
@@ -230,6 +236,29 @@ function positionsLabel(member: TeamMember) {
   display: flex;
   flex-direction: column;
   gap: $space-4;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-2;
+  }
+
+  &__stats-link {
+    @include focus-visible;
+
+    display: inline-flex;
+    align-items: center;
+    gap: $space-1;
+    min-height: $touch-target;
+    padding: 0 $space-3;
+    border: 2px solid var(--color-border);
+    border-radius: $radius-full;
+    background: var(--color-surface);
+    color: inherit;
+    font-weight: 700;
+    text-decoration: none;
+  }
 
   &__actions {
     display: flex;

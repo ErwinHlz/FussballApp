@@ -361,10 +361,10 @@ Gespeichert in `drills.animation` als JSON:
 **Abnahme:** App läuft auf dem Handy, Einladung und Login funktionieren über Links, Push kommt an.
 
 ### Phase 12 – Spieltag erweitert (später)
-- [ ] Spielplan per `.ics` importieren
+- [ ] ~~Spielplan per `.ics` importieren~~ – verworfen (Nutzerentscheidung). Ein automatischer Import von FuPa wurde ebenfalls verworfen: keine offizielle Schnittstelle, rechtliches Risiko (Nutzungsbedingungen, Datenbankrecht, Vereinswappen).
 - [ ] Aufstellung auf dem Taktikboard aus dem nominierten Kader
 - [ ] Wechsel und Einsatzzeiten live erfassen, Tore und Karten
-- [ ] Saisonstatistik pro Spieler: Trainingsbeteiligung, Zusagequote, Einsatzminuten
+- [x] Saisonstatistik pro Spieler: Trainingsbeteiligung, Trainingszeit, Zusage-/Antwortquote, Absagegründe, Nominierungen – nur aus vorhandenen App-Daten, ohne manuelle Pflege (Zeitraum: 30 Tage / Saison ab 1. Juli / gesamt). Einsatzminuten, Tore und Karten nicht enthalten.
 
 ---
 
