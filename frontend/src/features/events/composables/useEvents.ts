@@ -118,6 +118,8 @@ function applyAttendance(event: TeamEvent, input: AttendanceRequest): TeamEvent 
     reason: input.status === 'no' ? (input.reason ?? null) : null,
     reason_note: input.status === 'no' ? (input.reasonNote ?? null) : null,
     updated_by: existing?.updated_by ?? null,
+    // An own change turns an automatic (absence) answer into a manual one.
+    source_absence_id: null,
     updated_at: new Date().toISOString(),
     created_at: existing?.created_at ?? new Date().toISOString(),
   }

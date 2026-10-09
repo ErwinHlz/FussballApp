@@ -23,9 +23,10 @@ const groups: { key: AttendanceGroup; icon: string }[] = [
 function reasonText(entry: (typeof summary.value)['no'][number]) {
   const a = entry.attendance
   if (!a?.reason && !a?.reason_note) return null
-  return [a.reason ? t(`events.reasons.${a.reason}`) : null, a.reason_note]
+  const text = [a.reason ? t(`events.reasons.${a.reason}`) : null, a.reason_note]
     .filter(Boolean)
     .join(': ')
+  return a.source_absence_id ? `${text} · ${t('absences.auto')}` : text
 }
 </script>
 

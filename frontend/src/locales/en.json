@@ -646,5 +646,22 @@
       "yesOf": "{yes} of {players} players",
       "point": "{date}: {yes} of {players} players ({rate} %)"
     }
+  },
+  "absences": {
+    "title": "Absences",
+    "intro": "Vacation, illness or work? Enter the period once – all events in it are declined automatically.",
+    "add": "Add absence",
+    "from": "From",
+    "to": "Until (inclusive)",
+    "notePlaceholder": "e.g. family vacation",
+    "hint": "Applies to all your teams. Your own yes answers stay; events past the deadline can only be changed by the coach.",
+    "save": "Save absence",
+    "failed": "Absence could not be saved.",
+    "created": "Saved – no event affected. | Saved – {n} event declined. | Saved – {n} events declined.",
+    "now": "now",
+    "delete": "Delete absence of {name}",
+    "away": "Away",
+    "forPlayer": "Add absence",
+    "auto": "absence"
   }
 }

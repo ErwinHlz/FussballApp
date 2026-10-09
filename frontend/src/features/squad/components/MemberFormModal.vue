@@ -7,6 +7,7 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseChipGroup from '@/components/BaseChipGroup.vue'
 import BaseInput from '@/components/BaseInput.vue'
 import BaseModal from '@/components/BaseModal.vue'
+import AbsenceForm from '@/features/absences/components/AbsenceForm.vue'
 import { useAuthStore } from '@/stores/auth'
 import type { TeamMember } from '@/features/teams/api'
 import { squadErrorKind, type MemberInput } from '../api'
@@ -183,6 +184,11 @@ async function onLink() {
         </p>
       </template>
       <p v-else class="member-form__hint">{{ t('squad.linkNoCandidates') }}</p>
+    </section>
+
+    <section v-if="member" class="member-form__section">
+      <h3 class="member-form__subtitle">{{ t('absences.forPlayer') }}</h3>
+      <AbsenceForm :member-ids="[member.id]" />
     </section>
 
     <section v-if="member && !isSelf" class="member-form__section">

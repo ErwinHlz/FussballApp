@@ -23,16 +23,42 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "attendances": {
+            "absences": {
                   Row: {
-                    "created_at": string,"event_id": string,"id": string,"member_id": string,"reason": string | null,"reason_note": string | null,"status": Database["public"]['Enums']["attendance_status"],"updated_at": string,"updated_by": string | null
+                    "created_at": string,"created_by": string | null,"ends_at": string,"id": string,"member_id": string,"note": string | null,"reason": string,"starts_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"event_id": string,"id"?: string,"member_id": string,"reason"?: string | null,"reason_note"?: string | null,"status": Database["public"]['Enums']["attendance_status"],"updated_at"?: string,"updated_by"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"ends_at": string,"id"?: string,"member_id": string,"note"?: string | null,"reason": string,"starts_at": string
                   }
                   Update: {
-                    "created_at"?: string,"event_id"?: string,"id"?: string,"member_id"?: string,"reason"?: string | null,"reason_note"?: string | null,"status"?: Database["public"]['Enums']["attendance_status"],"updated_at"?: string,"updated_by"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"ends_at"?: string,"id"?: string,"member_id"?: string,"note"?: string | null,"reason"?: string,"starts_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "absences_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "absences_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "team_members"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"attendances": {
+                  Row: {
+                    "created_at": string,"event_id": string,"id": string,"member_id": string,"reason": string | null,"reason_note": string | null,"source_absence_id": string | null,"status": Database["public"]['Enums']["attendance_status"],"updated_at": string,"updated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"event_id": string,"id"?: string,"member_id": string,"reason"?: string | null,"reason_note"?: string | null,"source_absence_id"?: string | null,"status": Database["public"]['Enums']["attendance_status"],"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"event_id"?: string,"id"?: string,"member_id"?: string,"reason"?: string | null,"reason_note"?: string | null,"source_absence_id"?: string | null,"status"?: Database["public"]['Enums']["attendance_status"],"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -46,6 +72,12 @@ isOneToOne: false
       columns: ["member_id"]
 isOneToOne: false
       referencedRelation: "team_members"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attendances_source_absence_id_fkey"
+      columns: ["source_absence_id"]
+isOneToOne: false
+      referencedRelation: "absences"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "attendances_updated_by_fkey"
@@ -378,6 +410,9 @@ isOneToOne: false
             "accept_team_invite":
 { Args: { "p_token": string }; Returns: string
                            },
+"apply_absence":
+{ Args: { "p_absence_id": string,"p_include_closed": boolean }; Returns: number
+                           },
 "copy_drill":
 { Args: { "p_drill_id": string,"p_team_id": string }; Returns: {
               "animation": Json | null,
@@ -405,6 +440,9 @@ isOneToOne: false
       } },
 "copy_event_plan":
 { Args: { "p_source_event_id": string,"p_target_event_id": string }; Returns: number
+                           },
+"create_absences":
+{ Args: { "p_ends_at": string,"p_member_ids": (string)[],"p_note"?: string,"p_reason": string,"p_starts_at": string }; Returns: number
                            },
 "create_club":
 { Args: { "p_name": string }; Returns: {
@@ -438,6 +476,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"delete_absence":
+{ Args: { "p_absence_id": string }; Returns: undefined
+                           },
 "drill_group_event_id":
 { Args: { "p_group_id": string }; Returns: string
                            },
@@ -521,6 +562,7 @@ isOneToOne: false
 "member_id": string,
 "reason": string | null,
 "reason_note": string | null,
+"source_absence_id": string | null,
 "status": Database["public"]['Enums']["attendance_status"],
 "updated_at": string,
 "updated_by": string | null

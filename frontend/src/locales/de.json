@@ -646,5 +646,22 @@
       "yesOf": "{yes} von {players} Spielern",
       "point": "{date}: {yes} von {players} Spielern ({rate} %)"
     }
+  },
+  "absences": {
+    "title": "Abwesenheiten",
+    "intro": "Urlaub, Krankheit oder Arbeit? Trag den Zeitraum einmal ein – alle Termine darin werden automatisch abgesagt.",
+    "add": "Abwesenheit eintragen",
+    "from": "Von",
+    "to": "Bis (einschließlich)",
+    "notePlaceholder": "z. B. Familienurlaub",
+    "hint": "Gilt für alle deine Mannschaften. Eigene Zusagen bleiben bestehen; Termine nach Anmeldeschluss ändert nur der Trainer.",
+    "save": "Abwesenheit speichern",
+    "failed": "Abwesenheit konnte nicht gespeichert werden.",
+    "created": "Gespeichert – kein Termin betroffen. | Gespeichert – {n} Termin abgesagt. | Gespeichert – {n} Termine abgesagt.",
+    "now": "gerade",
+    "delete": "Abwesenheit von {name} löschen",
+    "away": "Abwesend",
+    "forPlayer": "Abwesenheit eintragen",
+    "auto": "Abwesenheit"
   }
 }

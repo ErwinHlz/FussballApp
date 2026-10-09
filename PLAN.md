@@ -376,3 +376,13 @@ Gespeichert in `drills.animation` als JSON:
 - Barrierefreiheit: Buttons mit Labels, Farben nie als einziges Unterscheidungsmerkmal (Gruppen zusätzlich mit Namen, Zu-/Absage zusätzlich mit Icon).
 - Datums- und Zeitangaben immer in der lokalen Zeitzone des Nutzers anzeigen, in der Datenbank als `timestamptz` speichern.
 - Keine echten Personendaten in Seeds oder Tests.
+
+---
+
+## 9. Erweiterungen nach dem Plan (mit dem Nutzer abgestimmt)
+
+- [x] Qualitätsrunde: Browser-Tests (Playwright), Sichtprüfung per Screenshots, Dark Mode, installierbare Web-App (Manifest + Icon), Zurück-Navigation, Seitentitel und Fokus für Screenreader
+- [x] Statistik aus vorhandenen App-Daten (siehe Phase 12), für die ganze Mannschaft sichtbar
+- [x] **Abwesenheiten:** Zeitraum (Urlaub, Krank, Verletzt, Arbeit, Sonstiges) einmal eintragen – alle Termine darin werden automatisch abgesagt, auch später angelegte. Eigene Antworten haben Vorrang; nach Anmeldeschluss wirkt nur der Trainer. Löschen entfernt genau die automatischen Absagen.
+- [ ] **Web-Push:** Benachrichtigungen über die installierte Web-App (Erinnerung vor Anmeldeschluss, neuer Termin, Plan veröffentlicht, Absage)
+- [ ] **DSGVO & Go-live:** Konto löschen, Datenexport, Datenschutz/Impressum, Supabase-Cloud und Hosting vorbereiten

@@ -146,3 +146,32 @@ test('coach assigns a group by tapping, the player sees the bib color', async ({
   const warmUp = player.locator('.flow__item', { hasText: 'Aufwärmen mit Ball' })
   await expect(warmUp.locator('.bib')).toHaveText('Blau')
 })
+
+test('a vacation declines events automatically and the coach sees it', async ({ browser }) => {
+  const demo = await seedDemo()
+  const player = await (await browser.newContext()).newPage()
+  await login(player, demo.player.email, '/profile')
+
+  // Vacation from today until in 4 days (covers the match in 3 days).
+  const day = (offset: number) => {
+    const d = new Date()
+    d.setDate(d.getDate() + offset)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+  await player.getByRole('button', { name: 'Abwesenheit eintragen' }).click()
+  await player.getByLabel('Von').fill(day(0))
+  await player.getByLabel('Bis (einschließlich)').fill(day(4))
+  await player.getByRole('button', { name: 'Urlaub' }).click()
+  await player.getByRole('button', { name: 'Abwesenheit speichern' }).click()
+  await expect(player.getByRole('status')).toContainText(/Termine? abgesagt/)
+  // The training tomorrow was already answered "yes" (by the coach): explicit answers win.
+
+  const coach = await (await browser.newContext()).newPage()
+  await login(coach, demo.coach.email, `/events/${demo.match.id}`)
+  await expect(coach.locator('.overview__group', { hasText: 'Absagen' })).toContainText(
+    'Urlaub · Abwesenheit',
+  )
+  await coach.goto('/squad')
+  await expect(coach.locator('#squad-away')).toBeVisible()
+  await expect(coach.getByText('Urlaub').first()).toBeVisible()
+})

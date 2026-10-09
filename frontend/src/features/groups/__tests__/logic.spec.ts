@@ -20,6 +20,7 @@ function attendance(memberId: string, status: Attendance['status']): Attendance 
     reason: null,
     reason_note: null,
     updated_by: null,
+    source_absence_id: null,
     updated_at: '',
     created_at: '',
   }

@@ -13,6 +13,8 @@ import InvitePanel from '@/features/teams/components/InvitePanel.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useTeamMembers } from '@/features/teams/composables/useTeams'
 import MemberFormModal from '../components/MemberFormModal.vue'
+import AbsenceList from '@/features/absences/components/AbsenceList.vue'
+import { useTeamAbsences } from '@/features/absences/composables/useAbsences'
 import StatusBadge from '../components/StatusBadge.vue'
 import {
   filterSquad,
@@ -29,6 +31,7 @@ const auth = useAuthStore()
 const { activeTeam, isCoach } = useActiveTeam()
 const teamId = computed(() => activeTeam.value?.team_id ?? null)
 const members = useTeamMembers(teamId)
+const absences = useTeamAbsences(teamId)
 
 const inviteOpen = ref(false)
 const formOpen = ref(false)
@@ -121,6 +124,11 @@ function positionsLabel(member: TeamMember) {
     </p>
 
     <template v-else>
+      <section v-if="absences.data.value?.length" class="squad__group" aria-labelledby="squad-away">
+        <h2 id="squad-away" class="squad__subtitle">{{ t('absences.away') }}</h2>
+        <AbsenceList :absences="absences.data.value" show-name :can-manage="isCoach" />
+      </section>
+
       <section v-if="coaches.length" class="squad__group" aria-labelledby="squad-coaches">
         <h2 id="squad-coaches" class="squad__subtitle">{{ t('squad.coaches') }}</h2>
         <ul class="squad__list" role="list">

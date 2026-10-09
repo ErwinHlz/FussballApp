@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -10,6 +10,11 @@ import BaseCard from '@/components/BaseCard.vue'
 import BaseInput from '@/components/BaseInput.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useMyClubs } from '@/features/teams/composables/useTeams'
+import { useQuery } from '@tanstack/vue-query'
+import AbsenceForm from '@/features/absences/components/AbsenceForm.vue'
+import AbsenceList from '@/features/absences/components/AbsenceList.vue'
+import { fetchMyMemberIds } from '@/features/absences/api'
+import { useMyAbsences } from '@/features/absences/composables/useAbsences'
 import { profileSchema } from '../schemas'
 import { useProfile, useUpdateProfile } from '../composables/useProfile'
 import { useSignOut } from '../composables/useAuth'
@@ -20,6 +25,13 @@ const profile = useProfile()
 const updateProfile = useUpdateProfile()
 const signOut = useSignOut()
 const myClubs = useMyClubs()
+const myAbsences = useMyAbsences()
+const myMemberIds = useQuery({
+  queryKey: computed(() => ['my-member-ids', auth.userId] as const),
+  queryFn: () => fetchMyMemberIds(auth.userId!),
+  enabled: computed(() => !!auth.userId),
+})
+const absenceFormOpen = ref(false)
 
 const { defineField, errors, handleSubmit, resetForm, meta } = useForm({
   validationSchema: toTypedSchema(profileSchema),
@@ -85,6 +97,24 @@ const onSubmit = handleSubmit(async (values) => {
         </BaseButton>
       </form>
     </BaseCard>
+
+    <section class="profile__clubs" aria-labelledby="profile-absences">
+      <h2 id="profile-absences" class="profile__subtitle">{{ t('absences.title') }}</h2>
+      <p class="profile__status">{{ t('absences.intro') }}</p>
+      <AbsenceList v-if="myAbsences.data.value?.length" :absences="myAbsences.data.value" />
+      <BaseButton
+        v-if="myMemberIds.data.value?.length"
+        variant="secondary"
+        block
+        :aria-expanded="absenceFormOpen"
+        @click="absenceFormOpen = !absenceFormOpen"
+      >
+        {{ absenceFormOpen ? t('common.close') : t('absences.add') }}
+      </BaseButton>
+      <BaseCard v-if="absenceFormOpen && myMemberIds.data.value?.length">
+        <AbsenceForm :member-ids="myMemberIds.data.value" />
+      </BaseCard>
+    </section>
 
     <section class="profile__clubs" aria-labelledby="profile-clubs">
       <h2 id="profile-clubs" class="profile__subtitle">{{ t('profile.myClubs') }}</h2>
