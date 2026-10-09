@@ -603,7 +603,6 @@
   },
   "stats": {
     "title": "Statistics",
-    "mine": "My statistics",
     "range": "Period",
     "ranges": {
       "last30": "Last 30 days",

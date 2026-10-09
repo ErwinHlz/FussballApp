@@ -25,7 +25,7 @@ import {
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
-const { activeTeam, isCoach } = useActiveTeam()
+const { activeTeam } = useActiveTeam()
 const teamId = computed(() => activeTeam.value?.team_id ?? null)
 
 const range = ref<RangeKey>('season')
@@ -151,8 +151,8 @@ function reasonsText(reasons: unknown) {
         <AttendanceChart v-if="points.length" :points="points" :title="t('stats.chart.title')" />
       </section>
 
-      <!-- Players (coaches only) -->
-      <section v-if="isCoach" aria-labelledby="stats-players" class="stats__section">
+      <!-- Players (visible to the whole team) -->
+      <section aria-labelledby="stats-players" class="stats__section">
         <div class="stats__row">
           <h2 id="stats-players" class="stats__subtitle">{{ t('stats.players') }}</h2>
           <BaseChipGroup
@@ -163,9 +163,19 @@ function reasonsText(reasons: unknown) {
           />
         </div>
         <ul class="stats__players" role="list">
-          <li v-for="m in players" :key="m.member_id" class="player">
+          <li
+            v-for="m in players"
+            :key="m.member_id"
+            class="player"
+            :class="{ 'player--me': m.member_id === me?.member_id }"
+          >
             <div class="player__head">
-              <span class="player__name">{{ m.display_name }}</span>
+              <span class="player__name">
+                {{ m.display_name }}
+                <span v-if="m.member_id === me?.member_id" class="player__you"
+                  >({{ t('common.you') }})</span
+                >
+              </span>
               <span class="player__rate">{{ formatPercent(trainingRate(m)) }}</span>
             </div>
             <div
@@ -265,6 +275,15 @@ function reasonsText(reasons: unknown) {
 
   & + & {
     border-top: 1px solid var(--color-border);
+  }
+
+  &--me {
+    background: color-mix(in srgb, var(--color-training) 8%, var(--color-surface));
+  }
+
+  &__you {
+    font-weight: 400;
+    color: var(--color-text-muted);
   }
 
   &__head {

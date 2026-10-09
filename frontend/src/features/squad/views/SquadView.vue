@@ -86,7 +86,7 @@ function positionsLabel(member: TeamMember) {
       <h1>{{ t('squad.title') }}</h1>
       <RouterLink :to="{ name: 'stats' }" class="squad__stats-link">
         <AppIcon name="chart" :size="20" />
-        {{ isCoach ? t('stats.title') : t('stats.mine') }}
+        {{ t('stats.title') }}
       </RouterLink>
     </div>
 

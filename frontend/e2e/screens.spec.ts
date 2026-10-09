@@ -126,5 +126,6 @@ test('screens: statistics', async ({ page }) => {
   await page.getByRole('button', { name: 'Abmelden' }).click()
   await login(page, demo.player.email, '/stats')
   await page.getByText('Deine Werte').waitFor()
+  await page.getByText('(du)').waitFor()
   await shot(page, '52-stats-player')
 })
