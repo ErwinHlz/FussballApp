@@ -384,5 +384,5 @@ Gespeichert in `drills.animation` als JSON:
 - [x] Qualitätsrunde: Browser-Tests (Playwright), Sichtprüfung per Screenshots, Dark Mode, installierbare Web-App (Manifest + Icon), Zurück-Navigation, Seitentitel und Fokus für Screenreader
 - [x] Statistik aus vorhandenen App-Daten (siehe Phase 12), für die ganze Mannschaft sichtbar
 - [x] **Abwesenheiten:** Zeitraum (Urlaub, Krank, Verletzt, Arbeit, Sonstiges) einmal eintragen – alle Termine darin werden automatisch abgesagt, auch später angelegte. Eigene Antworten haben Vorrang; nach Anmeldeschluss wirkt nur der Trainer. Löschen entfernt genau die automatischen Absagen.
-- [ ] **Web-Push:** Benachrichtigungen über die installierte Web-App (Erinnerung vor Anmeldeschluss, neuer Termin, Plan veröffentlicht, Absage)
+- [x] **Web-Push:** Benachrichtigungen über die installierte Web-App – neuer Termin (Serie: eine Nachricht), Plan veröffentlicht (Spieler), Absage, Nominierung (nur neu Nominierte), Erinnerung < 24 h vor Anmeldeschluss (nur ohne Antwort). Outbox per Trigger, pg_cron jede Minute, Edge Function `push-dispatch` (VAPID, aes128gcm), abgelaufene Geräte werden entfernt. Testnachricht im Profil.
 - [ ] **DSGVO & Go-live:** Konto löschen, Datenexport, Datenschutz/Impressum, Supabase-Cloud und Hosting vorbereiten

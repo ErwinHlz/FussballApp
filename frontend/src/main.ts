@@ -8,6 +8,7 @@ import { router } from '@/app/router'
 import { i18n } from '@/lib/i18n'
 import { queryClient } from '@/lib/queryClient'
 import { reportError } from '@/lib/errors'
+import { registerServiceWorker } from '@/lib/push'
 
 const app = createApp(App)
 
@@ -15,3 +16,6 @@ const app = createApp(App)
 app.config.errorHandler = (error, _instance, info) => reportError(error, info)
 
 app.use(createPinia()).use(router).use(i18n).use(VueQueryPlugin, { queryClient }).mount('#app')
+
+// Needed for push notifications (shows them and opens the right page on tap).
+void registerServiceWorker()

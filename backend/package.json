@@ -8,7 +8,8 @@
     "status": "supabase status",
     "db:reset": "supabase db reset",
     "gen:types": "supabase gen types typescript --local > ../frontend/src/types/database.ts",
-    "test:db": "supabase test db"
+    "test:db": "supabase test db",
+    "setup:push": "node scripts/setup-push.mjs"
   },
   "devDependencies": {
     "supabase": "^2.120.0"

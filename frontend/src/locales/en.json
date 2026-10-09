@@ -663,5 +663,20 @@
     "away": "Away",
     "forPlayer": "Add absence",
     "auto": "absence"
+  },
+  "push": {
+    "title": "Notifications",
+    "intro": "Get notified about new events, published training plans, nominations, cancellations and shortly before the response deadline.",
+    "on": "Active on this device",
+    "off": "Off on this device",
+    "enable": "Turn on notifications",
+    "disable": "Turn off",
+    "test": "Send test",
+    "testSent": "Test notification is on its way.",
+    "failed": "That did not work. Please try again.",
+    "denied": "Notifications are blocked in the browser. Allow them in the site settings and reload the page.",
+    "unsupported": "This browser does not support notifications.",
+    "ios": "On iPhone: tap \"Share\" → \"Add to Home Screen\" and open Rondo from there. Then you can turn on notifications.",
+    "unconfigured": "Notifications are not set up for this installation yet."
   }
 }

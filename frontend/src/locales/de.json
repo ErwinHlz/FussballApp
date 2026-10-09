@@ -663,5 +663,20 @@
     "away": "Abwesend",
     "forPlayer": "Abwesenheit eintragen",
     "auto": "Abwesenheit"
+  },
+  "push": {
+    "title": "Benachrichtigungen",
+    "intro": "Erhalte einen Hinweis bei neuen Terminen, veröffentlichten Trainingsplänen, Nominierungen, Absagen und kurz vor dem Anmeldeschluss.",
+    "on": "Auf diesem Gerät aktiv",
+    "off": "Auf diesem Gerät aus",
+    "enable": "Benachrichtigungen aktivieren",
+    "disable": "Deaktivieren",
+    "test": "Test senden",
+    "testSent": "Testnachricht ist unterwegs.",
+    "failed": "Das hat nicht geklappt. Bitte versuche es erneut.",
+    "denied": "Benachrichtigungen sind im Browser blockiert. Erlaube sie in den Website-Einstellungen und lade die Seite neu.",
+    "unsupported": "Dieser Browser unterstützt keine Benachrichtigungen.",
+    "ios": "Auf dem iPhone: Tippe auf „Teilen“ → „Zum Home-Bildschirm“ und öffne Rondo von dort. Dann kannst du Benachrichtigungen aktivieren.",
+    "unconfigured": "Benachrichtigungen sind für diese Installation noch nicht eingerichtet."
   }
 }

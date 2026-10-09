@@ -233,17 +233,23 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "cancel_reason": string | null,"competition": string | null,"created_at": string,"ends_at": string | null,"id": string,"is_cancelled": boolean,"is_home": boolean | null,"location": string | null,"meet_at": string | null,"meet_location": string | null,"notes": string | null,"opponent": string | null,"plan_published_at": string | null,"plan_status": Database["public"]['Enums']["plan_status"],"response_deadline": string | null,"series_id": string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
+                    "cancel_reason": string | null,"competition": string | null,"created_at": string,"created_by": string | null,"ends_at": string | null,"id": string,"is_cancelled": boolean,"is_home": boolean | null,"location": string | null,"meet_at": string | null,"meet_location": string | null,"notes": string | null,"opponent": string | null,"plan_published_at": string | null,"plan_status": Database["public"]['Enums']["plan_status"],"reminder_sent_at": string | null,"response_deadline": string | null,"series_id": string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
                   }
                   ComputedFields: never
                   Insert: {
-                    "cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"response_deadline"?: string | null,"series_id"?: string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
+                    "cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at": string,"team_id": string,"type": Database["public"]['Enums']["event_type"]
                   }
                   Update: {
-                    "cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"response_deadline"?: string | null,"series_id"?: string | null,"starts_at"?: string,"team_id"?: string,"type"?: Database["public"]['Enums']["event_type"]
+                    "cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at"?: string,"team_id"?: string,"type"?: Database["public"]['Enums']["event_type"]
                   }
                   Relationships: [
                     {
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "events_series_id_fkey"
       columns: ["series_id"]
 isOneToOne: false
@@ -309,6 +315,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"notification_outbox": {
+                  Row: {
+                    "actor_id": string | null,"created_at": string,"event_id": string | null,"id": number,"kind": string,"payload": NonNullable<Json>,"processed_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actor_id"?: string | null,"created_at"?: string,"event_id"?: string | null,"id"?: never,"kind": string,"payload"?: NonNullable<Json>,"processed_at"?: string | null
+                  }
+                  Update: {
+                    "actor_id"?: string | null,"created_at"?: string,"event_id"?: string | null,"id"?: never,"kind"?: string,"payload"?: NonNullable<Json>,"processed_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notification_outbox_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "avatar_url": string | null,"created_at": string,"display_name": string,"id": string
@@ -322,6 +348,26 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"push_subscriptions": {
+                  Row: {
+                    "auth": string,"created_at": string,"endpoint": string,"id": string,"locale": string,"p256dh": string,"user_agent": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"locale"?: string,"p256dh": string,"user_agent"?: string | null,"user_id"?: string
+                  }
+                  Update: {
+                    "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"locale"?: string,"p256dh"?: string,"user_agent"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "push_subscriptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"team_invites": {
                   Row: {
@@ -413,6 +459,11 @@ isOneToOne: false
 "apply_absence":
 { Args: { "p_absence_id": string,"p_include_closed": boolean }; Returns: number
                            },
+"claim_push_messages":
+{ Args: { "p_limit"?: number }; Returns: {
+              "auth": string,"endpoint": string,"event_id": string,"event_type": Database["public"]['Enums']["event_type"],"is_home": boolean,"kind": string,"locale": string,"location": string,"opponent": string,"outbox_id": number,"p256dh": string,"payload": Json,"starts_at": string,"subscription_id": string,"team_name": string
+            }[]
+                           },
 "copy_drill":
 { Args: { "p_drill_id": string,"p_team_id": string }; Returns: {
               "animation": Json | null,
@@ -488,6 +539,12 @@ isOneToOne: false
 "drill_video_team_id":
 { Args: { "p_name": string }; Returns: string
                            },
+"enqueue_nomination":
+{ Args: { "p_event_id": string,"p_member_ids": (string)[] }; Returns: undefined
+                           },
+"enqueue_series_notification":
+{ Args: { "p_count": number,"p_first_event": string,"p_weekday": number }; Returns: undefined
+                           },
 "event_drill_event_id":
 { Args: { "p_event_drill_id": string }; Returns: string
                            },
@@ -553,6 +610,12 @@ isOneToOne: false
                            },
 "reorder_event_drills":
 { Args: { "p_event_id": string,"p_ids": (string)[] }; Returns: undefined
+                           },
+"request_test_push":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"save_push_subscription":
+{ Args: { "p_auth": string,"p_endpoint": string,"p_locale"?: string,"p_p256dh": string,"p_user_agent"?: string }; Returns: undefined
                            },
 "set_attendance":
 { Args: { "p_event_id": string,"p_member_id": string,"p_reason"?: string,"p_reason_note"?: string,"p_status": Database["public"]['Enums']["attendance_status"] }; Returns: {

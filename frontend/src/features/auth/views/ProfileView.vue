@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useMyClubs } from '@/features/teams/composables/useTeams'
 import { useQuery } from '@tanstack/vue-query'
 import AbsenceForm from '@/features/absences/components/AbsenceForm.vue'
+import NotificationSettings from '../components/NotificationSettings.vue'
 import AbsenceList from '@/features/absences/components/AbsenceList.vue'
 import { fetchMyMemberIds } from '@/features/absences/api'
 import { useMyAbsences } from '@/features/absences/composables/useAbsences'
@@ -97,6 +98,13 @@ const onSubmit = handleSubmit(async (values) => {
         </BaseButton>
       </form>
     </BaseCard>
+
+    <section class="profile__clubs" aria-labelledby="profile-push">
+      <h2 id="profile-push" class="profile__subtitle">{{ t('push.title') }}</h2>
+      <BaseCard>
+        <NotificationSettings />
+      </BaseCard>
+    </section>
 
     <section class="profile__clubs" aria-labelledby="profile-absences">
       <h2 id="profile-absences" class="profile__subtitle">{{ t('absences.title') }}</h2>

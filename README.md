@@ -28,6 +28,10 @@ npm run status     # zeigt URLs und API-Schlüssel
 - `npm run db:reset` spielt alle Migrationen und `seed.sql` neu ein
 - `npm run gen:types` erzeugt `frontend/src/types/database.ts` (nach jeder neuen Migration)
 - `npm run test:db` prüft die Zugriffsregeln (RLS) mit pgTAP
+- `npm run setup:push` richtet Push-Benachrichtigungen lokal ein (einmalig): erzeugt die
+  VAPID-Schlüssel (`supabase/functions/.env`, nicht im Git), schreibt den öffentlichen Schlüssel
+  nach `frontend/.env.local` und sagt dem Zeitjob, wo die Edge Function `push-dispatch` läuft.
+  Danach einmal `npm run stop && npm start`.
 - `npm run stop` stoppt das Backend
 
 Hinweis Windows: Supabase-Analytics ist in `config.toml` deaktiviert, weil der Log-Dienst
