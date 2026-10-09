@@ -80,3 +80,30 @@ $bib-colors: (
 
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
+
+// Dark theme: only the custom properties change (emitted from main.scss).
+// Green for buttons/links gets lighter with dark text (contrast > 7:1); colored badges and
+// circles with white text keep strong tones so the white text stays readable.
+@mixin root-dark-custom-properties {
+  --color-bg: #0f1712;
+  --color-surface: #18221b;
+  --color-surface-muted: #222e26;
+  --color-border: #334139;
+  --color-text: #e6ede8;
+  --color-text-muted: #9fb0a6;
+  --color-primary: #3ccf72;
+  --color-primary-hover: #6ee39a;
+  --color-primary-contrast: #08160d;
+  --color-danger: #f87171;
+  --color-danger-contrast: #1c0606;
+  --color-warning: #f5a524;
+  --color-success: #4ade80;
+  --color-focus: #60a5fa;
+
+  --color-training: #1f9d4f;
+  --color-match: #3b82f6;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 60%);
+}

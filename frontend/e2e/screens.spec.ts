@@ -91,3 +91,23 @@ test('screens: coach', async ({ page }) => {
   await page.getByText('SV Demo 09').first().waitFor()
   await shot(page, '30-teams')
 })
+
+test.describe('dark mode', () => {
+  test.use({ colorScheme: 'dark' })
+
+  test('screens: dark', async ({ page }) => {
+    const demo = await seedDemo()
+    await login(page, demo.player.email)
+    await page.getByText('Als Nächstes').waitFor()
+    await page.waitForTimeout(500)
+    await shot(page, '40-dark-home')
+
+    await page.goto(`/events/${demo.match.id}`)
+    await page.getByText('FC Nachbarort').first().waitFor()
+    await shot(page, '41-dark-match')
+
+    await page.goto('/drills/0d000000-0000-4000-8000-000000000001')
+    await page.getByRole('button', { name: 'Abspielen' }).waitFor()
+    await shot(page, '42-dark-drill')
+  })
+})

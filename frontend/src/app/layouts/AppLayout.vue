@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue'
+import { computed, nextTick, ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppIcon, { type IconName } from '@/components/AppIcon.vue'
@@ -58,6 +58,27 @@ function goBack() {
   else if (route.meta.back) void router.push({ name: route.meta.back })
 }
 
+// After navigating, move focus to the new page's heading so screen readers announce it
+// (an SPA does not reload the page). Not on the first load: the user starts at the top.
+const mainRef = ref<HTMLElement | null>(null)
+watch(
+  () => route.path,
+  async (_path, previous) => {
+    if (previous === undefined) return
+    // Lazy pages render a moment later; wait until the heading exists.
+    for (let i = 0; i < 20; i++) {
+      await nextTick()
+      const heading = mainRef.value?.querySelector<HTMLElement>('h1')
+      if (heading) {
+        heading.setAttribute('tabindex', '-1')
+        heading.focus({ preventScroll: true })
+        return
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    }
+  },
+)
+
 function isActive(tab: Tab) {
   return tab.match.some((prefix) => route.path.startsWith(prefix))
 }
@@ -99,7 +120,7 @@ watchEffect(() => {
       </div>
     </header>
 
-    <main class="app-layout__main">
+    <main ref="mainRef" class="app-layout__main">
       <RouterView />
     </main>
 
@@ -126,6 +147,10 @@ watchEffect(() => {
   min-height: 100dvh;
 
   &__main {
+    :deep(h1:focus) {
+      outline: none;
+    }
+
     max-width: 720px;
     margin: 0 auto;
     padding: $space-4 $space-4 0;

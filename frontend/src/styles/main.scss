@@ -4,4 +4,15 @@
 
 :root {
   @include root-custom-properties;
+
+  color-scheme: light;
+}
+
+// Follows the phone/OS setting.
+@media (prefers-color-scheme: dark) {
+  :root {
+    @include root-dark-custom-properties;
+
+    color-scheme: dark;
+  }
 }
