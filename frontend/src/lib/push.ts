@@ -48,9 +48,28 @@ export async function getPushState(): Promise<PushState> {
   if (!isPushSupported()) return 'unsupported'
   if (!VAPID_PUBLIC_KEY) return 'unconfigured'
   if (Notification.permission === 'denied') return 'denied'
-  const registration = await navigator.serviceWorker.getRegistration()
-  const subscription = await registration?.pushManager.getSubscription()
-  return subscription ? 'on' : 'off'
+  try {
+    const subscription = await withTimeout(
+      navigator.serviceWorker
+        .getRegistration()
+        .then((registration) => registration?.pushManager.getSubscription()),
+      PUSH_SERVICE_TIMEOUT_MS,
+    )
+    return subscription ? 'on' : 'off'
+  } catch {
+    // The API exists but no push service answers: Firefox with push disabled rejects
+    // with an AbortError or never settles.
+    return 'unsupported'
+  }
+}
+
+const PUSH_SERVICE_TIMEOUT_MS = 5000
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('timeout')), ms)
+    promise.then(resolve, reject).finally(() => clearTimeout(timer))
+  })
 }
 
 export async function enablePush(locale: string): Promise<PushState> {

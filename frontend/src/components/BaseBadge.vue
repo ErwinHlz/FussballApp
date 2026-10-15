@@ -25,11 +25,12 @@ withDefaults(
   font-weight: 700;
   line-height: 1.5;
   white-space: nowrap;
-  color: var(--badge-color);
+  color: var(--badge-text, var(--badge-color));
   background: color-mix(in srgb, var(--badge-color) 14%, transparent);
 
   &--neutral {
     --badge-color: var(--color-text-muted);
+    --badge-text: var(--color-text);
   }
 
   &--success {
@@ -47,14 +48,17 @@ withDefaults(
   &--info,
   &--match {
     --badge-color: var(--color-match);
+    --badge-text: var(--color-match-text);
   }
 
   &--training {
     --badge-color: var(--color-training);
+    --badge-text: var(--color-training-text);
   }
 
   &--event {
     --badge-color: var(--color-event);
+    --badge-text: var(--color-event-text);
   }
 }
 </style>

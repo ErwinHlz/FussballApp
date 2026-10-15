@@ -106,18 +106,22 @@ const myNomination = computed(
 
   &--training {
     --event-color: var(--color-training);
+    --event-text: var(--color-training-text);
   }
 
   &--match {
     --event-color: var(--color-match);
+    --event-text: var(--color-match-text);
   }
 
   &--event {
     --event-color: var(--color-event);
+    --event-text: var(--color-event-text);
   }
 
   &--cancelled {
     --event-color: var(--color-border);
+    --event-text: var(--color-text-muted);
 
     opacity: 0.75;
   }
@@ -146,7 +150,7 @@ const myNomination = computed(
     padding: $space-1;
     border-radius: $radius-md;
     background: color-mix(in srgb, var(--event-color) 12%, var(--color-surface));
-    color: var(--event-color);
+    color: var(--event-text);
     line-height: 1.1;
   }
 
@@ -196,15 +200,15 @@ const myNomination = computed(
   }
 
   &__count--yes {
-    color: var(--color-yes);
+    color: var(--color-yes-text);
   }
 
   &__count--maybe {
-    color: var(--color-maybe);
+    color: var(--color-maybe-text);
   }
 
   &__count--no {
-    color: var(--color-no);
+    color: var(--color-no-text);
   }
 }
 </style>

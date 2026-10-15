@@ -192,7 +192,7 @@
     "addPlayer": "Add player",
     "addPlayerHint": "For players without their own account. You can link them to their account later when they join via link.",
     "editPlayer": "Edit player",
-    "editPlayerNamed": "Edit {name}",
+    "editHint": "edit",
     "name": "Name",
     "shirtNumber": "Shirt number",
     "positionsLabel": "Positions",

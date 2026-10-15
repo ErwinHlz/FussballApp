@@ -86,6 +86,7 @@ const showPlan = computed(
 <style scoped lang="scss">
 .hero {
   --event-color: var(--color-training);
+  --event-text: var(--color-training-text);
 
   display: flex;
   flex-direction: column;
@@ -98,10 +99,12 @@ const showPlan = computed(
 
   &--match {
     --event-color: var(--color-match);
+    --event-text: var(--color-match-text);
   }
 
   &--event {
     --event-color: var(--color-event);
+    --event-text: var(--color-event-text);
   }
 
   &__eyebrow {
@@ -109,7 +112,7 @@ const showPlan = computed(
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--event-color);
+    color: var(--event-text);
   }
 
   &__header {

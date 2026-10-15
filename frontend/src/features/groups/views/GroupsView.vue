@@ -477,7 +477,7 @@ function names(ids: string[]) {
   &__drill-index {
     font-size: $font-xs;
     font-weight: 800;
-    color: var(--color-training);
+    color: var(--color-training-text);
   }
 
   &__drill-title {

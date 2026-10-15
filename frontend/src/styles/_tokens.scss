@@ -55,21 +55,28 @@ $bib-colors: (
   --color-primary: #15803d;
   --color-primary-hover: #166534;
   --color-primary-contrast: #ffffff;
-  --color-danger: #dc2626;
+  // Status colors are used as text: at least 4.5:1 on surfaces (WCAG AA).
+  --color-danger: #b91c1c;
   --color-danger-contrast: #ffffff;
-  --color-warning: #d97706;
-  --color-success: #16a34a;
+  --color-warning: #92400e;
+  --color-success: #166534;
   --color-focus: #2563eb;
 
-  // Event types
+  // Event types and attendance: fills behind white text (>= 4.5:1 with white in both themes).
   --color-training: #15803d;
   --color-match: #1d4ed8;
   --color-event: #7c3aed;
-
-  // Attendance
-  --color-yes: #16a34a;
+  --color-yes: #15803d;
   --color-no: #dc2626;
-  --color-maybe: #d97706;
+  --color-maybe: #b45309;
+
+  // ... and the same meaning as text, also on their own light tints (>= 4.5:1).
+  --color-training-text: #166534;
+  --color-match-text: #1e40af;
+  --color-event-text: #5b21b6;
+  --color-yes-text: #166534;
+  --color-no-text: #991b1b;
+  --color-maybe-text: #92400e;
 
   @each $name, $value in $bib-colors {
     --bib-#{$name}: #{$value};
@@ -101,9 +108,14 @@ $bib-colors: (
   --color-success: #4ade80;
   --color-focus: #60a5fa;
 
-  --color-training: #1f9d4f;
-  --color-match: #3b82f6;
-  --color-event: #8b5cf6;
+  // Fills keep white text readable; text variants are light on the dark surfaces.
+  --color-match: #2563eb;
+  --color-training-text: #4ade80;
+  --color-match-text: #93c5fd;
+  --color-event-text: #c4b5fd;
+  --color-yes-text: #4ade80;
+  --color-no-text: #fca5a5;
+  --color-maybe-text: #fbbf24;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
   --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);

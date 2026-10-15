@@ -186,9 +186,6 @@ function positionsLabel(member: TeamMember) {
               :type="isCoach ? 'button' : undefined"
               class="squad__member"
               :class="{ 'squad__member--clickable': isCoach }"
-              :aria-label="
-                isCoach ? t('squad.editPlayerNamed', { name: member.display_name }) : undefined
-              "
               @click="openEdit(member)"
             >
               <span class="squad__number">
@@ -214,6 +211,8 @@ function positionsLabel(member: TeamMember) {
               </span>
               <StatusBadge v-if="member.status !== 'active'" :status="member.status" />
               <AppIcon v-if="isCoach" name="chevronRight" :size="18" class="squad__chevron" />
+              <!-- Name, number and status stay in the accessible name; the action is appended. -->
+              <span v-if="isCoach" class="visually-hidden">{{ t('squad.editHint') }}</span>
             </component>
           </li>
         </ul>

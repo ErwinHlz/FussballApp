@@ -107,6 +107,7 @@ function reasonText(entry: (typeof summary.value)['no'][number]) {
 
   &__total {
     --total-color: var(--color-text-muted);
+    --total-text: var(--color-text-muted);
 
     display: flex;
     flex-direction: column;
@@ -114,18 +115,21 @@ function reasonText(entry: (typeof summary.value)['no'][number]) {
     padding: $space-2 $space-1;
     border-radius: $radius-md;
     background: color-mix(in srgb, var(--total-color) 10%, var(--color-surface));
-    color: var(--total-color);
+    color: var(--total-text);
 
     &--yes {
       --total-color: var(--color-yes);
+      --total-text: var(--color-yes-text);
     }
 
     &--maybe {
       --total-color: var(--color-maybe);
+      --total-text: var(--color-maybe-text);
     }
 
     &--no {
       --total-color: var(--color-no);
+      --total-text: var(--color-no-text);
     }
   }
 

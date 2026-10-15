@@ -98,8 +98,8 @@ function back() {
   mark {
     padding: 0 2px;
     border-radius: 3px;
-    background: color-mix(in srgb, var(--color-warning) 30%, transparent);
-    color: inherit;
+    background: color-mix(in srgb, var(--color-maybe) 20%, transparent);
+    color: var(--color-text);
   }
 }
 </style>
