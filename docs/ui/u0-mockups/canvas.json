@@ -1,0 +1,32 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-15T16:30:00Z" },
+  "title": "Rondo UI-Richtungen",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 390, "h": 844, "title": "A · Spieler-Start", "is_interactive": true, "radius": 28 },
+    "A-Detail.dc.html": { "x": 470, "y": 0, "w": 390, "h": 844, "title": "A · Termin-Detail", "is_interactive": true, "radius": 28 },
+    "A-Plan.dc.html": { "x": 940, "y": 0, "w": 390, "h": 844, "title": "A · Plan-Editor (Trainer)", "is_interactive": true, "radius": 28 },
+    "A-Dark.dc.html": { "x": 1410, "y": 0, "w": 390, "h": 844, "title": "A · Start dunkel", "is_interactive": true, "radius": 28 },
+    "B-Start.dc.html": { "x": 0, "y": 1300, "w": 390, "h": 844, "title": "B · Spieler-Start", "is_interactive": true, "radius": 28 },
+    "B-Detail.dc.html": { "x": 470, "y": 1300, "w": 390, "h": 844, "title": "B · Termin-Detail", "is_interactive": true, "radius": 28 },
+    "B-Plan.dc.html": { "x": 940, "y": 1300, "w": 390, "h": 844, "title": "B · Plan-Editor (Aufbau aus A) – gewählt", "is_interactive": true, "radius": 28 },
+    "B-Dark.dc.html": { "x": 1410, "y": 1300, "w": 390, "h": 844, "title": "B · Start hell", "is_interactive": true, "radius": 28 },
+    "C-Start.dc.html": { "x": 0, "y": 2600, "w": 390, "h": 844, "title": "C · Spieler-Start", "is_interactive": true, "radius": 28 },
+    "C-Detail.dc.html": { "x": 470, "y": 2600, "w": 390, "h": 844, "title": "C · Termin-Detail", "is_interactive": true, "radius": 28 },
+    "C-Plan.dc.html": { "x": 940, "y": 2600, "w": 390, "h": 844, "title": "C · Plan-Editor (Trainer)", "is_interactive": true, "radius": 28 },
+    "C-Dark.dc.html": { "x": 1410, "y": 2600, "w": 390, "h": 844, "title": "C · Start dunkel", "is_interactive": true, "radius": 28 }
+  },
+  "order": [
+    "Main.dc.html", "A-Detail.dc.html", "A-Plan.dc.html", "A-Dark.dc.html",
+    "B-Start.dc.html", "B-Detail.dc.html", "B-Plan.dc.html", "B-Dark.dc.html",
+    "C-Start.dc.html", "C-Detail.dc.html", "C-Plan.dc.html", "C-Dark.dc.html"
+  ],
+  "notes": {
+    "titleA": { "x": 0, "y": -260, "text": "A · Anzeigetafel – schmale Sportschrift, Spielfeld-Grün, Datum wie auf dem Spielplan", "kind": "title1", "maxW": 1800 },
+    "titleB": { "x": 0, "y": 1040, "text": "B · Taktiktafel – GEWÄHLT (Plan-Editor mit dem Aufbau aus A)", "kind": "title1", "maxW": 1800 },
+    "titleC": { "x": 0, "y": 2340, "text": "C · Vereinsheim – freundlich, runde Formen, farbige Kacheln je Termintyp", "kind": "title1", "maxW": 1800 }
+  },
+  "designSystems": []
+}

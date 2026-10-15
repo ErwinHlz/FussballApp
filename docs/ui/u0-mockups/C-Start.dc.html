@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>C · Spieler-Start</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; overflow: hidden; background: {{t.bg}}; color: {{t.ink}}; font-family: Figtree, system-ui, sans-serif; font-size: 16px">
+
+  <header style="display: flex; align-items: center; gap: 12px; padding: 18px 16px 8px">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+      <button type="button" aria-label="Mannschaft wechseln" style="align-self: flex-start; display: flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px 0 4px; border-radius: 999px; border: 0; background: {{t.surface}}; color: {{t.ink}}; font-family: Figtree, sans-serif; font-weight: 700; font-size: 13px; cursor: pointer">
+        <span style="display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: {{accent}}; color: #FFFFFF; font-size: 11px; font-weight: 800">09</span>
+        SV Demo 09 · U17
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+      </button>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -0.02em">Hallo Pia</h1>
+    </div>
+    <a href="#profil" aria-label="Profil" style="display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; background: {{t.surface}}; color: {{t.ink}}; text-decoration: none; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">P</a>
+  </header>
+
+  <main style="flex: 1; overflow-y: auto; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 20px">
+    <section aria-labelledby="c-next" style="display: flex; flex-direction: column; gap: 14px; padding: 18px; border-radius: 28px; background: {{t.trainingTile}}">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: {{t.surface}}; font-size: 13px; font-weight: 800; color: {{t.trainingText}}">Morgen</span>
+          <h2 id="c-next" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -0.02em; color: {{t.trainingInk}}">Training</h2>
+          <span style="font-weight: 700; font-size: 17px; color: {{t.trainingInk}}">Fr · 18:30 – 20:00</span>
+          <span style="font-size: 15px; color: {{t.trainingSub}}">Sportpark, Platz 2</span>
+        </div>
+        <span aria-hidden="true" style="display: grid; place-items: center; width: 64px; height: 64px; border-radius: 22px; background: {{t.surface}}">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="{{t.trainingText}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l6.5 17h-13z M8 13h8 M3.5 20.5h17"></path></svg>
+        </span>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <span style="display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: {{t.surface}}; font-weight: 700; font-size: 14px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L3 6l2 4 3-1.5V21h8V8.5l3 1.5 2-4-5-3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z" fill="#EF4444"></path></svg>Rondo: Rot</span>
+        <span style="display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: {{t.surface}}; font-weight: 700; font-size: 14px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L3 6l2 4 3-1.5V21h8V8.5l3 1.5 2-4-5-3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z" fill="#3B82F6"></path></svg>Spiel: Blau</span>
+      </div>
+      <div role="group" aria-label="Bist du dabei?" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 10px; border-radius: 22px; background: {{t.surface}}">
+        <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+          <button type="button" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 0 4px; border: 0; background: none; color: {{t.ink}}; font-family: Figtree, sans-serif; font-weight: 700; font-size: 14px; cursor: pointer">
+            <span style="display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; border: 2px solid {{o.border}}; background: {{o.bg}}; color: {{o.fg}}">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{o.icon}}"></path></svg>
+            </span>
+            {{o.label}}
+          </button>
+        </sc-for>
+      </div>
+      <a href="C-Detail.dc.html" style="align-self: stretch; min-height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: {{t.trainingInk}}; color: {{t.trainingTile}}; font-weight: 800; font-size: 15px; text-decoration: none">Ablauf ansehen</a>
+    </section>
+
+    <section aria-labelledby="c-pulse" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 20px; background: {{t.surface}}">
+      <div style="display: flex">
+        <sc-for list="{{faces}}" as="f" hint-placeholder-count="4">
+          <span style="display: grid; place-items: center; width: 34px; height: 34px; margin-right: -10px; border-radius: 50%; border: 2px solid {{t.surface}}; background: {{f.c}}; color: #FFFFFF; font-weight: 800; font-size: 13px">{{f.l}}</span>
+        </sc-for>
+      </div>
+      <p id="c-pulse" style="margin: 0 0 0 10px; font-size: 15px"><strong>6 von 8</strong> sind morgen dabei</p>
+    </section>
+
+    <section aria-labelledby="c-more" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 id="c-more" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px">Demnächst</h2>
+      <div style="display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px; padding: 0 16px 4px">
+        <sc-for list="{{cards}}" as="c" hint-placeholder-count="2">
+          <div style="flex-shrink: 0; width: 220px; display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 22px; background: {{c.tile}}">
+            <span style="font-size: 13px; font-weight: 800; color: {{c.text}}">{{c.when}}</span>
+            <strong style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; color: {{c.ink}}">{{c.title}}</strong>
+            <span style="font-size: 14px; color: {{c.sub}}">{{c.meta}}</span>
+            <button type="button" aria-pressed="{{c.on}}" onClick="{{c.pick}}" style="min-height: 44px; border-radius: 14px; border: 0; background: {{c.btnBg}}; color: {{c.btnFg}}; font-family: Figtree, sans-serif; font-weight: 800; font-size: 14px; cursor: pointer">{{c.btn}}</button>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+
+  <nav aria-label="Hauptnavigation" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 8px 8px 22px; background: {{t.surface}}">
+    <sc-for list="{{tabs}}" as="tab" hint-placeholder-count="4">
+      <a href="#" aria-current="{{tab.current}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 52px; text-decoration: none; color: {{tab.fg}}; font-size: 12px; font-weight: {{tab.weight}}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="{{tab.fill}}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tab.icon}}"></path></svg>
+        {{tab.label}}
+      </a>
+    </sc-for>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"accent":{"editor":"color","default":"#0F766E","options":["#0F766E","#15803D","#B91C1C","#1D4ED8"]},"$preview":{"width":390,"height":844}}'>
+var THEMES = {
+  light: { bg: '#F2F3F6', surface: '#FFFFFF', ink: '#1A1D26', muted: '#5A6070', line: '#D9DCE3', trainingTile: '#D7F0DF', trainingInk: '#0E3B22', trainingSub: '#2C5A3E', trainingText: '#166534', matchTile: '#DCE6FF', matchInk: '#172C6B', matchSub: '#33467F', matchText: '#1E40AF', yes: '#15803D', maybe: '#B45309', no: '#B91C1C', tabOff: '#5A6070' },
+  dark: { bg: '#101217', surface: '#1A1D25', ink: '#EEF0F4', muted: '#A4AABA', line: '#2C303B', trainingTile: '#173523', trainingInk: '#DDF7E6', trainingSub: '#B4D9C0', trainingText: '#4ADE80', matchTile: '#1A2647', matchInk: '#E0E8FF', matchSub: '#B8C6EE', matchText: '#93C5FD', yes: '#15803D', maybe: '#B45309', no: '#B91C1C', tabOff: '#A4AABA' }
+};
+var ICONS = { yes: 'M5 12.5l4.5 4.5L19 7.5', maybe: 'M9.2 9a3 3 0 1 1 4.3 2.7c-.9.4-1.5 1.1-1.5 2.1V15 M12 19h.01', no: 'M6 6l12 12M18 6L6 18' };
+var LABELS = { yes: 'Dabei', maybe: 'Vielleicht', no: 'Absage' };
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { answer: null, cards: [false, false] };
+  }
+  renderVals() {
+    var self = this;
+    var t = this.props.dark ? THEMES.dark : THEMES.light;
+    var accent = this.props.accent || '#0F766E';
+    var opts = ['yes', 'maybe', 'no'].map(function (v) {
+      var on = self.state.answer === v;
+      return { label: LABELS[v], icon: ICONS[v], pressed: on, pick: function () { self.setState({ answer: on ? null : v }); }, bg: on ? t[v] : 'transparent', fg: on ? '#FFFFFF' : t.ink, border: on ? t[v] : t.line };
+    });
+    var cardBase = [
+      { when: 'So 18.10. · 15:00', title: 'vs. FC Nachbarort', meta: 'Auswärts · Waldstadion', tile: t.matchTile, ink: t.matchInk, sub: t.matchSub, text: t.matchText },
+      { when: 'Di 20.10. · 18:30', title: 'Training', meta: 'Sportpark, Platz 2', tile: t.trainingTile, ink: t.trainingInk, sub: t.trainingSub, text: t.trainingText }
+    ];
+    var cards = cardBase.map(function (c, i) {
+      var on = self.state.cards[i];
+      return Object.assign({}, c, { on: on, btn: on ? '✓ Du bist dabei' : 'Zusagen', btnBg: on ? t.yes : t.surface, btnFg: on ? '#FFFFFF' : t.ink, pick: function () { var cs = self.state.cards.slice(); cs[i] = !on; self.setState({ cards: cs }); } });
+    });
+    var icons = ['M4 11l8-7 8 7v9h-5v-6h-6v6H4z', 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4', 'M12 4l6 16H6z', 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5'];
+    var tabs = ['Start', 'Termine', 'Training', 'Team'].map(function (l, i) {
+      var on = i === 0;
+      return { label: l, icon: icons[i], current: on ? 'page' : undefined, fg: on ? accent : t.tabOff, fill: on ? accent : 'none', weight: on ? 800 : 600 };
+    });
+    return {
+      t: t, accent: accent, opts: opts, cards: cards, tabs: tabs,
+      faces: [{ l: 'L', c: '#0F766E' }, { l: 'A', c: '#7C3AED' }, { l: 'C', c: '#B45309' }, { l: 'D', c: '#1D4ED8' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

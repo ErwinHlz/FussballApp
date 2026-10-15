@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>B · Spieler-Start</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; display: flex; flex-direction: column; overflow: hidden; background: {{t.bg}}; color: {{t.ink}}; font-family: Manrope, system-ui, sans-serif; font-size: 16px">
+
+  <header style="display: flex; align-items: center; gap: 10px; padding: 16px 16px 8px">
+    <button type="button" aria-label="Mannschaft wechseln" style="flex: 1; display: flex; align-items: baseline; gap: 8px; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; text-align: left">
+      <span style="font-family: 'Saira Condensed', sans-serif; font-weight: 800; font-size: 32px; line-height: 1">U17</span>
+      <span style="font-size: 14px; font-weight: 600; color: {{t.muted}}">SV Demo 09 ▾</span>
+    </button>
+    <button type="button" aria-label="Benachrichtigungen" style="display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 0; background: {{t.surface}}; color: {{t.ink}}; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z M10 21h4"></path></svg>
+    </button>
+    <a href="#profil" aria-label="Profil" style="display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: {{t.accent}}; color: {{t.accentInk}}; text-decoration: none; font-family: 'Saira Condensed', sans-serif; font-weight: 800; font-size: 20px">10</a>
+  </header>
+
+  <nav aria-label="Diese Woche" style="padding: 6px 12px 4px">
+    <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px">
+      <sc-for list="{{week}}" as="d" hint-placeholder-count="7">
+        <li>
+          <a href="#tag" aria-label="{{d.label}}" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0 8px; border-radius: 14px; border: 2px solid {{d.ring}}; background: {{d.bg}}; color: {{d.fg}}; text-decoration: none">
+            <span style="font-size: 11px; font-weight: 700; opacity: 0.8">{{d.wd}}</span>
+            <span style="font-family: 'Saira Condensed', sans-serif; font-weight: 800; font-size: 22px; line-height: 1">{{d.n}}</span>
+            <span aria-hidden="true" style="width: 14px; height: 4px; border-radius: 2px; background: {{d.mark}}"></span>
+          </a>
+        </li>
+      </sc-for>
+    </ol>
+  </nav>
+
+  <main style="flex: 1; overflow-y: auto; padding: 14px 16px 120px; display: flex; flex-direction: column; gap: 20px">
+    <section aria-labelledby="b-next" style="position: relative; border-radius: 24px; border: 2px dashed {{t.dash}}; background: {{t.surface}}; padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+      <svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true" style="position: absolute; right: -14px; top: -10px; opacity: 0.5">
+        <circle cx="75" cy="75" r="48" fill="none" stroke="{{t.dash}}" stroke-width="2" stroke-dasharray="6 6"></circle>
+        <circle cx="75" cy="27" r="8" fill="{{t.chalkA}}"></circle><circle cx="123" cy="75" r="8" fill="{{t.chalkA}}"></circle><circle cx="75" cy="123" r="8" fill="{{t.chalkA}}"></circle><circle cx="27" cy="75" r="8" fill="{{t.chalkA}}"></circle>
+        <circle cx="66" cy="70" r="7" fill="none" stroke="{{t.chalkB}}" stroke-width="3"></circle><circle cx="86" cy="82" r="7" fill="none" stroke="{{t.chalkB}}" stroke-width="3"></circle>
+        <path d="M75 35 L118 70" stroke="{{t.chalkA}}" stroke-width="2" stroke-dasharray="4 4"></path>
+      </svg>
+      <div style="position: relative; display: flex; flex-direction: column; gap: 2px">
+        <span id="b-next" style="font-size: 13px; font-weight: 800; letter-spacing: 0.08em; color: {{t.trainingText}}">MORGEN · TRAINING</span>
+        <span style="font-family: 'Saira Condensed', sans-serif; font-weight: 800; font-size: 64px; line-height: 0.95">18:30</span>
+        <span style="font-size: 15px; font-weight: 600; color: {{t.muted}}">Fr 16.10. · Sportpark, Platz 2</span>
+      </div>
+      <div style="position: relative; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600">
+        <span style="color: {{t.muted}}">Deine Leibchen</span>
+        <span style="display: flex; align-items: center; gap: 5px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L3 6l2 4 3-1.5V21h8V8.5l3 1.5 2-4-5-3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z" fill="#EF4444"></path></svg>Rot</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14 M13 6l6 6-6 6"></path></svg>
+        <span style="display: flex; align-items: center; gap: 5px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L3 6l2 4 3-1.5V21h8V8.5l3 1.5 2-4-5-3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z" fill="#3B82F6"></path></svg>Blau</span>
+      </div>
+      <div style="position: relative; display: flex; flex-direction: column; gap: 8px">
+        <button type="button" aria-pressed="{{yesOn}}" onClick="{{pickYes}}" style="min-height: 60px; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 18px; border: 2px solid {{yesBorder}}; background: {{yesBg}}; color: {{yesFg}}; font-family: Manrope, sans-serif; font-weight: 800; font-size: 18px; cursor: pointer">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          {{yesLabel}}
+        </button>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <button type="button" aria-pressed="{{maybeOn}}" onClick="{{pickMaybe}}" style="min-height: 48px; border-radius: 14px; border: 2px solid {{maybeBorder}}; background: {{maybeBg}}; color: {{maybeFg}}; font-family: Manrope, sans-serif; font-weight: 700; font-size: 15px; cursor: pointer">? Vielleicht</button>
+          <button type="button" aria-pressed="{{noOn}}" onClick="{{pickNo}}" style="min-height: 48px; border-radius: 14px; border: 2px solid {{noBorder}}; background: {{noBg}}; color: {{noFg}}; font-family: Manrope, sans-serif; font-weight: 700; font-size: 15px; cursor: pointer">✕ Absage</button>
+        </div>
+      </div>
+      <a href="B-Detail.dc.html" style="position: relative; align-self: flex-start; min-height: 44px; display: flex; align-items: center; font-weight: 700; font-size: 15px; color: {{t.link}}; text-decoration: none">Ablauf ansehen →</a>
+    </section>
+
+    <section aria-labelledby="b-open" style="display: flex; flex-direction: column; gap: 4px">
+      <h2 id="b-open" style="margin: 0 0 6px; font-family: 'Saira Condensed', sans-serif; font-weight: 800; font-size: 26px">Wartet auf deine Antwort</h2>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="2">
+        <div style="display: flex; gap: 14px">
+          <div style="display: flex; flex-direction: column; align-items: center; width: 14px">
+            <span style="width: 14px; height: 14px; margin-top: 18px; border-radius: {{r.shape}}; background: {{r.typeColor}}"></span>
+            <span style="flex: 1; border-left: 2px dashed {{t.dash}}"></span>
+          </div>
+          <div style="flex: 1; display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid {{t.line}}">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 13px; font-weight: 700; color: {{r.typeText}}">{{r.when}}</span>
+              <strong style="font-size: 17px">{{r.title}}</strong>
+              <span style="font-size: 13px; color: {{t.muted}}">{{r.meta}}</span>
+            </div>
+            <button type="button" aria-pressed="{{r.on}}" onClick="{{r.pick}}" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 2px solid {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-family: Manrope, sans-serif; font-weight: 800; font-size: 14px; cursor: pointer">{{r.label}}</button>
+          </div>
+        </div>
+      </sc-for>
+    </section>
+  </main>
+
+  <nav aria-label="Hauptnavigation" style="position: absolute; left: 16px; right: 16px; bottom: 22px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 6px; border-radius: 26px; background: {{t.nav}}; box-shadow: 0 10px 30px rgba(0,0,0,0.35)">
+    <sc-for list="{{tabs}}" as="tab" hint-placeholder-count="4">
+      <a href="#" aria-current="{{tab.current}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 54px; border-radius: 20px; background: {{tab.bg}}; color: {{tab.fg}}; text-decoration: none; font-size: 11px; font-weight: 700">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tab.icon}}"></path></svg>
+        {{tab.label}}
+      </a>
+    </sc-for>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"light":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+var THEMES = {
+  dark: { bg: '#0F1412', surface: '#171F1A', ink: '#EEF2EC', muted: '#A1ADA5', line: '#27322B', dash: 'rgba(238,242,236,0.28)', chalkA: '#EEF2EC', chalkB: '#C6F25B', accent: '#C6F25B', accentInk: '#16210A', yes: '#C6F25B', yesInk: '#16210A', maybe: '#FBBF24', maybeInk: '#241703', no: '#F87171', noInk: '#2A0707', trainingText: '#C6F25B', matchText: '#93C5FD', training: '#C6F25B', match: '#60A5FA', link: '#C6F25B', nav: '#222C25', navOn: '#C6F25B', navOnInk: '#16210A', navOff: '#C3CCC5', today: '#C6F25B' },
+  light: { bg: '#F3F5F0', surface: '#FFFFFF', ink: '#121815', muted: '#56615A', line: '#DCE1D9', dash: 'rgba(18,24,21,0.28)', chalkA: '#121815', chalkB: '#4D7C0F', accent: '#3F6212', accentInk: '#FFFFFF', yes: '#3F6212', yesInk: '#FFFFFF', maybe: '#B45309', maybeInk: '#FFFFFF', no: '#B91C1C', noInk: '#FFFFFF', trainingText: '#3F6212', matchText: '#1E40AF', training: '#4D7C0F', match: '#1D4ED8', link: '#3F6212', nav: '#121815', navOn: '#C6F25B', navOnInk: '#16210A', navOff: '#C3CCC5', today: '#3F6212' }
+};
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { answer: null, rows: [null, null] };
+  }
+  renderVals() {
+    var self = this;
+    var t = this.props.light ? THEMES.light : THEMES.dark;
+    var a = this.state.answer;
+    function set(v) { return function () { self.setState({ answer: a === v ? null : v }); }; }
+    var week = [['MO', 12], ['DI', 13], ['MI', 14], ['DO', 15], ['FR', 16], ['SA', 17], ['SO', 18]].map(function (d, i) {
+      var today = i === 3;
+      var mark = i === 4 ? t.training : i === 6 ? t.match : 'transparent';
+      var label = d[0] + ' ' + d[1] + '.10.' + (today ? ', heute' : '') + (i === 4 ? ', Training' : i === 6 ? ', Spiel' : '');
+      return { wd: d[0], n: d[1], label: label, ring: today ? t.today : 'transparent', bg: today ? 'transparent' : 'transparent', fg: t.ink, mark: mark };
+    });
+    var tabIcons = ['M4 11l8-7 8 7v9h-5v-6h-6v6H4z', 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4', 'M12 4l6 16H6z M8.6 13h6.8', 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5 M16 4.3a3.5 3.5 0 0 1 0 6.4 M18.5 14.8c1.7.8 2.8 2.6 3 5.2'];
+    var tabs = ['Start', 'Termine', 'Training', 'Team'].map(function (l, i) {
+      var on = i === 0;
+      return { label: l, icon: tabIcons[i], current: on ? 'page' : undefined, bg: on ? t.navOn : 'transparent', fg: on ? t.navOnInk : t.navOff };
+    });
+    var rowsBase = [
+      { when: 'SO 18.10. · 15:00', title: 'vs. FC Nachbarort', meta: 'Auswärts · Treffpunkt 13:45 Vereinsheim', typeColor: t.match, typeText: t.matchText, shape: '3px' },
+      { when: 'DI 20.10. · 18:30', title: 'Training', meta: 'Sportpark, Platz 2', typeColor: t.training, typeText: t.trainingText, shape: '50%' }
+    ];
+    var rows = rowsBase.map(function (r, i) {
+      var on = self.state.rows[i] === 'yes';
+      return Object.assign({}, r, {
+        on: on, label: on ? '✓ Dabei' : 'Zusagen',
+        pick: function () { var rs = self.state.rows.slice(); rs[i] = on ? null : 'yes'; self.setState({ rows: rs }); },
+        bg: on ? t.yes : 'transparent', fg: on ? t.yesInk : t.ink, border: on ? t.yes : t.line
+      });
+    });
+    return {
+      t: t, week: week, tabs: tabs, rows: rows,
+      yesOn: a === 'yes', pickYes: set('yes'), yesLabel: a === 'yes' ? 'Du bist dabei' : 'Ich bin dabei',
+      yesBg: a === 'yes' ? t.yes : (a ? 'transparent' : t.yes), yesFg: a === 'yes' || !a ? t.yesInk : t.ink, yesBorder: a && a !== 'yes' ? t.line : t.yes,
+      maybeOn: a === 'maybe', pickMaybe: set('maybe'), maybeBg: a === 'maybe' ? t.maybe : 'transparent', maybeFg: a === 'maybe' ? t.maybeInk : t.ink, maybeBorder: a === 'maybe' ? t.maybe : t.line,
+      noOn: a === 'no', pickNo: set('no'), noBg: a === 'no' ? t.no : 'transparent', noFg: a === 'no' ? t.noInk : t.ink, noBorder: a === 'no' ? t.no : t.line
+    };
+  }
+}
+</script>
+</body>
+</html>

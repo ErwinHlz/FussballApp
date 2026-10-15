@@ -45,16 +45,33 @@
 
 ---
 
-## 3. Designrichtung (Vorschlag: „Spieltag“)
+## 3. Designrichtung: „Taktiktafel“ (entschieden in U0)
 
-Der Vorschlag wird in Phase U0 mit Alternativen als Klick-Mockup vorgelegt. Gebaut wird erst nach deiner Entscheidung.
+Gewählt wurde **Richtung B** aus den Mockups (`docs/ui/u0-mockups/`, Canvas „Rondo UI-Richtungen“). Der **Plan-Editor übernimmt den Aufbau aus Richtung A**, gestaltet im Stil von B.
 
-- **Typografie:** eine kräftige, schmale Display-Schrift für Überschriften, Datum und Zahlen (z. B. *Barlow Condensed* oder *Saira Condensed*, wie auf Anzeigetafeln und Trikotnummern) plus eine gut lesbare Textschrift (z. B. *Inter*). Zahlen in Tabellenziffern.
-- **Farbe:** ruhige, leicht warme Grundfläche, ein tiefer Dunkelmodus als gleichwertiges Theme. Vereinsfarbe als Akzent (Logik aus Abschnitt 9 bleibt: Kontrast ≥ 4,5:1).
-- **Formen und Motive:** große Datumsblöcke wie auf einem Spielplan, Leibchen als echtes Trikot-Icon mit Farbe und Namen, dezente Spielfeldlinien als Gestaltungselement (z. B. im Kopf der Startseite), Trikotnummern statt Avatar-Platzhaltern.
-- **Icons:** ein einheitliches, eigenes Linien-Icon-Set (24 px, 2 px Strich) inklusive Zusage-, Vielleicht- und Absage-Icon. Kein Emoji mehr, auch nicht im Logo.
+- **Charakter:** wie eine Taktiktafel in der Kabine: dunkle Fläche, Kreidelinien (gestrichelt), klare weiße Schrift, ein leuchtender Akzent. Das dunkle Theme ist das Leit-Theme, das helle ist gleichwertig ausgearbeitet. Standard ist „automatisch“ (Systemeinstellung).
+- **Typografie:** *Saira Condensed* (600–800) für Überschriften, Uhrzeiten, Datum und Zahlen, *Manrope* (400–800) für Text und Bedienelemente. Beide selbst gehostet als WOFF2, Zahlen in Tabellenziffern.
+- **Farben (Startwerte, Kontrast ≥ 4,5:1 geprüft in U1):**
+
+  | Token | Dunkel | Hell |
+  |---|---|---|
+  | Grund | `#0F1412` | `#F3F5F0` |
+  | Fläche | `#171F1A` | `#FFFFFF` |
+  | Text / gedämpft | `#EEF2EC` / `#A1ADA5` | `#121815` / `#56615A` |
+  | Linie / Kreide | `#27322B` / `rgba(238,242,236,.28)` | `#DCE1D9` / `rgba(18,24,21,.28)` |
+  | Akzent (Standard ohne Vereinsfarbe) | `#C6F25B` mit dunkler Schrift | `#3F6212` mit weißer Schrift |
+
+  Die Vereinsfarbe ersetzt den Akzent und wird wie bisher pro Theme auf Kontrast angepasst. Typfarben (Training, Spiel, Event) und Antwortfarben bleiben eigene Tokens und werden nie durch die Vereinsfarbe ersetzt.
+- **Motive:** gestrichelte Kreiderahmen um den nächsten Termin, kleine Taktik-Zeichnungen (z. B. Rondo-Kreis) als Dekor, Übungsvorschau als Mini-Spielfeld mit Spielerpunkten, Leibchen als Trikot-Icon, Trikotnummern statt Avatar-Platzhaltern, dezente gestrichelte Zeitleisten.
+- **Muster aus dem Mockup, die verbindlich sind:**
+  - Start: Wochenleiste (Mo–So) oben, Typ-Markierung je Tag zusätzlich mit Form, nicht nur Farbe
+  - Antwort: ein großer Knopf „Ich bin dabei“, darunter klein „Vielleicht“ und „Absage“; im Termin-Detail als feste Leiste unten (großer Knopf + ⋯ für die anderen Antworten)
+  - Navigation: schwebende, abgerundete Tab-Leiste mit gefülltem Akzent-Pill für den aktiven Tab
+  - Runde Icon-Knöpfe (44 px) für Zurück, Benachrichtigungen, Kalender
+  - Plan-Editor (Aufbau A): Kopf mit Typ und Datum, Segmente Plan / Gruppen / Wer kommt / Infos, Gesamtzeit groß mit Balken, Übungszeilen mit Ziehgriff, Minus/Plus-Stepper und ⋯, gestrichelter Knopf „Übung hinzufügen“, feste Leiste mit Status und „Veröffentlichen“
+- **Icons:** ein einheitliches, eigenes Linien-Icon-Set (24 px, 2 px Strich) inklusive Zusage-, Vielleicht- und Absage-Icon. Kein Emoji.
 - **Bewegung:** kurze, sinnvolle Übergänge (Sheet gleitet hoch, Antwort-Knopf „rastet ein“, Listen-Einträge blenden ein). `prefers-reduced-motion` wird respektiert.
-- **Logo:** einfache Wortmarke „Rondo“ mit Symbol (z. B. Kreis aus Punkten wie bei der Übung), als SVG, auch für App-Icon und Splash.
+- **Logo:** Wortmarke „Rondo“ in Saira Condensed mit Symbol aus der Rondo-Übung (Kreis aus vier Punkten, zwei in der Mitte), als SVG, auch für App-Icon und Splash. Entwurf in U1.
 
 ---
 
@@ -100,10 +117,10 @@ src/ui/                 # neues Design-System (ersetzt src/components/Base*)
 ## 6. Phasen
 
 ### Phase U0 – Richtung festlegen
-- [ ] Screenshot-Bestand aller Hauptseiten als „Vorher“ sichern (`docs/ui/before/`)
-- [ ] 2–3 Designrichtungen als klickbare Mockups für 3 Schlüsselseiten: Spieler-Start, Termin-Detail, Plan-Editor (hell und dunkel, 375 px)
-- [ ] Vorschlag für Tab-Struktur und Navigation (Abschnitt 4) im Mockup erlebbar machen
-- [ ] Entscheidung festhalten: Richtung, Schriften, Logo-Idee, Tab-Struktur
+- [x] Screenshot-Bestand aller Hauptseiten als „Vorher“ sichern (`docs/ui/before/`)
+- [x] 2–3 Designrichtungen als klickbare Mockups für 3 Schlüsselseiten: Spieler-Start, Termin-Detail, Plan-Editor (hell und dunkel, 375 px)
+- [x] Vorschlag für Tab-Struktur und Navigation (Abschnitt 4) im Mockup erlebbar machen
+- [x] Entscheidung festhalten: Richtung, Schriften, Logo-Idee, Tab-Struktur (siehe Abschnitte 3 und 8)
 
 **Abnahme:** Du hast eine Richtung gewählt. Erst danach wird gebaut.
 
@@ -118,9 +135,9 @@ src/ui/                 # neues Design-System (ersetzt src/components/Base*)
 **Abnahme:** Alle Bausteine laufen auf `/dev/ui` in hell und dunkel und bestehen axe. Die App läuft schon in der neuen Shell (Inhalte noch alt).
 
 ### Phase U2 – Spieler-Kern
-- [ ] **Start:** großer Block „Als Nächstes“ mit Datum, Uhrzeit, Ort, eigener Leibchenfarbe bzw. Nominierung und Antwort-Knöpfen. Darunter „Noch offen“ (unbeantwortete Termine) mit Antwort in der Zeile
+- [ ] **Start:** Wochenleiste oben, darunter der nächste Termin im Kreiderahmen mit großer Uhrzeit, Datum, Ort, eigenen Leibchen bzw. Nominierung und „Ich bin dabei“ (Vielleicht/Absage klein darunter). Darunter „Wartet auf deine Antwort“ als gestrichelte Zeitleiste mit Zusage in der Zeile
 - [ ] **Termine:** nach Wochen gruppiert mit festem Wochenkopf beim Scrollen, kompakte Zeilen mit Datumsblock, Typ-Kennung und Antwort; vergangene Termine darunter; Filter als Sheet
-- [ ] **Termin-Detail:** Kopfbereich in Typfarbe, Antwort als feste Leiste unten (immer erreichbar), Plan als Zeitleiste mit eigener Gruppe, Treffpunkt mit Link zur Karten-App
+- [ ] **Termin-Detail:** großer Titel mit Typ und Uhrzeit, Fakten als 2×2-Kacheln, Übungsvorschau als Mini-Spielfeld mit „Abspielen“, Ablauf mit eigenem Leibchen, Antwort als feste Leiste unten (immer erreichbar), Treffpunkt mit Link zur Karten-App
 - [ ] **Absage:** Sheet mit großen Grund-Chips, Absage mit einem Tipp, Bemerkung optional; Snackbar „Abgesagt · Rückgängig“
 - [ ] Übungsdetail für Spieler: Animation bzw. Video in voller Breite, Beschreibung darunter
 
@@ -186,9 +203,12 @@ src/ui/                 # neues Design-System (ersetzt src/components/Base*)
 
 ---
 
-## 8. Offene Entscheidungen (in Phase U0)
+## 8. Entscheidungen aus Phase U0
 
-1. **Neuaufbau oder Umbau?** Empfehlung: Neuaufbau der Oberfläche (neues `src/ui/`, Views neu geschrieben) bei unveränderter Daten- und Logikschicht. So gibt es ein durchgängiges neues Bild, ohne das Risiko, Supabase-Logik neu schreiben zu müssen.
-2. **Designrichtung, Schriften und Logo:** Auswahl anhand der Mockups.
-3. **Tab-Struktur:** Vorschlag aus Abschnitt 4 (Start, Termine, Training, Team plus Profil oben) oder die bisherige Aufteilung beibehalten.
-4. **Darstellung:** Soll es zusätzlich zu „automatisch“ eine feste Wahl hell/dunkel im Profil geben? (Vorschlag: ja)
+1. **Neuaufbau** der Oberfläche (neues `src/ui/`, Views neu geschrieben) bei unveränderter Daten- und Logikschicht. *(Vorschlag, nicht widersprochen)*
+2. **Designrichtung B „Taktiktafel“**, Plan-Editor mit dem Aufbau aus A. *(entschieden)*
+3. **Schriften** Saira Condensed + Manrope, Logo-Idee „Rondo-Kreis“. *(aus Richtung B übernommen, nicht widersprochen)*
+4. **Tabs** Start, Termine, Training, Team, Profil über das eigene Bild oben. *(Vorschlag, nicht widersprochen)*
+5. **Darstellung** automatisch nach System, zusätzlich feste Wahl hell/dunkel im Profil. *(Vorschlag, nicht widersprochen)*
+
+Punkte, die nur „nicht widersprochen“ sind, können vor U1 noch geändert werden.

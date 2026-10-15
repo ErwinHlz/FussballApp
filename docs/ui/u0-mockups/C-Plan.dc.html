@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>C · Plan-Editor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; overflow: hidden; background: {{t.bg}}; color: {{t.ink}}; font-family: Figtree, system-ui, sans-serif; font-size: 16px">
+
+  <header style="display: flex; flex-direction: column; gap: 14px; padding: 12px 16px 12px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <a href="#zurueck" aria-label="Zurück" style="display: grid; place-items: center; width: 44px; height: 44px; border-radius: 16px; background: {{t.surface}}; color: {{t.ink}}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+      </a>
+      <div style="flex: 1; display: flex; flex-direction: column">
+        <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.02em">Trainingsplan</h1>
+        <span style="font-size: 14px; color: {{t.muted}}">Freitag · 18:30 – 20:00</span>
+      </div>
+      <button type="button" aria-label="Weitere Aktionen: kopieren, Vorlage, Notizen" style="display: grid; place-items: center; width: 44px; height: 44px; border-radius: 16px; border: 0; background: {{t.surface}}; color: {{t.ink}}; cursor: pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
+      </button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 22px; background: {{t.surface}}">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px">{{total}} von 90 Min.</span>
+        <span style="font-size: 14px; font-weight: 700; color: {{fitColor}}">{{fitText}}</span>
+      </div>
+      <div aria-hidden="true" style="display: flex; gap: 3px; height: 14px">
+        <sc-for list="{{bars}}" as="b" hint-placeholder-count="4">
+          <span style="flex: {{b.f}}; border-radius: 6px; background: {{b.c}}"></span>
+        </sc-for>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex: 1; overflow-y: auto; padding: 4px 16px 24px">
+    <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+      <sc-for list="{{drills}}" as="d" hint-placeholder-count="3">
+        <li style="display: flex; align-items: center; gap: 10px; padding: 12px 10px 12px 6px; border-radius: 22px; background: {{t.surface}}">
+          <button type="button" aria-label="{{d.moveLabel}}" style="width: 30px; height: 44px; border: 0; background: none; color: {{t.muted}}; cursor: grab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg>
+          </button>
+          <span aria-hidden="true" style="width: 14px; height: 44px; flex-shrink: 0; border-radius: 7px; background: {{d.color}}"></span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <strong style="font-size: 16px; line-height: 1.2">{{d.title}}</strong>
+            <span style="font-size: 13px; color: {{t.muted}}">{{d.meta}}</span>
+          </div>
+          <button type="button" aria-label="{{d.durLabel}}" onClick="{{d.cycle}}" style="min-width: 64px; min-height: 44px; padding: 0 10px; border-radius: 14px; border: 0; background: {{t.track}}; color: {{t.ink}}; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 17px; cursor: pointer">{{d.min}}′</button>
+        </li>
+      </sc-for>
+    </ol>
+    <p style="margin: 14px 4px 0; font-size: 13px; color: {{t.muted}}">Tipp auf die Minuten ändert die Dauer, Ziehen am Griff sortiert, Wischen nach links entfernt.</p>
+  </main>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 12px 16px 24px; background: {{t.surface}}; box-shadow: 0 -6px 20px rgba(0,0,0,0.06)">
+    <button type="button" style="min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 18px; border: 2px solid {{t.line}}; background: transparent; color: {{t.ink}}; font-family: Figtree, sans-serif; font-weight: 800; font-size: 15px; cursor: pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Übung
+    </button>
+    <button type="button" onClick="{{togglePublish}}" style="min-height: 54px; border-radius: 18px; border: 2px solid {{pubBorder}}; background: {{pubBg}}; color: {{pubFg}}; font-family: Figtree, sans-serif; font-weight: 800; font-size: 15px; cursor: pointer">{{pubLabel}}</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"accent":{"editor":"color","default":"#0F766E","options":["#0F766E","#15803D","#B91C1C","#1D4ED8"]},"$preview":{"width":390,"height":844}}'>
+var THEMES = {
+  light: { bg: '#F2F3F6', surface: '#FFFFFF', ink: '#1A1D26', muted: '#5A6070', line: '#D9DCE3', track: '#ECEEF2', free: '#E3E6EC', ok: '#166534', warn: '#92400E' },
+  dark: { bg: '#101217', surface: '#1A1D25', ink: '#EEF0F4', muted: '#A4AABA', line: '#2C303B', track: '#262A34', free: '#2C303B', ok: '#4ADE80', warn: '#FBBF24' }
+};
+var STEPS = [5, 10, 15, 20, 25, 30, 40, 45, 60];
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mins: [10, 15, 25], published: false };
+  }
+  renderVals() {
+    var self = this;
+    var t = this.props.dark ? THEMES.dark : THEMES.light;
+    var accent = this.props.accent || '#0F766E';
+    var mins = this.state.mins;
+    var total = mins.reduce(function (a, b) { return a + b; }, 0);
+    var colors = ['#64748B', '#0EA5E9', '#F59E0B'];
+    var base = [
+      { title: 'Aufwärmen mit Ball', meta: 'Aufwärmen · ohne Gruppen' },
+      { title: 'Rondo 4 gegen 2', meta: 'Ballbesitz · Rot 3 · Blau 4' },
+      { title: 'Abschlussspiel 7 gegen 7', meta: 'Spielform · Rot 3 · Blau 4' }
+    ];
+    var drills = base.map(function (d, i) {
+      var m = mins[i];
+      return {
+        title: d.title, meta: d.meta, min: m, color: colors[i],
+        moveLabel: d.title + ' verschieben',
+        durLabel: 'Dauer ' + d.title + ': ' + m + ' Minuten, ändern',
+        cycle: function () { var ms = mins.slice(); var k = STEPS.indexOf(ms[i]); ms[i] = STEPS[(k + 1) % STEPS.length]; self.setState({ mins: ms }); }
+      };
+    });
+    var bars = drills.map(function (d) { return { f: d.min, c: d.color }; });
+    if (total < 90) bars.push({ f: 90 - total, c: t.free });
+    var fits = total >= 80 && total <= 90;
+    var pub = this.state.published;
+    return {
+      t: t, drills: drills, bars: bars, total: total,
+      fitText: total > 90 ? (total - 90) + ' Min. zu lang' : fits ? 'passt' : (90 - total) + ' Min. frei',
+      fitColor: fits ? t.ok : t.warn,
+      pubLabel: pub ? '✓ Veröffentlicht' : 'Veröffentlichen',
+      pubBg: pub ? 'transparent' : accent,
+      pubFg: pub ? t.ink : '#FFFFFF',
+      pubBorder: pub ? t.line : accent,
+      togglePublish: function () { self.setState({ published: !pub }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

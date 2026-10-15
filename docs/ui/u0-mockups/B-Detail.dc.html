@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>B · Termin-Detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; overflow: hidden; background: {{t.bg}}; color: {{t.ink}}; font-family: Manrope, system-ui, sans-serif; font-size: 16px">
+
+  <header style="display: flex; align-items: center; gap: 6px; padding: 12px 12px 6px">
+    <a href="B-Start.dc.html" aria-label="Zurück" style="display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: {{t.surface}}; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <span style="flex: 1"></span>
+    <button type="button" aria-label="Zum Kalender hinzufügen" style="display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 0; background: {{t.surface}}; color: {{t.ink}}; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4 M12 13v5 M9.5 15.5h5"></path></svg>
+    </button>
+  </header>
+
+  <main style="flex: 1; overflow-y: auto; padding: 4px 16px 24px; display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.08em; color: {{t.trainingText}}">TRAINING · MORGEN</span>
+      <h1 style="margin: 0; font-family: 'Saira Condensed', sans-serif; font-weight: 800; font-size: 46px; line-height: 1">Fr 16.10. · 18:30</h1>
+    </div>
+
+    <dl style="margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <sc-for list="{{facts}}" as="f" hint-placeholder-count="4">
+        <div style="padding: 10px 12px; border-radius: 16px; background: {{t.surface}}">
+          <dt style="font-size: 12px; font-weight: 700; color: {{t.muted}}">{{f.k}}</dt>
+          <dd style="margin: 2px 0 0; font-weight: 700; font-size: 15px">{{f.v}}</dd>
+        </div>
+      </sc-for>
+    </dl>
+
+    <section aria-labelledby="b-board" style="border-radius: 22px; overflow: hidden; background: {{t.pitch}}">
+      <svg width="358" height="170" viewBox="0 0 358 170" role="img" aria-label="Vorschau der Übung Rondo 4 gegen 2: vier Spieler im Kreis, zwei in der Mitte">
+        <rect x="10" y="10" width="338" height="150" rx="4" fill="none" stroke="rgba(238,242,236,0.35)" stroke-width="2"></rect>
+        <path d="M179 10v150" stroke="rgba(238,242,236,0.35)" stroke-width="2"></path>
+        <circle cx="179" cy="85" r="34" fill="none" stroke="rgba(238,242,236,0.35)" stroke-width="2"></circle>
+        <circle cx="120" cy="45" r="10" fill="#EF4444"></circle><circle cx="240" cy="45" r="10" fill="#EF4444"></circle><circle cx="240" cy="125" r="10" fill="#EF4444"></circle><circle cx="120" cy="125" r="10" fill="#EF4444"></circle>
+        <circle cx="168" cy="78" r="10" fill="#3B82F6"></circle><circle cx="194" cy="96" r="10" fill="#3B82F6"></circle>
+        <circle cx="132" cy="49" r="5" fill="#FFFFFF"></circle>
+        <path d="M132 49 L228 47" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="5 5"></path>
+      </svg>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px 12px; background: {{t.surface}}">
+        <div style="flex: 1; display: flex; flex-direction: column">
+          <strong id="b-board" style="font-size: 16px">Rondo 4 gegen 2</strong>
+          <span style="font-size: 13px; color: {{t.muted}}">Übung 2 von 3 · 15 Min. · du bist Rot</span>
+        </div>
+        <button type="button" style="min-height: 44px; padding: 0 16px; display: flex; align-items: center; gap: 6px; border-radius: 999px; border: 0; background: {{t.accent}}; color: {{t.accentInk}}; font-family: Manrope, sans-serif; font-weight: 800; font-size: 14px; cursor: pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"></path></svg>Abspielen
+        </button>
+      </div>
+    </section>
+
+    <section aria-labelledby="b-flow" style="display: flex; flex-direction: column">
+      <h2 id="b-flow" style="margin: 0 0 6px; font-family: 'Saira Condensed', sans-serif; font-weight: 800; font-size: 26px">Ablauf · 50 Min.</h2>
+      <sc-for list="{{drills}}" as="d" hint-placeholder-count="3">
+        <a href="#uebung" style="display: flex; align-items: center; gap: 12px; min-height: 60px; border-bottom: 1px solid {{t.line}}; color: inherit; text-decoration: none">
+          <span style="width: 28px; font-family: 'Saira Condensed', sans-serif; font-weight: 800; font-size: 26px; color: {{t.muted}}">{{d.n}}</span>
+          <span style="flex: 1; display: flex; flex-direction: column">
+            <strong style="font-size: 16px">{{d.title}}</strong>
+            <span style="font-size: 13px; color: {{t.muted}}">{{d.min}}</span>
+          </span>
+          <sc-if value="{{d.hasBib}}" hint-placeholder-val="{{true}}">
+            <span style="display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 14px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L3 6l2 4 3-1.5V21h8V8.5l3 1.5 2-4-5-3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z" fill="{{d.bib}}"></path></svg>{{d.bibName}}</span>
+          </sc-if>
+        </a>
+      </sc-for>
+    </section>
+
+    <p style="margin: 0; padding: 12px 14px; border-radius: 16px; border: 2px dashed {{t.dash}}; font-size: 15px; line-height: 1.4"><strong>Trainerin Tina:</strong> Bitte Schienbeinschoner mitbringen.</p>
+  </main>
+
+  <div style="display: flex; gap: 8px; padding: 12px 16px 24px; background: {{t.bar}}; border-top: 1px solid {{t.line}}">
+    <button type="button" aria-pressed="{{yesOn}}" onClick="{{pickYes}}" style="flex: 1; min-height: 56px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 16px; border: 2px solid {{yesBorder}}; background: {{yesBg}}; color: {{yesFg}}; font-family: Manrope, sans-serif; font-weight: 800; font-size: 17px; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>{{yesLabel}}
+    </button>
+    <button type="button" aria-label="Andere Antwort: Vielleicht oder Absage" style="width: 56px; min-height: 56px; border-radius: 16px; border: 2px solid {{t.line}}; background: transparent; color: {{t.ink}}; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
+    </button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"light":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+var THEMES = {
+  dark: { bg: '#0F1412', surface: '#171F1A', bar: '#141B17', ink: '#EEF2EC', muted: '#A1ADA5', line: '#27322B', dash: 'rgba(238,242,236,0.28)', pitch: '#123524', accent: '#C6F25B', accentInk: '#16210A', yes: '#C6F25B', yesInk: '#16210A', trainingText: '#C6F25B' },
+  light: { bg: '#F3F5F0', surface: '#FFFFFF', bar: '#FFFFFF', ink: '#121815', muted: '#56615A', line: '#DCE1D9', dash: 'rgba(18,24,21,0.28)', pitch: '#1B4D33', accent: '#3F6212', accentInk: '#FFFFFF', yes: '#3F6212', yesInk: '#FFFFFF', trainingText: '#3F6212' }
+};
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { yes: false };
+  }
+  renderVals() {
+    var self = this;
+    var t = this.props.light ? THEMES.light : THEMES.dark;
+    var on = this.state.yes;
+    return {
+      t: t,
+      facts: [
+        { k: 'Dauer', v: '18:30 – 20:00' },
+        { k: 'Ort', v: 'Sportpark, Platz 2' },
+        { k: 'Antworten bis', v: 'Fr 16:30' },
+        { k: 'Dabei', v: '6 von 8' }
+      ],
+      drills: [
+        { n: '1', title: 'Aufwärmen mit Ball', min: '10 Min.', hasBib: false },
+        { n: '2', title: 'Rondo 4 gegen 2', min: '15 Min. · Animation', hasBib: true, bib: '#EF4444', bibName: 'Rot' },
+        { n: '3', title: 'Abschlussspiel 7 gegen 7', min: '25 Min.', hasBib: true, bib: '#3B82F6', bibName: 'Blau' }
+      ],
+      yesOn: on,
+      pickYes: function () { self.setState({ yes: !on }); },
+      yesLabel: on ? 'Du bist dabei' : 'Ich bin dabei',
+      yesBg: on ? 'transparent' : t.yes,
+      yesFg: on ? t.ink : t.yesInk,
+      yesBorder: t.yes
+    };
+  }
+}
+</script>
+</body>
+</html>

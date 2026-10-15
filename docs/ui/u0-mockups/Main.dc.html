@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>A · Spieler-Start</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Barlow:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; overflow: hidden; background: {{t.bg}}; color: {{t.ink}}; font-family: Barlow, system-ui, sans-serif; font-size: 16px">
+
+  <header style="display: flex; align-items: center; gap: 12px; padding: 14px 16px 10px; background: {{t.bg}}">
+    <button type="button" aria-label="Mannschaft wechseln" style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l15 5v11c0 9.5-6.4 16.5-15 20C11.4 34.5 5 27.5 5 18V7z" fill="{{t.pitch}}"></path><text x="20" y="25" text-anchor="middle" font-family="Barlow Condensed" font-weight="800" font-size="15" fill="#ffffff">09</text></svg>
+      <span style="display: flex; flex-direction: column; line-height: 1.1">
+        <span style="font-size: 13px; font-weight: 600; color: {{t.muted}}">SV Demo 09</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: 0.01em">U17</span>
+      </span>
+    </button>
+    <a href="#profil" aria-label="Profil" style="display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: {{t.surface}}; border: 2px solid {{t.line}}; color: {{t.ink}}; text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 19px">10</a>
+  </header>
+
+  <main style="flex: 1; overflow-y: auto; padding: 4px 16px 24px; display: flex; flex-direction: column; gap: 22px">
+
+    <section aria-labelledby="next-title" style="position: relative; overflow: hidden; border-radius: 22px; background: {{t.pitch}}; color: #ffffff; padding: 18px 18px 18px">
+      <svg width="358" height="250" viewBox="0 0 358 250" aria-hidden="true" style="position: absolute; right: -120px; top: -20px; opacity: 0.14"><circle cx="179" cy="125" r="70" fill="none" stroke="#ffffff" stroke-width="3"></circle><path d="M179 0v250" stroke="#ffffff" stroke-width="3"></path><circle cx="179" cy="125" r="5" fill="#ffffff"></circle></svg>
+      <div style="position: relative; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span style="padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.16); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.06em">TRAINING</span>
+          <span id="next-title" style="font-size: 15px; font-weight: 600; opacity: 0.9">Als Nächstes · morgen</span>
+        </div>
+        <div style="display: flex; align-items: flex-end; justify-content: space-between">
+          <div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; line-height: 0.9">
+            <div style="font-size: 20px; opacity: 0.85; letter-spacing: 0.04em">FREITAG</div>
+            <div style="font-size: 52px">16.10.</div>
+          </div>
+          <div style="text-align: right; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; line-height: 0.9">
+            <div style="font-size: 52px">18:30</div>
+            <div style="font-size: 18px; opacity: 0.85">bis 20:00</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 500">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+          Sportpark, Platz 2
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.18)">
+          <div style="font-size: 13px; font-weight: 600; opacity: 0.85">Dein Leibchen</div>
+          <div style="display: flex; gap: 8px">
+            <div style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,0.1)">
+              <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L3 6l2 4 3-1.5V21h8V8.5l3 1.5 2-4-5-3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z" fill="#ef4444" stroke="#ffffff" stroke-width="1.2"></path></svg>
+              <span style="display: flex; flex-direction: column; line-height: 1.15"><strong style="font-size: 15px">Rot</strong><span style="font-size: 12px; opacity: 0.85">Rondo 4 gegen 2</span></span>
+            </div>
+            <div style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,0.1)">
+              <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L3 6l2 4 3-1.5V21h8V8.5l3 1.5 2-4-5-3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z" fill="#3b82f6" stroke="#ffffff" stroke-width="1.2"></path></svg>
+              <span style="display: flex; flex-direction: column; line-height: 1.15"><strong style="font-size: 15px">Blau</strong><span style="font-size: 12px; opacity: 0.85">Abschlussspiel</span></span>
+            </div>
+          </div>
+        </div>
+        <div role="group" aria-label="Bist du dabei?" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{heroOpts}}" as="o" hint-placeholder-count="3">
+            <button type="button" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="height: 54px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 14px; border: 2px solid {{o.border}}; background: {{o.bg}}; color: {{o.fg}}; font-family: Barlow, sans-serif; font-weight: 700; font-size: 16px; cursor: pointer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{o.icon}}"></path></svg>
+              {{o.label}}
+            </button>
+          </sc-for>
+        </div>
+        <a href="A-Detail.dc.html" style="align-self: flex-start; display: flex; align-items: center; gap: 2px; min-height: 44px; color: #ffffff; font-weight: 600; font-size: 15px; text-decoration: none">Ablauf und Details
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </a>
+      </div>
+    </section>
+
+    <section aria-labelledby="open-title" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 id="open-title" style="margin: 0; display: flex; align-items: baseline; gap: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800">Noch offen <span style="font-size: 18px; color: {{t.muted}}">2</span></h2>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 10px; border-radius: 16px; background: {{t.surface}}">
+          <div style="width: 52px; flex-shrink: 0; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; line-height: 1; color: {{r.typeText}}">
+            <div style="font-size: 14px; letter-spacing: 0.05em">{{r.wd}}</div>
+            <div style="font-size: 24px">{{r.day}}</div>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <strong style="font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.title}}</strong>
+            <span style="font-size: 13px; color: {{t.muted}}">{{r.meta}}</span>
+          </div>
+          <div role="group" aria-label="{{r.groupLabel}}" style="display: flex; gap: 4px">
+            <sc-for list="{{r.opts}}" as="o" hint-placeholder-count="3">
+              <button type="button" aria-label="{{o.label}}" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; border: 2px solid {{o.border}}; background: {{o.bg}}; color: {{o.fg}}; cursor: pointer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{o.icon}}"></path></svg>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </section>
+
+    <section aria-labelledby="week-title" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 id="week-title" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800">Danach</h2>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 10px; border-radius: 16px; background: {{t.surface}}">
+        <div style="width: 52px; flex-shrink: 0; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; line-height: 1; color: {{t.trainingText}}">
+          <div style="font-size: 14px; letter-spacing: 0.05em">DO</div>
+          <div style="font-size: 24px">22.10.</div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <strong style="font-size: 16px">Training</strong>
+          <span style="font-size: 13px; color: {{t.muted}}">18:30 · Sportpark, Platz 2</span>
+        </div>
+        <span style="display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700; color: {{t.yesText}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Dabei</span>
+      </div>
+    </section>
+  </main>
+
+  <nav aria-label="Hauptnavigation" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 6px 8px 22px; background: {{t.surface}}; border-top: 1px solid {{t.line}}">
+    <sc-for list="{{tabs}}" as="tab" hint-placeholder-count="4">
+      <a href="#" aria-current="{{tab.current}}" style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 52px; justify-content: center; text-decoration: none; color: {{tab.color}}; font-size: 12px; font-weight: {{tab.weight}}">
+        <span style="display: grid; place-items: center; width: 56px; height: 30px; border-radius: 999px; background: {{tab.pill}}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tab.icon}}"></path></svg>
+        </span>
+        {{tab.label}}
+      </a>
+    </sc-for>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+var THEMES = {
+  light: { bg: '#EDF1EC', surface: '#FFFFFF', ink: '#0F1A14', muted: '#55625A', line: '#D7DED5', pitch: '#0B4A30', yes: '#15803D', maybe: '#B45309', no: '#B91C1C', yesText: '#166534', trainingText: '#166534', matchText: '#1E40AF', tabOn: '#0F1A14', tabOff: '#55625A', pill: '#D3E8D9' },
+  dark: { bg: '#0A110D', surface: '#141D18', ink: '#E7EEE9', muted: '#9DAEA3', line: '#26332B', pitch: '#0E4B32', yes: '#15803D', maybe: '#B45309', no: '#B91C1C', yesText: '#4ADE80', trainingText: '#4ADE80', matchText: '#93C5FD', tabOn: '#E7EEE9', tabOff: '#9DAEA3', pill: '#1F3A2A' }
+};
+var ICONS = {
+  yes: 'M5 12.5l4.5 4.5L19 7.5',
+  maybe: 'M9.2 9a3 3 0 1 1 4.3 2.7c-.9.4-1.5 1.1-1.5 2.1V15 M12 19h.01',
+  no: 'M6 6l12 12M18 6L6 18'
+};
+var LABELS = { yes: 'Zusage', maybe: 'Vielleicht', no: 'Absage' };
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { hero: 'yes', match: null, training: null };
+  }
+  options(key, onHero, t) {
+    var self = this;
+    return ['yes', 'maybe', 'no'].map(function (v) {
+      var on = self.state[key] === v;
+      var fill = t[v];
+      return {
+        label: LABELS[v], icon: ICONS[v], pressed: on,
+        pick: function () { var s = {}; s[key] = on ? null : v; self.setState(s); },
+        bg: on ? fill : (onHero ? 'rgba(255,255,255,0.08)' : 'transparent'),
+        fg: on ? '#FFFFFF' : (onHero ? '#FFFFFF' : t.ink),
+        border: on ? fill : (onHero ? 'rgba(255,255,255,0.35)' : t.line)
+      };
+    });
+  }
+  renderVals() {
+    var t = this.props.dark ? THEMES.dark : THEMES.light;
+    var tabIcons = {
+      start: 'M4 11l8-7 8 7v9h-5v-6h-6v6H4z',
+      events: 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4',
+      training: 'M12 4l6 16H6z M8.6 13h6.8',
+      team: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5 M16 4.3a3.5 3.5 0 0 1 0 6.4 M18.5 14.8c1.7.8 2.8 2.6 3 5.2'
+    };
+    var tabs = [['start', 'Start'], ['events', 'Termine'], ['training', 'Training'], ['team', 'Team']].map(function (x, i) {
+      var on = i === 0;
+      return { label: x[1], icon: tabIcons[x[0]], current: on ? 'page' : undefined, color: on ? t.tabOn : t.tabOff, weight: on ? 700 : 500, pill: on ? t.pill : 'transparent' };
+    });
+    return {
+      t: t,
+      tabs: tabs,
+      heroOpts: this.options('hero', true, t),
+      rows: [
+        { wd: 'SO', day: '18.10.', title: 'vs. FC Nachbarort', meta: 'Spiel · auswärts · 15:00', typeText: t.matchText, groupLabel: 'Antwort Spiel 18.10.', opts: this.options('match', false, t) },
+        { wd: 'DI', day: '20.10.', title: 'Training', meta: '18:30 · Sportpark, Platz 2', typeText: t.trainingText, groupLabel: 'Antwort Training 20.10.', opts: this.options('training', false, t) }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
