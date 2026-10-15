@@ -134,6 +134,9 @@ export function useSetAttendance() {
 
   return useMutation({
     mutationFn: setAttendance,
+    // Answers are sent one after another: two quick taps must reach the server in order,
+    // otherwise the earlier answer could win.
+    scope: { id: 'attendance' },
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.all })
       const snapshot = queryClient.getQueriesData<TeamEvent | TeamEvent[]>({

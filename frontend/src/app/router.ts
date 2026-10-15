@@ -100,18 +100,19 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/events/views/EventDetailView.vue'),
       },
       {
-        // Plan, groups and animation editors have their own contextual back links.
+        // Plan and groups switch with the event overview via EventCoachNav; their main action
+        // sits in a fixed bar, so the tab bar steps aside.
         path: 'events/:eventId/plan',
         name: 'event-plan',
         props: true,
-        meta: { title: 'plan.title' },
+        meta: { title: 'plan.title', back: 'event', hideNav: true },
         component: () => import('@/features/training-plan/views/PlanEditorView.vue'),
       },
       {
         path: 'events/:eventId/groups',
         name: 'event-groups',
         props: true,
-        meta: { title: 'groups.title' },
+        meta: { title: 'groups.title', back: 'event', hideNav: true },
         component: () => import('@/features/groups/views/GroupsView.vue'),
       },
       {

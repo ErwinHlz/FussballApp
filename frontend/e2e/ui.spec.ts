@@ -169,11 +169,40 @@ test('the create menu offers all event types and opens the form', async ({ page 
   await page.mouse.click(10, 10)
   await expect(menu).toBeHidden()
 
+  // A match asks for the opponent; "Alles anpassen" opens the full form with the choices.
   await page.getByRole('button', { name: 'Termin anlegen' }).click()
   await menu.getByRole('button', { name: /^Spiel\s/ }).click()
-  await expect(page).toHaveURL(/\/events\/new\/match$/)
+  const match = page.getByRole('dialog', { name: 'Neues Spiel' })
+  await match.getByLabel('Gegner').fill('TSV Testhausen')
+  await match.getByRole('button', { name: 'Alles anpassen' }).click()
+  await expect(match).toBeHidden()
+  await expect(page).toHaveURL(/\/events\/new\/match\?/)
   await expect(page.getByRole('heading', { level: 1, name: 'Neues Spiel' })).toBeVisible()
+  await expect(page.getByLabel('Gegner')).toHaveValue('TSV Testhausen')
   await expectNoHorizontalScroll(page)
+})
+
+test('a coach creates a training with taken-over defaults in at most four taps', async ({
+  page,
+}) => {
+  const demo = await seedDemo()
+  await login(page, demo.coach.email)
+  await ready(page)
+
+  await page.getByRole('button', { name: 'Termin anlegen' }).click() // 1
+  const sheet = page.getByRole('dialog')
+  await sheet.getByRole('button', { name: /^Training\s/ }).click() // 2
+  await expect(sheet).toHaveAccessibleName('Neues Training')
+  // Place, time, length and deadline come from the last training (seed: 18:30, Platz 2).
+  await expect(sheet.getByLabel('Beginn')).toHaveValue('18:30')
+  await expect(sheet).toContainText('Sportpark, Platz 2')
+  await expect(sheet.locator('.quick__day[aria-pressed="true"]')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Anlegen', exact: true }).click() // 3
+
+  await expect(page).toHaveURL(/\/events\/[0-9a-f-]{36}$/)
+  await expect(page.getByText('Training angelegt')).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Training' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Sportpark, Platz 2/ })).toBeVisible()
 })
 
 test('the filter sheet narrows the list and is remembered', async ({ page }) => {

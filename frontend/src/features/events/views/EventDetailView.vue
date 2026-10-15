@@ -2,10 +2,12 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseModal from '@/components/BaseModal.vue'
 import ActionBar from '@/ui/ActionBar.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
+import OverflowMenu, { type OverflowItem } from '@/ui/OverflowMenu.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiInput from '@/ui/UiInput.vue'
+import { useSnackbar } from '@/ui/useSnackbar'
 import AnswerControl from '@/ui/AnswerControl.vue'
 import UiBadge from '@/ui/UiBadge.vue'
 import UiIcon from '@/ui/UiIcon.vue'
@@ -16,9 +18,11 @@ import { relativeDay } from '@/features/player-view/logic'
 import PlanSection from '@/features/training-plan/components/PlanSection.vue'
 import AttendanceOverview from '../components/AttendanceOverview.vue'
 import DeclineSheet from '../components/DeclineSheet.vue'
+import EventCoachNav from '../components/EventCoachNav.vue'
 import MatchSquadEditor from '../components/MatchSquadEditor.vue'
 import { useAnswer } from '../composables/useAnswer'
-import { useDeleteEvent, useEvent, useMyMember, useUpdateEvent } from '../composables/useEvents'
+import { useDeleteWithUndo } from '../composables/useDeleteWithUndo'
+import { useEvent, useMyMember, useUpdateEvent } from '../composables/useEvents'
 import { useEventFormat } from '../format'
 import { canRespond, responseState, SQUAD_ROLES, type AttendanceStatus } from '../logic'
 
@@ -32,7 +36,8 @@ const teamId = computed(() => event.data.value?.team_id ?? null)
 const { members, myMember } = useMyMember(teamId)
 const { myTeams } = useActiveTeam()
 const updateEvent = useUpdateEvent()
-const deleteEvent = useDeleteEvent()
+const deleteWithUndo = useDeleteWithUndo()
+const snackbar = useSnackbar()
 
 // Coach rights for the event's team (not just the active one).
 const isCoach = computed(() => {
@@ -106,33 +111,58 @@ function onAnswer(status: AttendanceStatus) {
   answer(e.value, myMember.value.id, myAttendance.value, status, label)
 }
 
-// Coach actions (restyled in UI-PLAN.md phase U3).
+// Coach actions behind "⋯": edit, cancel (with reason) or reactivate, delete (with undo).
+type CoachAction = 'edit' | 'cancel' | 'reactivate' | 'delete'
+const coachActions = computed<OverflowItem<CoachAction>[]>(() => [
+  { key: 'edit', label: t('events.edit'), icon: 'edit' },
+  e.value?.is_cancelled
+    ? { key: 'reactivate', label: t('events.reactivate'), icon: 'undo' }
+    : { key: 'cancel', label: t('events.cancel'), icon: 'x' },
+  { key: 'delete', label: t('events.delete'), icon: 'trash', danger: true },
+])
 const cancelOpen = ref(false)
 const cancelReason = ref('')
-const confirmDelete = ref(false)
+const deleteOpen = ref(false)
+
+function onCoachAction(action: CoachAction) {
+  if (action === 'edit')
+    void router.push({ name: 'event-edit', params: { eventId: props.eventId } })
+  else if (action === 'cancel') cancelOpen.value = true
+  else if (action === 'reactivate') void reactivate()
+  else deleteOpen.value = true
+}
 
 async function cancelEvent() {
-  await updateEvent.mutateAsync({
-    eventId: props.eventId,
-    patch: { is_cancelled: true, cancel_reason: cancelReason.value.trim() || null },
-  })
-  cancelOpen.value = false
+  try {
+    await updateEvent.mutateAsync({
+      eventId: props.eventId,
+      patch: { is_cancelled: true, cancel_reason: cancelReason.value.trim() || null },
+    })
+    cancelOpen.value = false
+    snackbar.show({ text: t('events.cancelledDone') })
+  } catch {
+    snackbar.show({ text: t('squad.errors.unknown'), tone: 'error' })
+  }
 }
 
 async function reactivate() {
-  await updateEvent.mutateAsync({
-    eventId: props.eventId,
-    patch: { is_cancelled: false, cancel_reason: null },
-  })
+  try {
+    await updateEvent.mutateAsync({
+      eventId: props.eventId,
+      patch: { is_cancelled: false, cancel_reason: null },
+    })
+    snackbar.show({ text: t('events.reactivatedDone') })
+  } catch {
+    snackbar.show({ text: t('squad.errors.unknown'), tone: 'error' })
+  }
 }
 
 async function remove() {
-  if (!confirmDelete.value) {
-    confirmDelete.value = true
-    return
-  }
-  await deleteEvent.mutateAsync(props.eventId)
+  if (!e.value) return
+  const label = fmt.title(e.value)
+  deleteOpen.value = false
   await router.replace({ name: 'events' })
+  deleteWithUndo.remove(props.eventId, label)
 }
 </script>
 
@@ -148,7 +178,17 @@ async function remove() {
     </p>
 
     <template v-else>
+      <EventCoachNav v-if="isCoach && e.type === 'training'" :event-id="e.id" active="event" />
+
       <header class="detail__head">
+        <OverflowMenu
+          v-if="isCoach"
+          class="detail__menu"
+          :items="coachActions"
+          :title="t('events.coachActions')"
+          :label="t('events.coachActions')"
+          @select="onCoachAction"
+        />
         <!-- Trainings are titled "Training" already: the eyebrow then only says when. -->
         <p v-if="e.type !== 'training' || when" class="detail__eyebrow">
           <template v-if="e.type !== 'training'">{{ typeLabel }}</template>
@@ -261,45 +301,6 @@ async function remove() {
           :event="e"
           :members="members.data.value"
         />
-
-        <section class="detail__coach-actions" :aria-label="t('events.coachActions')">
-          <RouterLink
-            v-slot="{ navigate }"
-            custom
-            :to="{ name: 'event-edit', params: { eventId: e.id } }"
-          >
-            <BaseButton variant="secondary" block @click="navigate">{{
-              t('events.edit')
-            }}</BaseButton>
-          </RouterLink>
-          <BaseButton v-if="!e.is_cancelled" variant="secondary" block @click="cancelOpen = true">
-            {{ t('events.cancel') }}
-          </BaseButton>
-          <BaseButton
-            v-else
-            variant="secondary"
-            block
-            :loading="updateEvent.isPending.value"
-            @click="reactivate"
-          >
-            {{ t('events.reactivate') }}
-          </BaseButton>
-          <BaseButton
-            :variant="confirmDelete ? 'danger' : 'ghost'"
-            block
-            :loading="deleteEvent.isPending.value"
-            @click="remove"
-          >
-            {{ confirmDelete ? t('events.deleteConfirm') : t('events.delete') }}
-          </BaseButton>
-          <p
-            v-if="updateEvent.isError.value || deleteEvent.isError.value"
-            class="detail__error"
-            role="alert"
-          >
-            {{ t('squad.errors.unknown') }}
-          </p>
-        </section>
       </template>
 
       <!-- My answer: always in reach at the bottom. -->
@@ -320,21 +321,34 @@ async function remove() {
 
       <DeclineSheet :request="declining" @decline="decline" @cancel="declining = null" />
 
-      <BaseModal v-model:open="cancelOpen" :title="t('events.cancelTitle')">
-        <BaseInput
+      <BottomSheet v-model:open="cancelOpen" :title="t('events.cancelTitle')">
+        <UiInput
           v-model="cancelReason"
           :label="t('events.cancelReason')"
           :placeholder="t('events.cancelReasonPlaceholder')"
         />
+        <p class="detail__hint">{{ t('events.cancelHint') }}</p>
         <template #footer>
-          <BaseButton variant="secondary" @click="cancelOpen = false">{{
+          <UiButton variant="secondary" @click="cancelOpen = false">{{
             t('common.cancel')
-          }}</BaseButton>
-          <BaseButton variant="danger" :loading="updateEvent.isPending.value" @click="cancelEvent">
+          }}</UiButton>
+          <UiButton variant="danger" :loading="updateEvent.isPending.value" @click="cancelEvent">
             {{ t('events.cancel') }}
-          </BaseButton>
+          </UiButton>
         </template>
-      </BaseModal>
+      </BottomSheet>
+
+      <BottomSheet v-model:open="deleteOpen" :title="t('events.deleteTitle')">
+        <p>{{ t('events.deleteText') }}</p>
+        <template #footer>
+          <UiButton variant="secondary" @click="deleteOpen = false">{{
+            t('common.cancel')
+          }}</UiButton>
+          <UiButton variant="danger" icon="trash" @click="remove">{{
+            t('events.delete')
+          }}</UiButton>
+        </template>
+      </BottomSheet>
     </template>
   </section>
 </template>
@@ -362,9 +376,17 @@ async function remove() {
   }
 
   &__head {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: $space-1;
+    padding-right: $touch-target;
+  }
+
+  &__menu {
+    position: absolute;
+    top: -4px;
+    right: -8px;
   }
 
   &__eyebrow {
@@ -477,12 +499,6 @@ async function remove() {
 
   &__squad-group h3 {
     font-size: $font-md;
-  }
-
-  &__coach-actions {
-    display: flex;
-    flex-direction: column;
-    gap: $space-2;
   }
 
   &__answer {

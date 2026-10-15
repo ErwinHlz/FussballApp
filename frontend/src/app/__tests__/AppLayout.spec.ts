@@ -29,7 +29,8 @@ const tabLabels = (wrapper: Awaited<ReturnType<typeof mountAt>>['wrapper']) =>
   wrapper.findAll('.tab-bar__link').map((l) => l.text())
 
 describe('App layout', () => {
-  it('starts on the start tab and shows the four tabs', async () => {
+  // First test loads the lazy start page (and its imports) once: give it more time.
+  it('starts on the start tab and shows the four tabs', { timeout: 15_000 }, async () => {
     i18n.global.locale.value = 'de'
     const { wrapper, router } = await mountAt('/')
     await flush()

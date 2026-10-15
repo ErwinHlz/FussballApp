@@ -158,12 +158,19 @@ Umsetzungsnotizen U2:
 **Abnahme:** Ein Spieler sagt vom App-Start aus mit **einem Tipp** zu und erkennt seine Gruppe ohne Scrollen. Die Absage mit Grund braucht höchstens 2 Tipps.
 
 ### Phase U3 – Trainer-Kern
-- [ ] **Termin anlegen** über ⊕ als geführtes Sheet: Typ wählen, Datum, dann fertig. Ort, Uhrzeit, Dauer und Anmeldeschluss werden vom letzten gleichartigen Termin übernommen und sind änderbar. Serien und Spiele haben je einen zusätzlichen Schritt.
-- [ ] **Wer kommt?** Zähler als große Zahlen, Namen als Trikotnummer-Chips je Status, live; Antwort für Spieler ohne Konto per Tipp auf den Namen
-- [ ] **Plan-Editor:** kompakte Übungszeilen mit Ziehgriff, Dauer als Stepper (− 10 +), Notiz/Gruppen/Löschen über ⋯ oder Wischen; eine feste Leiste mit Gesamtzeit und „Veröffentlichen“; „Übung hinzufügen“ als einzige Hauptaktion, Kopieren/Vorlage im ⋯-Menü
-- [ ] **Gruppen:** Leibchen-Spalten, Spieler antippen und dann Gruppe antippen (und Ziehen), Schnellaktionen (zufällig, nach Positionen, wie vorher) im ⋯-Menü, Hinweis bei nicht eingeteilten Spielern als feste Leiste
-- [ ] **Nominierung:** drei Bereiche (Startelf/Bank/Reserve) mit Zähler; Spieler per Tipp durchschalten
-- [ ] Termin absagen, bearbeiten und löschen über ⋯ mit Bestätigungs-Sheet; Löschen mit Undo
+- [x] **Termin anlegen** über ⊕ als geführtes Sheet: Typ wählen, Datum, dann fertig. Ort, Uhrzeit, Dauer und Anmeldeschluss werden vom letzten gleichartigen Termin übernommen und sind änderbar. Serien und Spiele haben je einen zusätzlichen Schritt.
+- [x] **Wer kommt?** Zähler als große Zahlen, Namen als Trikotnummer-Chips je Status, live; Antwort für Spieler ohne Konto per Tipp auf den Namen
+- [x] **Plan-Editor:** kompakte Übungszeilen mit Ziehgriff, Dauer als Stepper (− 10 +), Notiz/Gruppen/Löschen über ⋯ oder Wischen; eine feste Leiste mit Gesamtzeit und „Veröffentlichen“; „Übung hinzufügen“ als einzige Hauptaktion, Kopieren/Vorlage im ⋯-Menü
+- [x] **Gruppen:** Leibchen-Spalten, Spieler antippen und dann Gruppe antippen (und Ziehen), Schnellaktionen (zufällig, nach Positionen, wie vorher) im ⋯-Menü, Hinweis bei nicht eingeteilten Spielern als feste Leiste
+- [x] **Nominierung:** drei Bereiche (Startelf/Bank/Reserve) mit Zähler; Spieler per Tipp durchschalten
+- [x] Termin absagen, bearbeiten und löschen über ⋯ mit Bestätigungs-Sheet; Löschen mit Undo
+
+Umsetzungsnotizen U3:
+- Termin anlegen: `QuickCreateSheet` mit Vorgaben vom zuletzt angelegten Termin derselben Art (`suggestDefaults`, `suggestDate`); Training mit Vorgaben in 3 Tipps (+, Training, Anlegen). „Alles anpassen“ öffnet das Formular vorbefüllt. Serien gehen direkt ins Formular.
+- Trainer-Ansichten eines Trainings als `EventCoachNav` (Übersicht · Plan · Gruppen) statt der Segmente Plan/Gruppen/Wer kommt/Infos aus dem Mockup: „Wer kommt“ und Infos stehen zusammen in der Übersicht. Plan und Gruppen blenden die Tab-Leiste aus.
+- `BaseModal` ist jetzt ein Wrapper um `BottomSheet`; alle alten Dialoge verhalten sich wie Sheets. `AttendanceControl` ist entfernt.
+- Termin löschen: Bestätigungs-Sheet, danach „Rückgängig“; gelöscht wird erst nach 7 s (`useDeleteWithUndo`).
+- Mitgefundene Fehler, behoben: Antworten konnten bei schnellem Tippen in falscher Reihenfolge gespeichert werden (jetzt nacheinander); die Vorlagen-Seite überschrieb ungespeicherte Eingaben beim Nachladen; die Kopfzeile änderte beim Scrollen ihre Höhe und ließ die Seite zittern; die Snackbar verdeckte schwebende Knöpfe.
 
 **Abnahme:** Der Trainer legt ein Training mit übernommenen Vorgaben in **höchstens 4 Tipps** an, baut einen Plan aus 3 Übungen und veröffentlicht ihn, ohne zu scrollen, um den Veröffentlichen-Knopf zu finden.
 

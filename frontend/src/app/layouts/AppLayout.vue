@@ -104,10 +104,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div
-    class="app-layout"
-    :class="{ 'app-layout--no-nav': !showNav, 'app-layout--compact': compact }"
-  >
+  <div class="app-layout" :class="{ 'app-layout--no-nav': !showNav }">
     <header class="top-bar" :class="{ 'top-bar--compact': compact }">
       <div class="top-bar__inner">
         <UiIconButton
@@ -162,10 +159,6 @@ watchEffect(() => {
 
   min-height: 100dvh;
 
-  &--compact {
-    --top-bar-height: calc(52px + env(safe-area-inset-top, 0px));
-  }
-
   &__main {
     :deep(h1:focus) {
       outline: none;
@@ -201,14 +194,11 @@ watchEffect(() => {
     align-items: center;
     gap: $space-2;
     max-width: 720px;
-    min-height: 64px;
+    // Constant height: shrinking the bar while scrolling would shift the page and make the
+    // scroll position jitter around the threshold. Only type size and the club line change.
+    height: 64px;
     margin: 0 auto;
     padding: $space-2 $space-3 $space-2 $space-3;
-    transition: min-height var(--duration-medium) var(--ease-out);
-  }
-
-  &--compact &__inner {
-    min-height: 52px;
   }
 
   &__team {

@@ -87,7 +87,9 @@
       "yes": "Zusagen",
       "maybe": "Vielleicht",
       "no": "Absagen",
-      "none": "Keine Antwort"
+      "none": "Keine Antwort",
+      "change": "Antwort ändern",
+      "answerFor": "Antwort für {name}"
     },
     "nomination": {
       "title": "Spieltagskader",
@@ -97,7 +99,9 @@
       "saved": "Kader gespeichert",
       "saveFailed": "Kader konnte nicht gespeichert werden.",
       "you": "Du bist nominiert: {role}",
-      "notYou": "Du bist für dieses Spiel nicht nominiert."
+      "notYou": "Du bist für dieses Spiel nicht nominiert.",
+      "tapHint": "Tipp auf die Rolle, um sie zu wechseln.",
+      "roleOf": "{name}: {role} – tippen zum Wechseln"
     },
     "coachActions": "Trainer-Aktionen",
     "edit": "Bearbeiten",
@@ -193,6 +197,38 @@
       "thisWeek": "Diese Woche",
       "nextWeek": "Nächste Woche",
       "range": "{from} – {to}"
+    },
+    "coachNav": {
+      "label": "Bereiche des Trainings",
+      "overview": "Übersicht",
+      "plan": "Plan",
+      "groups": "Gruppen"
+    },
+    "quick": {
+      "duration": "Dauer",
+      "minutesBefore": "{n} Min. vorher",
+      "fromLast": "Übernommen vom letzten Termin",
+      "otherDate": "Anderes Datum",
+      "customize": "Alles anpassen",
+      "create": "Anlegen",
+      "created": {
+        "training": "Training angelegt",
+        "match": "Spiel angelegt",
+        "event": "Event angelegt"
+      }
+    },
+    "deleteFailed": "Löschen fehlgeschlagen – der Termin ist wieder da.",
+    "deleted": "„{title}“ gelöscht",
+    "deleteTitle": "Termin löschen?",
+    "deleteText": "Antworten, Trainingsplan und Gruppen gehen mit verloren. Direkt danach kannst du es noch rückgängig machen.",
+    "cancelHint": "Die Spieler werden benachrichtigt. Der Termin bleibt durchgestrichen sichtbar.",
+    "cancelledDone": "Termin abgesagt",
+    "reactivatedDone": "Absage zurückgenommen",
+    "squadRoleLong": {
+      "none": "Nicht nominiert",
+      "starter": "Startelf",
+      "bench": "Bank",
+      "reserve": "Reserve"
     }
   },
   "training": {
@@ -538,7 +574,19 @@
     "notesLabel": "Trainernotiz",
     "notesPlaceholder": "z. B. Fokus auf ersten Kontakt",
     "saveFailed": "Änderung konnte nicht gespeichert werden. Bitte versuche es erneut.",
-    "lateDeclines": "{n} Spieler hat nach dem Veröffentlichen abgesagt: | {n} Spieler haben nach dem Veröffentlichen abgesagt:"
+    "lateDeclines": "{n} Spieler hat nach dem Veröffentlichen abgesagt: | {n} Spieler haben nach dem Veröffentlichen abgesagt:",
+    "moveUpShort": "Nach oben",
+    "moveDownShort": "Nach unten",
+    "openDrill": "Übung ansehen",
+    "removeShort": "Entfernen",
+    "removed": "„{title}“ entfernt",
+    "actionsFor": "Aktionen für {title}",
+    "moreTitle": "Plan-Aktionen",
+    "moreHint": "Kopieren, Vorlagen und Notizen unter ⋯",
+    "statusLabel": "Plan-Status",
+    "publishedShort": "Spieler sehen den Plan",
+    "draftShort": "Nur Trainer sehen den Plan",
+    "notesFor": "Notiz zu {title}"
   },
   "groups": {
     "title": "Gruppeneinteilung",
@@ -579,7 +627,9 @@
       "green": "Grün",
       "orange": "Orange",
       "white": "Weiß"
-    }
+    },
+    "quickTitle": "Schnell einteilen",
+    "allAssigned": "Alle Zusagen sind eingeteilt"
   },
   "player": {
     "upNext": "Als Nächstes",

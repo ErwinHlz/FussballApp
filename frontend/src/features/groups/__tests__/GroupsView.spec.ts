@@ -54,6 +54,7 @@ async function mountView() {
     routes: [
       { path: '/events/:eventId/groups', name: 'event-groups', component: GroupsView, props: true },
       { path: '/events/:eventId/plan', name: 'event-plan', component: { template: '<div />' } },
+      { path: '/events/:eventId', name: 'event', component: { template: '<div />' } },
     ],
   })
   await router.push('/events/e1/groups')
@@ -99,7 +100,7 @@ describe('GroupsView', () => {
     // Cem only said maybe, so only Ben and Dana count as unassigned yes.
     expect(wrapper.text()).toContain('2 Zusagen ohne Gruppe: Ben, Dana')
 
-    await wrapper.find('.groups__savebar button').trigger('click')
+    await wrapper.find('.action-bar button').trigger('click')
     await flushPromises()
     expect(saveMutate).toHaveBeenCalledWith({
       eventDrillId: 'ed1',
@@ -112,10 +113,15 @@ describe('GroupsView', () => {
 
   it('distributes all available players randomly into two default groups', async () => {
     const wrapper = await mountView()
-    const random = wrapper
-      .findAll('.groups__tools button')
-      .find((b) => b.text().includes('Zufällig'))!
-    await random.trigger('click')
+    // Quick actions live in the "⋯" sheet (teleported to the document body).
+    await wrapper.get('button[aria-label="Schnell einteilen"]').trigger('click')
+    await flushPromises()
+    const random = [
+      ...document.body.querySelectorAll<HTMLButtonElement>('.overflow-menu__item'),
+    ].find((b) => b.textContent?.includes('Zufällig'))!
+    random.click()
+    await flushPromises()
+    await flushPromises()
 
     expect(poolNames(wrapper)).toEqual([])
     const sizes = wrapper

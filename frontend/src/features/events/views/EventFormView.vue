@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -36,6 +36,7 @@ const props = defineProps<{ kind?: Kind; eventId?: string }>()
 
 const { t, locale } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const { activeTeam } = useActiveTeam()
 const teamId = computed(() => activeTeam.value?.team_id ?? null)
 
@@ -62,19 +63,25 @@ const schema = computed(() =>
 )
 
 const today = format(new Date(), 'yyyy-MM-dd')
+// "Alles anpassen" in the quick create sheet passes what was chosen there.
+const fromQuick = (key: string) => (typeof route.query[key] === 'string' ? route.query[key] : null)
 const { defineField, errors, handleSubmit, resetForm, values } = useForm({
   // Shared superset of fields; the active schema validates the relevant ones.
   validationSchema: schema,
   initialValues: {
-    date: today,
-    startTime: '19:00',
-    kickoffTime: '15:00',
-    durationMin: '90',
-    deadline: 'none',
+    date: fromQuick('date') ?? today,
+    startTime: fromQuick('time') ?? '19:00',
+    kickoffTime: fromQuick('time') ?? '15:00',
+    durationMin: fromQuick('duration') ?? '90',
+    deadline: fromQuick('deadline') ?? 'none',
+    location: fromQuick('location') ?? '',
+    title: fromQuick('title') ?? '',
+    opponent: fromQuick('opponent') ?? '',
+    meetLocation: fromQuick('meetLocation') ?? '',
     weekdays: [] as string[],
     validFrom: today,
     validUntil: format(addMonths(new Date(), 3), 'yyyy-MM-dd'),
-    venue: 'home',
+    venue: fromQuick('venue') ?? 'home',
     competition: 'league',
   } as Record<string, unknown>,
 })

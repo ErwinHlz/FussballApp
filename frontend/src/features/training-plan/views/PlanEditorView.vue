@@ -1,21 +1,35 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { VueDraggable } from 'vue-draggable-plus'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseBadge from '@/components/BaseBadge.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
+import ActionBar from '@/ui/ActionBar.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
+import OverflowMenu, { type OverflowItem } from '@/ui/OverflowMenu.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiSkeleton from '@/ui/UiSkeleton.vue'
+import UiStepper from '@/ui/UiStepper.vue'
+import { useSnackbar } from '@/ui/useSnackbar'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import type { Drill } from '@/features/drills/logic'
+import EventCoachNav from '@/features/events/components/EventCoachNav.vue'
 import { useEventFormat } from '@/features/events/format'
 import { useEvent, useMyMember } from '@/features/events/composables/useEvents'
+import { useEventGroups } from '@/features/groups/composables/useGroups'
 import SaveAsTemplateModal from '@/features/templates/components/SaveAsTemplateModal.vue'
 import TemplatePickerModal from '@/features/templates/components/TemplatePickerModal.vue'
 import CopyPlanModal from '../components/CopyPlanModal.vue'
 import DrillPickerModal from '../components/DrillPickerModal.vue'
 import LateDeclines from '../components/LateDeclines.vue'
-import { durationFit, eventMinutes, moveItem, planTotalMinutes, type PlanItem } from '../logic'
+import {
+  durationFit,
+  eventMinutes,
+  itemMinutes,
+  moveItem,
+  planTotalMinutes,
+  type PlanItem,
+} from '../logic'
 import {
   useAddPlanDrill,
   usePlan,
@@ -25,10 +39,17 @@ import {
   useUpdatePlanItem,
 } from '../composables/usePlan'
 
+/**
+ * Plan editor (layout "A" in the tactics board look): total time with bar on top, compact
+ * drill rows with drag handle, minute stepper and "⋯", one main action "Übung hinzufügen",
+ * and "Veröffentlichen" in a fixed bar that is always in reach.
+ */
 const props = defineProps<{ eventId: string }>()
 
 const { t } = useI18n()
+const router = useRouter()
 const fmt = useEventFormat()
+const snackbar = useSnackbar()
 const event = useEvent(() => props.eventId)
 const plan = usePlan(() => props.eventId)
 const teamId = computed(() => event.data.value?.team_id ?? null)
@@ -41,20 +62,22 @@ const removeItem = useRemovePlanItem()
 const reorder = useReorderPlan(() => props.eventId)
 const setStatus = useSetPlanStatus()
 
-const pickerOpen = ref(false)
-const copyOpen = ref(false)
-const templateOpen = ref(false)
-const saveTemplateOpen = ref(false)
-const templateNotice = ref<string | null>(null)
-const openNotes = ref<string | null>(null)
-const announcement = ref('')
-
 const isCoach = computed(() => {
   const team = myTeams.data.value?.find((x) => x.team_id === teamId.value)
   return !!team && (team.team_role === 'coach' || team.is_club_admin)
 })
+const groups = useEventGroups(() => props.eventId, isCoach)
+const groupColors = computed(
+  () => new Map((groups.data.value ?? []).map((ed) => [ed.id, ed.groups.map((g) => g.color)])),
+)
 
-// Local copy for drag & drop; refreshed whenever the server data changes.
+const pickerOpen = ref(false)
+const copyOpen = ref(false)
+const templateOpen = ref(false)
+const saveTemplateOpen = ref(false)
+const announcement = ref('')
+
+// Local copy for drag & drop and instant minute changes; refreshed from the server.
 const items = ref<PlanItem[]>([])
 watch(
   () => plan.data.value,
@@ -75,17 +98,13 @@ const isPublished = computed(() => e.value?.plan_status === 'published')
 const anyPending = computed(
   () => addDrill.isPending.value || removeItem.isPending.value || reorder.isPending.value,
 )
-const anyError = computed(
-  () =>
-    addDrill.isError.value ||
-    updateItem.isError.value ||
-    removeItem.isError.value ||
-    reorder.isError.value ||
-    setStatus.isError.value,
-)
+
+function failed() {
+  snackbar.show({ text: t('plan.saveFailed'), tone: 'error' })
+}
 
 function saveOrder() {
-  reorder.mutate(items.value)
+  reorder.mutate(items.value, { onError: failed })
 }
 
 function move(index: number, direction: -1 | 1) {
@@ -99,75 +118,178 @@ function move(index: number, direction: -1 | 1) {
 }
 
 function onPick(drill: Drill) {
-  addDrill.mutate({
-    eventId: props.eventId,
-    drillId: drill.id,
-    position: (items.value.at(-1)?.position ?? 0) + 1,
-    durationMin: null,
+  addDrill.mutate(
+    {
+      eventId: props.eventId,
+      drillId: drill.id,
+      position: (items.value.at(-1)?.position ?? 0) + 1,
+      durationMin: null,
+    },
+    { onError: failed },
+  )
+}
+
+// Minutes: the stepper changes the number at once, saving waits for a short pause.
+const timers = new Map<string, ReturnType<typeof setTimeout>>()
+function setMinutes(item: PlanItem, minutes: number) {
+  items.value = items.value.map((i) => (i.id === item.id ? { ...i, duration_min: minutes } : i))
+  clearTimeout(timers.get(item.id))
+  timers.set(
+    item.id,
+    setTimeout(() => {
+      updateItem.mutate({ itemId: item.id, patch: { duration_min: minutes } }, { onError: failed })
+    }, 600),
+  )
+}
+
+// Notes in a sheet.
+const notesFor = ref<PlanItem | null>(null)
+const notesText = ref('')
+const notesOpen = computed({
+  get: () => !!notesFor.value,
+  set: (value) => {
+    if (!value) notesFor.value = null
+  },
+})
+function openNotes(item: PlanItem) {
+  notesFor.value = item
+  notesText.value = item.coach_notes ?? ''
+}
+function saveNotes() {
+  const item = notesFor.value
+  if (!item) return
+  const notes = notesText.value.trim() || null
+  notesFor.value = null
+  if (notes !== item.coach_notes)
+    updateItem.mutate({ itemId: item.id, patch: { coach_notes: notes } }, { onError: failed })
+}
+
+function remove(item: PlanItem) {
+  removeItem.mutate(item.id, {
+    onError: failed,
+    onSuccess: () =>
+      snackbar.show({
+        text: t('plan.removed', { title: item.drill.title }),
+        action: {
+          label: t('ui.undo'),
+          run: () =>
+            addDrill.mutate(
+              {
+                eventId: props.eventId,
+                drillId: item.drill.id,
+                position: item.position,
+                durationMin: item.duration_min,
+              },
+              { onError: failed },
+            ),
+        },
+      }),
   })
 }
 
-function onDurationChange(item: PlanItem, value: string) {
-  const minutes = value.trim() === '' ? null : Math.min(180, Math.max(1, Number(value)))
-  if (Number.isNaN(minutes)) return
-  updateItem.mutate({ itemId: item.id, patch: { duration_min: minutes } })
+type RowAction = 'up' | 'down' | 'notes' | 'groups' | 'open' | 'remove'
+function rowActions(item: PlanItem, index: number): OverflowItem<RowAction>[] {
+  return [
+    {
+      key: 'up',
+      label: t('plan.moveUpShort'),
+      icon: 'arrowUp',
+      disabled: index === 0 || anyPending.value,
+    },
+    {
+      key: 'down',
+      label: t('plan.moveDownShort'),
+      icon: 'chevronDown',
+      disabled: index === items.value.length - 1 || anyPending.value,
+    },
+    {
+      key: 'notes',
+      label: item.coach_notes ? t('plan.notesEdit') : t('plan.notesAdd'),
+      icon: 'note',
+    },
+    { key: 'groups', label: t('groups.assign'), icon: 'shirt' },
+    { key: 'open', label: t('plan.openDrill'), icon: 'play' },
+    { key: 'remove', label: t('plan.removeShort'), icon: 'trash', danger: true },
+  ]
+}
+function onRowAction(item: PlanItem, index: number, action: RowAction) {
+  if (action === 'up') move(index, -1)
+  else if (action === 'down') move(index, 1)
+  else if (action === 'notes') openNotes(item)
+  else if (action === 'groups')
+    void router.push({
+      name: 'event-groups',
+      params: { eventId: props.eventId },
+      query: { drill: item.id },
+    })
+  else if (action === 'open')
+    void router.push({ name: 'drill', params: { drillId: item.drill.id } })
+  else remove(item)
 }
 
-function onNotesBlur(item: PlanItem, value: string) {
-  const notes = value.trim() || null
-  if (notes !== item.coach_notes)
-    updateItem.mutate({ itemId: item.id, patch: { coach_notes: notes } })
+type PlanAction = 'copy' | 'template' | 'saveTemplate'
+const planActions = computed<OverflowItem<PlanAction>[]>(() => [
+  { key: 'copy', label: t('plan.copyFrom'), icon: 'copy' },
+  { key: 'template', label: t('templates.fromTemplate'), icon: 'note' },
+  ...(items.value.length
+    ? [{ key: 'saveTemplate' as const, label: t('templates.saveAs'), icon: 'star' as const }]
+    : []),
+])
+function onPlanAction(action: PlanAction) {
+  if (action === 'copy') copyOpen.value = true
+  else if (action === 'template') templateOpen.value = true
+  else saveTemplateOpen.value = true
 }
 
 function togglePublish() {
-  setStatus.mutate({ eventId: props.eventId, status: isPublished.value ? 'draft' : 'published' })
+  setStatus.mutate(
+    { eventId: props.eventId, status: isPublished.value ? 'draft' : 'published' },
+    { onError: failed },
+  )
 }
 </script>
 
 <template>
   <section class="plan">
-    <p v-if="event.isPending.value || plan.isPending.value">{{ t('common.loading') }}</p>
+    <div
+      v-if="event.isPending.value || plan.isPending.value"
+      aria-busy="true"
+      class="plan__loading"
+    >
+      <h1 class="visually-hidden">{{ t('plan.title') }}</h1>
+      <UiSkeleton shape="block" height="48px" />
+      <UiSkeleton v-for="n in 3" :key="n" shape="block" height="72px" />
+    </div>
     <p v-else-if="event.isError.value || !e" class="plan__error" role="alert">
       {{ t('events.loadFailedOne') }}
     </p>
     <p v-else-if="!isCoach" role="alert">{{ t('plan.coachOnly') }}</p>
 
     <template v-else>
-      <header class="plan__header">
-        <RouterLink :to="{ name: 'event', params: { eventId } }" class="plan__back">
-          ‹ {{ t('plan.backToEvent') }}
-        </RouterLink>
-        <h1>{{ t('plan.title') }}</h1>
-        <p class="plan__when">{{ fmt.longDay(e.starts_at) }} · {{ fmt.timeRange(e) }}</p>
-      </header>
+      <EventCoachNav :event-id="eventId" active="event-plan" />
 
-      <BaseCard class="plan__status">
-        <div class="plan__status-row">
-          <BaseBadge :tone="isPublished ? 'success' : 'warning'">
-            {{ isPublished ? t('plan.published') : t('plan.draft') }}
-          </BaseBadge>
-          <span v-if="isPublished && e.plan_published_at" class="plan__muted">
-            {{ t('plan.publishedAt', { date: fmt.dateTime(e.plan_published_at) }) }}
-          </span>
+      <header class="plan__head">
+        <div class="plan__titles">
+          <p class="plan__eyebrow">
+            {{ t('events.training') }} · {{ fmt.weekdayShort(e.starts_at) }}
+            {{ fmt.dayMonth(e.starts_at) }}
+          </p>
+          <h1 class="plan__title">{{ t('plan.title') }}</h1>
         </div>
-        <p class="plan__muted">{{ isPublished ? t('plan.publishedHint') : t('plan.draftHint') }}</p>
-        <BaseButton
-          :variant="isPublished ? 'secondary' : 'primary'"
-          block
-          :disabled="!items.length"
-          :loading="setStatus.isPending.value"
-          @click="togglePublish"
-        >
-          {{ isPublished ? t('plan.unpublish') : t('plan.publish') }}
-        </BaseButton>
-      </BaseCard>
+        <OverflowMenu
+          :items="planActions"
+          :title="t('plan.moreTitle')"
+          :label="t('plan.moreTitle')"
+          @select="onPlanAction"
+        />
+      </header>
 
       <LateDeclines v-if="members.data.value" :event="e" :members="members.data.value" />
 
       <div class="plan__duration" :class="`plan__duration--${fit}`">
         <div class="plan__duration-text">
-          <strong>{{ t('plan.total', { n: total }) }}</strong>
-          <span v-if="available !== null">
+          <strong class="plan__total">{{ t('plan.total', { n: total }) }}</strong>
+          <span v-if="available !== null" class="plan__fit">
             {{ t('plan.ofAvailable', { n: available }) }} · {{ t(`plan.fit.${fit}`) }}
           </span>
         </div>
@@ -194,119 +316,102 @@ function togglePublish() {
         @end="saveOrder"
       >
         <li v-for="(item, index) in items" :key="item.id" class="plan-item">
-          <div class="plan-item__row">
-            <span class="plan-item__handle" :title="t('plan.dragHandle')" aria-hidden="true"
-              >⋮⋮</span
-            >
-            <span class="plan-item__index">{{ index + 1 }}</span>
-            <span class="plan-item__main">
-              <RouterLink
-                :to="{ name: 'drill', params: { drillId: item.drill.id } }"
-                class="plan-item__title"
-              >
-                {{ item.drill.title }}
-              </RouterLink>
-              <span class="plan__muted">{{ t(`drills.categories.${item.drill.category}`) }}</span>
+          <span class="plan-item__handle" :title="t('plan.dragHandle')" aria-hidden="true">
+            <UiIcon name="grip" :size="20" />
+          </span>
+          <div class="plan-item__main">
+            <span class="plan-item__title">
+              <span class="plan-item__index">{{ index + 1 }}.</span> {{ item.drill.title }}
             </span>
-            <label class="plan-item__minutes">
-              <span class="visually-hidden">{{
-                t('plan.minutesFor', { title: item.drill.title })
-              }}</span>
-              <input
-                type="number"
-                inputmode="numeric"
-                min="1"
-                max="180"
-                :value="item.duration_min ?? ''"
-                :placeholder="String(item.drill.duration_min ?? '')"
-                @change="onDurationChange(item, ($event.target as HTMLInputElement).value)"
-              />
-              <span aria-hidden="true">{{ t('plan.min') }}</span>
-            </label>
+            <span class="plan-item__meta">
+              {{ t(`drills.categories.${item.drill.category}`) }}
+              <span
+                v-if="groupColors.get(item.id)?.length"
+                class="plan-item__groups"
+                role="img"
+                :aria-label="t('groups.groupCount', groupColors.get(item.id)!.length)"
+              >
+                <span
+                  v-for="(color, i) in groupColors.get(item.id)"
+                  :key="i"
+                  class="plan-item__swatch"
+                  :style="{ background: `var(--bib-${color})` }"
+                />
+              </span>
+            </span>
+            <span v-if="item.coach_notes" class="plan-item__note">
+              <UiIcon name="note" :size="14" />{{ item.coach_notes }}
+            </span>
           </div>
-
-          <div class="plan-item__actions">
-            <button
-              type="button"
-              class="plan-item__action"
-              :disabled="index === 0 || anyPending"
-              :aria-label="t('plan.moveUp', { title: item.drill.title })"
-              @click="move(index, -1)"
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              class="plan-item__action"
-              :disabled="index === items.length - 1 || anyPending"
-              :aria-label="t('plan.moveDown', { title: item.drill.title })"
-              @click="move(index, 1)"
-            >
-              ↓
-            </button>
-            <button
-              type="button"
-              class="plan-item__action plan-item__action--text"
-              :aria-expanded="openNotes === item.id"
-              @click="openNotes = openNotes === item.id ? null : item.id"
-            >
-              {{ item.coach_notes ? t('plan.notesEdit') : t('plan.notesAdd') }}
-            </button>
-            <RouterLink
-              class="plan-item__action plan-item__action--text plan-item__action--link"
-              :to="{ name: 'event-groups', params: { eventId }, query: { drill: item.id } }"
-            >
-              {{ t('groups.short') }}
-            </RouterLink>
-            <button
-              type="button"
-              class="plan-item__action plan-item__action--danger"
-              :aria-label="t('plan.remove', { title: item.drill.title })"
-              :disabled="anyPending"
-              @click="removeItem.mutate(item.id)"
-            >
-              <AppIcon name="x" :size="18" />
-            </button>
-          </div>
-
-          <label v-if="openNotes === item.id" class="plan-item__notes">
-            <span class="visually-hidden">{{ t('plan.notesLabel') }}</span>
-            <textarea
-              rows="3"
-              maxlength="1000"
-              :value="item.coach_notes ?? ''"
-              :placeholder="t('plan.notesPlaceholder')"
-              @blur="onNotesBlur(item, ($event.target as HTMLTextAreaElement).value)"
-            />
-          </label>
-          <p v-else-if="item.coach_notes" class="plan-item__note-preview">{{ item.coach_notes }}</p>
+          <UiStepper
+            :model-value="itemMinutes(item)"
+            :label="t('plan.minutesFor', { title: item.drill.title })"
+            :min="5"
+            :max="180"
+            @update:model-value="setMinutes(item, $event)"
+          />
+          <OverflowMenu
+            :items="rowActions(item, index)"
+            :title="item.drill.title"
+            :label="t('plan.actionsFor', { title: item.drill.title })"
+            @select="onRowAction(item, index, $event)"
+          />
         </li>
       </VueDraggable>
 
-      <p v-else class="plan__muted plan__empty">{{ t('plan.empty') }}</p>
+      <p v-else class="plan__empty">{{ t('plan.empty') }}</p>
+
+      <button
+        type="button"
+        class="plan__add"
+        :disabled="addDrill.isPending.value"
+        @click="pickerOpen = true"
+      >
+        <UiIcon name="plus" :size="22" :stroke-width="2.6" />
+        {{ t('plan.addDrill') }}
+      </button>
+      <p class="plan__hint">{{ t('plan.moreHint') }}</p>
 
       <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
-      <p v-if="anyError" class="plan__error" role="alert">{{ t('plan.saveFailed') }}</p>
 
-      <p v-if="templateNotice" class="plan__notice" role="status">✓ {{ templateNotice }}</p>
+      <ActionBar :label="t('plan.statusLabel')">
+        <span class="plan__status">
+          <span class="plan__status-title">
+            <span class="plan__dot" :class="{ 'plan__dot--on': isPublished }" aria-hidden="true" />
+            {{ isPublished ? t('plan.published') : t('plan.draft') }}
+          </span>
+          <span class="plan__status-hint">
+            {{ isPublished ? t('plan.publishedShort') : t('plan.draftShort') }}
+          </span>
+        </span>
+        <UiButton
+          :variant="isPublished ? 'secondary' : 'primary'"
+          :disabled="!items.length"
+          :loading="setStatus.isPending.value"
+          @click="togglePublish"
+        >
+          {{ isPublished ? t('plan.unpublish') : t('plan.publish') }}
+        </UiButton>
+      </ActionBar>
 
-      <div class="plan__add">
-        <BaseButton block :loading="addDrill.isPending.value" @click="pickerOpen = true">
-          <template #icon><AppIcon name="plus" :size="18" /></template>
-          {{ t('plan.addDrill') }}
-        </BaseButton>
-        <BaseButton variant="secondary" block @click="copyOpen = true">
-          <template #icon><AppIcon name="copy" :size="18" /></template>
-          {{ t('plan.copyFrom') }}
-        </BaseButton>
-        <BaseButton variant="secondary" block @click="templateOpen = true">
-          <template #icon><AppIcon name="copy" :size="18" /></template>
-          {{ t('templates.fromTemplate') }}
-        </BaseButton>
-        <BaseButton v-if="items.length" variant="ghost" block @click="saveTemplateOpen = true">
-          {{ t('templates.saveAs') }}
-        </BaseButton>
-      </div>
+      <BottomSheet
+        v-model:open="notesOpen"
+        :title="t('plan.notesFor', { title: notesFor?.drill.title ?? '' })"
+      >
+        <label class="plan__notes">
+          <span class="visually-hidden">{{ t('plan.notesLabel') }}</span>
+          <textarea
+            v-model="notesText"
+            rows="4"
+            maxlength="1000"
+            :placeholder="t('plan.notesPlaceholder')"
+          />
+        </label>
+        <template #footer>
+          <UiButton variant="secondary" @click="notesFor = null">{{ t('common.cancel') }}</UiButton>
+          <UiButton @click="saveNotes">{{ t('common.save') }}</UiButton>
+        </template>
+      </BottomSheet>
 
       <DrillPickerModal
         v-if="teamId"
@@ -320,19 +425,19 @@ function togglePublish() {
         v-model:open="templateOpen"
         :team-id="teamId"
         :event-id="eventId"
-        @applied="(n) => (templateNotice = t('plan.copied', n))"
+        @applied="(n) => snackbar.show({ text: t('plan.copied', n) })"
       />
       <SaveAsTemplateModal
         v-model:open="saveTemplateOpen"
         :event-id="eventId"
-        @created="templateNotice = t('templates.savedAs')"
+        @created="snackbar.show({ text: t('templates.savedAs') })"
       />
       <CopyPlanModal
         v-if="teamId"
         v-model:open="copyOpen"
         :team-id="teamId"
         :target-event-id="eventId"
-        @copied="(n) => (announcement = t('plan.copied', n))"
+        @copied="(n) => snackbar.show({ text: t('plan.copied', n) })"
       />
     </template>
   </section>
@@ -344,37 +449,28 @@ function togglePublish() {
   flex-direction: column;
   gap: $space-4;
 
-  &__notice {
-    color: var(--color-success);
-    font-weight: 600;
-  }
-
-  &__back {
-    @include focus-visible;
-
-    display: inline-flex;
-    align-items: center;
-    min-height: $touch-target;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  &__when {
-    font-weight: 600;
-    color: var(--color-text-muted);
-  }
-
-  &__status {
+  &__loading {
     display: flex;
     flex-direction: column;
     gap: $space-2;
   }
 
-  &__status-row {
+  &__head {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
     gap: $space-2;
+  }
+
+  &__titles {
+    flex: 1;
+  }
+
+  &__eyebrow {
+    color: var(--color-training-text);
+    font-size: $font-sm;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   &__duration {
@@ -384,30 +480,39 @@ function togglePublish() {
     flex-direction: column;
     gap: $space-2;
 
-    &--fits {
-      --fit-color: var(--color-success);
+    &--under {
+      --fit-color: var(--color-maybe);
     }
 
-    &--under {
-      --fit-color: var(--color-warning);
+    &--fits {
+      --fit-color: var(--color-yes);
     }
 
     &--over {
-      --fit-color: var(--color-danger);
+      --fit-color: var(--color-no);
     }
   }
 
   &__duration-text {
     display: flex;
     flex-wrap: wrap;
-    gap: $space-2;
     align-items: baseline;
+    justify-content: space-between;
+    gap: $space-1 $space-3;
+  }
 
-    span {
-      font-size: $font-sm;
-      font-weight: 600;
-      color: var(--fit-color);
-    }
+  &__total {
+    font-family: var(--font-display);
+    font-size: $font-3xl;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  &__fit {
+    color: var(--color-text-muted);
+    font-size: $font-sm;
+    font-weight: 700;
   }
 
   &__bar {
@@ -420,32 +525,95 @@ function togglePublish() {
   &__bar-fill {
     display: block;
     height: 100%;
+    border-radius: $radius-full;
     background: var(--fit-color);
-    transition: width 0.2s ease;
+    transition: width var(--duration-medium) var(--ease-out);
   }
 
   &__list {
     display: flex;
     flex-direction: column;
     gap: $space-2;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  &__empty {
-    padding: $space-5 0;
+  &__empty,
+  &__hint {
+    color: var(--color-text-muted);
+    font-size: $font-sm;
     text-align: center;
   }
 
   &__add {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    @include focus-visible;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: $space-2;
+    min-height: 60px;
+    border: 2px dashed var(--color-chalk);
+    border-radius: $radius-xl;
+    background: transparent;
+    color: var(--color-text);
+    font-size: $font-md;
+    font-weight: 800;
+
+    :deep(.ui-icon) {
+      color: var(--color-primary);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
   }
 
-  &__muted {
-    font-size: $font-sm;
+  &__status {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+  }
+
+  &__status-title {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    font-weight: 800;
+  }
+
+  &__status-hint {
     color: var(--color-text-muted);
+    font-size: $font-sm;
+  }
+
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-maybe);
+
+    &--on {
+      background: var(--color-yes);
+    }
+  }
+
+  &__notes textarea {
+    width: 100%;
+    padding: $space-3;
+    border: 2px solid var(--color-border);
+    border-radius: $radius-lg;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    resize: vertical;
+
+    &:focus-visible {
+      @include focus-ring;
+    }
   }
 
   &__error {
@@ -455,139 +623,68 @@ function togglePublish() {
 
 .plan-item {
   display: flex;
-  flex-direction: column;
-  gap: $space-2;
-  padding: $space-2 $space-3;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  align-items: center;
+  gap: $space-1;
+  padding: $space-2 $space-1 $space-2 0;
   border-radius: $radius-lg;
-  box-shadow: var(--shadow-sm);
-
-  &__row {
-    display: flex;
-    align-items: center;
-    gap: $space-2;
-  }
+  background: var(--color-surface);
 
   &__handle {
     display: grid;
-    place-items: center;
-    width: 32px;
-    min-height: $touch-target;
-    color: var(--color-text-muted);
-    font-weight: 800;
-    letter-spacing: -2px;
-    cursor: grab;
-    touch-action: none;
-  }
-
-  &__index {
-    display: grid;
     flex-shrink: 0;
     place-items: center;
-    width: 28px;
-    height: 28px;
-    border-radius: $radius-full;
-    background: var(--color-training);
-    color: #fff;
-    font-size: $font-sm;
-    font-weight: 800;
+    width: 32px;
+    height: $touch-target;
+    color: var(--color-text-muted);
+    cursor: grab;
+    touch-action: none;
   }
 
   &__main {
     display: flex;
     flex: 1;
     flex-direction: column;
+    gap: 2px;
     min-width: 0;
   }
 
   &__title {
-    font-weight: 700;
-    color: inherit;
-    overflow-wrap: anywhere;
+    font-weight: 800;
+    line-height: 1.2;
   }
 
-  &__minutes {
+  &__index {
+    color: var(--color-text-muted);
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    color: var(--color-text-muted);
+    font-size: $font-sm;
+  }
+
+  &__groups {
+    display: inline-flex;
+    gap: 3px;
+  }
+
+  &__swatch {
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--color-text);
+    border-radius: 3px;
+  }
+
+  &__note {
     display: flex;
     align-items: center;
     gap: $space-1;
-    font-size: $font-sm;
     color: var(--color-text-muted);
+    font-size: $font-xs;
 
-    input {
-      width: 56px;
-      min-height: $touch-target;
-      padding: $space-1;
-      border: 2px solid var(--color-border);
-      border-radius: $radius-md;
-      font-size: $font-md;
-      text-align: center;
-
-      &:focus-visible {
-        @include focus-ring;
-      }
-    }
-  }
-
-  &__actions {
-    display: flex;
-    align-items: center;
-    gap: $space-1;
-  }
-
-  &__action {
-    @include touch-target;
-    @include focus-visible;
-
-    padding: 0 $space-2;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-md;
-    background: var(--color-surface);
-    font-weight: 700;
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    &--text {
-      font-size: $font-sm;
-      font-weight: 600;
-    }
-
-    &--link {
-      display: inline-flex;
-      align-items: center;
-      color: inherit;
-      text-decoration: none;
-    }
-
-    &--danger {
-      margin-left: auto;
-      color: var(--color-danger);
-    }
-  }
-
-  &__effective {
-    margin-left: $space-2;
-  }
-
-  &__notes textarea {
-    width: 100%;
-    padding: $space-2;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-md;
-    font-size: $font-md;
-
-    &:focus-visible {
-      @include focus-ring;
-    }
-  }
-
-  &__note-preview {
-    font-size: $font-sm;
-    color: var(--color-text-muted);
-    white-space: pre-line;
+    @include truncate;
   }
 }
 </style>

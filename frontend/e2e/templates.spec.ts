@@ -75,18 +75,19 @@ test('coaches build, share and apply training templates', async ({ browser }) =>
   await expect(page.locator('.plan-item__title', { hasText: 'Gegenpressing-Spiel' })).toBeVisible()
   await expect(page.locator('.plan-item__title', { hasText: 'Rondo 4 gegen 2' })).toBeVisible()
   // The copied drill is now part of U19's library and opens normally.
-  await page.locator('.plan-item__title', { hasText: 'Gegenpressing-Spiel' }).click()
+  await page.getByRole('button', { name: 'Aktionen für Gegenpressing-Spiel' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Übung ansehen' }).click()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Gegenpressing-Spiel')
 
   // Tina saves the plan of her seeded training as a template.
   await tina.goto(`/events/${demo.training.id}/plan`)
-  await tina.getByRole('button', { name: 'Als Vorlage speichern' }).click()
-  await tina.getByRole('dialog').getByLabel('Name').fill('Dienstagstraining')
-  await tina.getByRole('dialog').getByRole('button', { name: 'Speichern' }).click()
-  // The plan page may also show the late-decline notice (role=status): pick the save message.
-  await expect(
-    tina.getByRole('status').filter({ hasText: 'Als Vorlage gespeichert' }),
-  ).toBeVisible()
+  // Plan actions sit behind "⋯"; the confirmation comes as a snackbar.
+  await tina.getByRole('button', { name: 'Plan-Aktionen' }).click()
+  await tina.getByRole('dialog').getByRole('button', { name: 'Als Vorlage speichern' }).click()
+  const save = tina.getByRole('dialog', { name: /Vorlage/ })
+  await save.getByLabel('Name').fill('Dienstagstraining')
+  await save.getByRole('button', { name: 'Speichern' }).click()
+  await expect(tina.getByText('Als Vorlage gespeichert')).toBeVisible()
   await tina.goto('/templates')
   await expect(tina.getByRole('link', { name: /Dienstagstraining/ })).toContainText('3 Übungen')
   await tina.screenshot({ path: 'e2e/__screens__/61-templates.png', fullPage: true })

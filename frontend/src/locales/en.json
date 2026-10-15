@@ -87,7 +87,9 @@
       "yes": "Yes",
       "maybe": "Maybe",
       "no": "No",
-      "none": "No answer"
+      "none": "No answer",
+      "change": "change answer",
+      "answerFor": "Answer for {name}"
     },
     "nomination": {
       "title": "Match squad",
@@ -97,7 +99,9 @@
       "saved": "Squad saved",
       "saveFailed": "Squad could not be saved.",
       "you": "You are nominated: {role}",
-      "notYou": "You are not nominated for this match."
+      "notYou": "You are not nominated for this match.",
+      "tapHint": "Tap the role to switch it.",
+      "roleOf": "{name}: {role} – tap to switch"
     },
     "coachActions": "Coach actions",
     "edit": "Edit",
@@ -193,6 +197,38 @@
       "thisWeek": "This week",
       "nextWeek": "Next week",
       "range": "{from} – {to}"
+    },
+    "coachNav": {
+      "label": "Training views",
+      "overview": "Overview",
+      "plan": "Plan",
+      "groups": "Groups"
+    },
+    "quick": {
+      "duration": "Length",
+      "minutesBefore": "{n} min before",
+      "fromLast": "Taken from the last event",
+      "otherDate": "Other date",
+      "customize": "Adjust everything",
+      "create": "Create",
+      "created": {
+        "training": "Training created",
+        "match": "Match created",
+        "event": "Event created"
+      }
+    },
+    "deleteFailed": "Deleting failed – the event is back.",
+    "deleted": "“{title}” deleted",
+    "deleteTitle": "Delete event?",
+    "deleteText": "Answers, training plan and groups are deleted too. Right afterwards you can still undo it.",
+    "cancelHint": "Players get notified. The event stays visible, crossed out.",
+    "cancelledDone": "Event cancelled",
+    "reactivatedDone": "Cancellation withdrawn",
+    "squadRoleLong": {
+      "none": "Not nominated",
+      "starter": "Starting XI",
+      "bench": "Bench",
+      "reserve": "Reserve"
     }
   },
   "training": {
@@ -538,7 +574,19 @@
     "notesLabel": "Coach note",
     "notesPlaceholder": "e.g. focus on first touch",
     "saveFailed": "Change could not be saved. Please try again.",
-    "lateDeclines": "{n} player declined after publishing: | {n} players declined after publishing:"
+    "lateDeclines": "{n} player declined after publishing: | {n} players declined after publishing:",
+    "moveUpShort": "Move up",
+    "moveDownShort": "Move down",
+    "openDrill": "Open drill",
+    "removeShort": "Remove",
+    "removed": "“{title}” removed",
+    "actionsFor": "Actions for {title}",
+    "moreTitle": "Plan actions",
+    "moreHint": "Copy, templates and notes under ⋯",
+    "statusLabel": "Plan status",
+    "publishedShort": "Players see the plan",
+    "draftShort": "Only coaches see the plan",
+    "notesFor": "Note on {title}"
   },
   "groups": {
     "title": "Groups",
@@ -579,7 +627,9 @@
       "green": "Green",
       "orange": "Orange",
       "white": "White"
-    }
+    },
+    "quickTitle": "Quick assign",
+    "allAssigned": "Everyone who said yes is assigned"
   },
   "player": {
     "upNext": "Up next",

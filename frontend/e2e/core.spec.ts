@@ -108,8 +108,9 @@ test('coach builds and publishes a plan, the player sees it', async ({ browser }
   await expect(coach.locator('.plan-item')).toHaveCount(4)
   await expect(coach.getByText(/70 Min\. geplant/)).toBeVisible()
 
-  // Keyboard-friendly reordering: move the new drill up once.
-  await coach.getByRole('button', { name: 'Torschuss nach Doppelpass nach oben' }).click()
+  // Reordering without dragging: "⋯" on the row, then "Nach oben".
+  await coach.getByRole('button', { name: 'Aktionen für Torschuss nach Doppelpass' }).click()
+  await coach.getByRole('dialog').getByRole('button', { name: 'Nach oben' }).click()
   await expect(coach.locator('.plan-item').nth(2)).toContainText('Torschuss nach Doppelpass')
 
   await coach.getByRole('button', { name: 'Plan veröffentlichen' }).click()

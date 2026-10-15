@@ -34,32 +34,39 @@ function onClosed() {
 </script>
 
 <template>
-  <UiIconButton
-    icon="more"
-    :label="props.label ?? t('ui.more')"
-    variant="ghost"
-    aria-haspopup="dialog"
-    @click="open = true"
-  />
-  <BottomSheet v-model:open="open" :title="title ?? t('ui.more')" @closed="onClosed">
-    <ul class="overflow-menu" role="list">
-      <li v-for="item in items" :key="item.key">
-        <button
-          type="button"
-          class="overflow-menu__item"
-          :class="{ 'overflow-menu__item--danger': item.danger }"
-          :disabled="item.disabled"
-          @click="choose(item.key)"
-        >
-          <UiIcon v-if="item.icon" :name="item.icon" :size="22" />
-          {{ item.label }}
-        </button>
-      </li>
-    </ul>
-  </BottomSheet>
+  <!-- One root element, so classes and positioning from the parent apply. -->
+  <span class="overflow-menu-root">
+    <UiIconButton
+      icon="more"
+      :label="props.label ?? t('ui.more')"
+      variant="ghost"
+      aria-haspopup="dialog"
+      @click="open = true"
+    />
+    <BottomSheet v-model:open="open" :title="title ?? t('ui.more')" @closed="onClosed">
+      <ul class="overflow-menu" role="list">
+        <li v-for="item in items" :key="item.key">
+          <button
+            type="button"
+            class="overflow-menu__item"
+            :class="{ 'overflow-menu__item--danger': item.danger }"
+            :disabled="item.disabled"
+            @click="choose(item.key)"
+          >
+            <UiIcon v-if="item.icon" :name="item.icon" :size="22" />
+            {{ item.label }}
+          </button>
+        </li>
+      </ul>
+    </BottomSheet>
+  </span>
 </template>
 
 <style scoped lang="scss">
+.overflow-menu-root {
+  display: inline-flex;
+}
+
 .overflow-menu {
   display: flex;
   flex-direction: column;

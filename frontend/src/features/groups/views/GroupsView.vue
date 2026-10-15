@@ -3,8 +3,12 @@ import { computed, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { VueDraggable } from 'vue-draggable-plus'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseButton from '@/components/BaseButton.vue'
+import ActionBar from '@/ui/ActionBar.vue'
+import OverflowMenu, { type OverflowItem } from '@/ui/OverflowMenu.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiSkeleton from '@/ui/UiSkeleton.vue'
+import EventCoachNav from '@/features/events/components/EventCoachNav.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useEventFormat } from '@/features/events/format'
 import { useEvent, useMyMember } from '@/features/events/composables/useEvents'
@@ -204,6 +208,31 @@ onBeforeRouteLeave((to) => {
   return !anyDirty.value || window.confirm(t('groups.unsavedConfirm'))
 })
 
+type QuickAction = 'random' | 'positions' | 'previous' | 'clear'
+const quickActions = computed<OverflowItem<QuickAction>[]>(() => [
+  { key: 'random', label: t('groups.random'), icon: 'swap' },
+  { key: 'positions', label: t('groups.byPosition'), icon: 'users' },
+  ...(previous.value
+    ? [
+        {
+          key: 'previous' as const,
+          label: t('groups.samePrevious'),
+          icon: 'copy' as const,
+          disabled: !previous.value.groups.length,
+        },
+      ]
+    : []),
+  { key: 'clear', label: t('groups.clear'), icon: 'x' },
+])
+function onQuickAction(action: QuickAction) {
+  const draft = current.value
+  if (!draft) return
+  if (action === 'random') shuffleRandom(draft)
+  else if (action === 'positions') balancePositions(draft)
+  else if (action === 'previous') sameAsPrevious(draft)
+  else clearAll(draft)
+}
+
 function names(ids: string[]) {
   return ids.map((id) => memberById.value.get(id)?.display_name ?? '?').join(', ')
 }
@@ -211,24 +240,39 @@ function names(ids: string[]) {
 
 <template>
   <section class="groups">
-    <p v-if="event.isPending.value || (isCoach && eventGroups.isPending.value)">
-      {{ t('common.loading') }}
-    </p>
+    <div
+      v-if="event.isPending.value || (isCoach && eventGroups.isPending.value)"
+      aria-busy="true"
+      class="groups__loading"
+    >
+      <h1 class="visually-hidden">{{ t('groups.title') }}</h1>
+      <UiSkeleton shape="block" height="48px" />
+      <UiSkeleton shape="block" height="160px" />
+    </div>
     <p v-else-if="event.isError.value || !event.data.value" class="groups__error" role="alert">
       {{ t('events.loadFailedOne') }}
     </p>
     <p v-else-if="!isCoach" role="alert">{{ t('plan.coachOnly') }}</p>
 
     <template v-else>
-      <header>
-        <RouterLink :to="{ name: 'event-plan', params: { eventId } }" class="groups__back">
-          ‹ {{ t('groups.backToPlan') }}
-        </RouterLink>
-        <h1>{{ t('groups.title') }}</h1>
-        <p class="groups__muted">
-          {{ fmt.longDay(event.data.value.starts_at) }} ·
-          {{ t('groups.availableCount', { n: available.length }) }}
-        </p>
+      <EventCoachNav :event-id="eventId" active="event-groups" />
+
+      <header class="groups__head">
+        <div class="groups__titles">
+          <p class="groups__eyebrow">
+            {{ fmt.weekdayShort(event.data.value.starts_at) }}
+            {{ fmt.dayMonth(event.data.value.starts_at) }} ·
+            {{ t('groups.availableCount', { n: available.length }) }}
+          </p>
+          <h1>{{ t('groups.title') }}</h1>
+        </div>
+        <OverflowMenu
+          v-if="current"
+          :items="quickActions"
+          :title="t('groups.quickTitle')"
+          :label="t('groups.quickTitle')"
+          @select="onQuickAction"
+        />
       </header>
 
       <p v-if="!drills.length" class="groups__muted">{{ t('groups.noDrills') }}</p>
@@ -253,27 +297,6 @@ function names(ids: string[]) {
             </span>
           </button>
         </nav>
-
-        <!-- Tools -->
-        <div class="groups__tools">
-          <BaseButton variant="secondary" @click="shuffleRandom(current)"
-            >🎲 {{ t('groups.random') }}</BaseButton
-          >
-          <BaseButton variant="secondary" @click="balancePositions(current)"
-            >⚖ {{ t('groups.byPosition') }}</BaseButton
-          >
-          <BaseButton
-            v-if="previous"
-            variant="secondary"
-            :disabled="!previous.groups.length"
-            @click="sameAsPrevious(current)"
-          >
-            ⟲ {{ t('groups.samePrevious') }}
-          </BaseButton>
-          <BaseButton variant="ghost" @click="clearAll(current)">{{
-            t('groups.clear')
-          }}</BaseButton>
-        </div>
 
         <!-- Warnings -->
         <div
@@ -353,7 +376,7 @@ function names(ids: string[]) {
                 :aria-label="t('groups.removeGroup', { name: group.name })"
                 @click="removeGroup(current, group.key)"
               >
-                <AppIcon name="x" :size="16" />
+                <UiIcon name="x" :size="18" />
               </button>
             </header>
             <button
@@ -402,7 +425,7 @@ function names(ids: string[]) {
             class="groups__add"
             @click="addGroup(current)"
           >
-            <AppIcon name="plus" :size="20" />
+            <UiIcon name="plus" :size="20" />
             {{ t('groups.addGroup') }}
           </button>
         </div>
@@ -412,17 +435,21 @@ function names(ids: string[]) {
           {{ t('groups.saveFailed') }}
         </p>
 
-        <div class="groups__savebar">
-          <BaseButton
-            size="lg"
-            block
+        <ActionBar :label="t('groups.title')">
+          <span class="groups__status">
+            <strong v-if="warnings?.unassigned.length" class="groups__status-warn">
+              {{ t('groups.warnUnassigned', warnings.unassigned.length) }}
+            </strong>
+            <span v-else class="groups__status-ok">{{ t('groups.allAssigned') }}</span>
+          </span>
+          <UiButton
             :disabled="!isDirty(currentId)"
             :loading="save.isPending.value"
             @click="saveCurrent"
           >
             {{ isDirty(currentId) ? t('groups.save') : `✓ ${t('groups.savedState')}` }}
-          </BaseButton>
-        </div>
+          </UiButton>
+        </ActionBar>
       </template>
     </template>
   </section>
@@ -434,14 +461,44 @@ function names(ids: string[]) {
   flex-direction: column;
   gap: $space-4;
 
-  &__back {
-    @include focus-visible;
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+  }
 
-    display: inline-flex;
-    align-items: center;
-    min-height: $touch-target;
-    font-weight: 600;
-    text-decoration: none;
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-2;
+  }
+
+  &__titles {
+    flex: 1;
+  }
+
+  &__eyebrow {
+    color: var(--color-training-text);
+    font-size: $font-sm;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  &__status {
+    flex: 1;
+    min-width: 0;
+    font-size: $font-sm;
+    line-height: 1.3;
+  }
+
+  &__status-warn {
+    color: var(--color-maybe-text);
+  }
+
+  &__status-ok {
+    color: var(--color-text-muted);
+    font-weight: 700;
   }
 
   &__drills {
@@ -463,14 +520,15 @@ function names(ids: string[]) {
     max-width: 180px;
     min-height: $touch-target;
     padding: $space-2 $space-3;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-md;
+    border: 2px solid transparent;
+    border-radius: $radius-lg;
     background: var(--color-surface);
+    color: var(--color-text);
     text-align: left;
     scroll-snap-align: start;
 
     &--active {
-      border-color: var(--color-training);
+      border-color: var(--color-text);
     }
   }
 
@@ -493,20 +551,13 @@ function names(ids: string[]) {
     color: var(--color-warning);
   }
 
-  &__tools {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: $space-2;
-  }
-
   &__warnings {
     display: flex;
     flex-direction: column;
     gap: $space-1;
-    padding: $space-3;
-    border: 2px solid var(--color-warning);
+    padding: $space-3 $space-4;
+    border: 2px dashed var(--color-maybe);
     border-radius: $radius-lg;
-    background: color-mix(in srgb, var(--color-warning) 10%, var(--color-surface));
     font-size: $font-sm;
   }
 
@@ -527,15 +578,14 @@ function names(ids: string[]) {
     flex-direction: column;
     gap: $space-2;
     padding: $space-3;
-    border: 1px solid var(--color-border);
-    border-top: 6px solid var(--bib);
-    border-radius: $radius-lg;
+    border-radius: $radius-xl;
     background: var(--color-surface);
+    box-shadow: inset 0 6px 0 var(--bib);
 
     &--pool {
-      border-top-color: var(--color-text-muted);
-      border-style: dashed;
-      background: var(--color-surface-muted);
+      border: 2px dashed var(--color-chalk);
+      background: transparent;
+      box-shadow: none;
     }
   }
 
@@ -606,10 +656,10 @@ function names(ids: string[]) {
 
     min-height: $touch-target;
     border: 2px dashed var(--color-primary);
-    border-radius: $radius-md;
-    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
-    color: var(--color-primary-hover);
-    font-weight: 700;
+    border-radius: $radius-lg;
+    background: transparent;
+    color: var(--color-text);
+    font-weight: 800;
   }
 
   &__chips {
@@ -631,20 +681,11 @@ function names(ids: string[]) {
     justify-content: center;
     gap: $space-2;
     min-height: 96px;
-    border: 2px dashed var(--color-border);
-    border-radius: $radius-lg;
+    border: 2px dashed var(--color-chalk);
+    border-radius: $radius-xl;
     background: transparent;
-    color: var(--color-text-muted);
-    font-weight: 700;
-  }
-
-  &__savebar {
-    @include safe-area-padding(bottom, $space-2);
-
-    position: sticky;
-    bottom: calc(#{$bottom-nav-height} + env(safe-area-inset-bottom, 0px));
-    padding-top: $space-2;
-    background: linear-gradient(transparent, var(--color-bg) 30%);
+    color: var(--color-text);
+    font-weight: 800;
   }
 
   &__muted {
@@ -673,8 +714,9 @@ function names(ids: string[]) {
   touch-action: none;
 
   &--selected {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 30%, transparent);
+    border-color: var(--color-text);
+    background: var(--color-text);
+    color: var(--color-bg);
   }
 
   &--declined {
@@ -689,8 +731,10 @@ function names(ids: string[]) {
     min-width: 28px;
     height: 28px;
     border-radius: $radius-full;
-    background: var(--color-surface-muted);
-    font-size: $font-sm;
+    background: var(--color-pitch);
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: $font-md;
     font-weight: 800;
   }
 

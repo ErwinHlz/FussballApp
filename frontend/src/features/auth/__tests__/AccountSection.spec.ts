@@ -45,7 +45,7 @@ function finalButton() {
 }
 
 async function typeConfirmation(value: string) {
-  const input = document.body.querySelector<HTMLInputElement>('.base-modal input')!
+  const input = document.body.querySelector<HTMLInputElement>('[role="dialog"] input')!
   input.value = value
   input.dispatchEvent(new Event('input'))
   await flushPromises()

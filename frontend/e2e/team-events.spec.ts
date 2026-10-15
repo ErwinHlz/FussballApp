@@ -21,14 +21,14 @@ test('coach adds a team event with the + button, the player answers it', async (
   await coach.screenshot({ path: 'e2e/__screens__/80-new-date.png' })
   await sheet.getByRole('button', { name: /^Event / }).click()
 
-  await expect(coach.getByRole('heading', { level: 1 })).toHaveText('Neues Event')
-  await coach.getByRole('button', { name: 'Speichern' }).click()
-  await expect(coach.getByText('Pflichtfeld', { exact: true })).toBeVisible()
+  // Quick create: the title is required, the date comes as a suggestion.
+  await expect(sheet).toHaveAccessibleName('Neues Event')
+  await coach.getByRole('button', { name: 'Anlegen', exact: true }).click()
+  await expect(sheet.getByText('Pflichtfeld', { exact: true })).toBeVisible()
 
-  await coach.getByLabel('Titel').fill('Teamabend')
-  await coach.getByLabel('Datum').fill(format(addDays(new Date(), 2), 'yyyy-MM-dd'))
-  await coach.getByLabel('Ort').fill('Vereinsheim')
-  await coach.getByRole('button', { name: 'Speichern' }).click()
+  await sheet.getByLabel('Titel').fill('Teamabend')
+  await sheet.getByLabel('Anderes Datum').fill(format(addDays(new Date(), 2), 'yyyy-MM-dd'))
+  await coach.getByRole('button', { name: 'Anlegen', exact: true }).click()
 
   await expect(coach).toHaveURL(/\/events\/[0-9a-f-]{36}$/)
   await expect(coach.getByRole('heading', { level: 1 })).toHaveText('Teamabend')
@@ -71,7 +71,9 @@ test('a player attends all open dates, filters the list and jumps back to the to
   await expect(page.getByRole('button', { name: 'Alle zusagen' })).toHaveCount(0)
   await expect(page.getByText('noch nicht beantwortet')).toHaveCount(0)
 
-  // Back to top after scrolling down.
+  // Back to top after scrolling down (once the sheet is gone, it would take the wheel).
+  await expect(dialog).toBeHidden()
+  await expect(page.locator('.sheet')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Nach oben' })).toHaveCount(0)
   await page.mouse.wheel(0, 3000)
   await page.getByRole('button', { name: 'Nach oben' }).click()

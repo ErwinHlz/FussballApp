@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLocalStorage, usePreferredReducedMotion, useWindowScroll } from '@vueuse/core'
 import BottomSheet from '@/ui/BottomSheet.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiChip from '@/ui/UiChip.vue'
 import UiEmptyState from '@/ui/UiEmptyState.vue'
-import UiIcon, { type UiIconName } from '@/ui/UiIcon.vue'
+import UiIcon from '@/ui/UiIcon.vue'
 import UiIconButton from '@/ui/UiIconButton.vue'
 import UiSkeleton from '@/ui/UiSkeleton.vue'
 import UiSwitch from '@/ui/UiSwitch.vue'
@@ -15,6 +14,7 @@ import { useSnackbar } from '@/ui/useSnackbar'
 import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import DeclineSheet from '../components/DeclineSheet.vue'
+import QuickCreateSheet from '../components/QuickCreateSheet.vue'
 import EventRow from '../components/EventRow.vue'
 import { useAnswer } from '../composables/useAnswer'
 import { useAttendAll, useMyMember, useTeamEvents } from '../composables/useEvents'
@@ -35,7 +35,6 @@ import {
 } from '../logic'
 
 const { t, locale } = useI18n()
-const router = useRouter()
 const fmt = useEventFormat()
 const snackbar = useSnackbar()
 const { activeTeam, isCoach } = useActiveTeam()
@@ -122,32 +121,7 @@ function toTop() {
   window.scrollTo({ top: 0, behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth' })
 }
 
-const createOptions: {
-  kind: 'training' | 'series' | 'match' | 'event'
-  icon: UiIconName
-  labelKey: string
-  hintKey: string
-}[] = [
-  {
-    kind: 'training',
-    icon: 'cone',
-    labelKey: 'events.newTraining',
-    hintKey: 'events.newTrainingHint',
-  },
-  {
-    kind: 'series',
-    icon: 'calendar',
-    labelKey: 'events.newSeries',
-    hintKey: 'events.newSeriesHint',
-  },
-  { kind: 'match', icon: 'users', labelKey: 'events.newMatch', hintKey: 'events.newMatchHint' },
-  { kind: 'event', icon: 'star', labelKey: 'events.newEvent', hintKey: 'events.newEventHint' },
-]
 const createOpen = ref(false)
-async function create(kind: (typeof createOptions)[number]['kind']) {
-  createOpen.value = false
-  await router.push({ name: 'event-new', params: { kind } })
-}
 
 function scrollToFirstUnanswered() {
   const first = unanswered.value[0]
@@ -306,26 +280,11 @@ function scrollToFirstUnanswered() {
       </template>
     </BottomSheet>
 
-    <BottomSheet v-model:open="createOpen" :title="t('events.createLabel')">
-      <ul class="events__options" role="list">
-        <li v-for="option in createOptions" :key="option.kind">
-          <button
-            type="button"
-            class="events__option"
-            :class="`events__option--${option.kind}`"
-            @click="create(option.kind)"
-          >
-            <span class="events__option-icon" aria-hidden="true">
-              <UiIcon :name="option.icon" :size="24" />
-            </span>
-            <span class="events__option-text">
-              <span class="events__option-label">{{ t(option.labelKey) }}</span>
-              <span class="events__option-hint">{{ t(option.hintKey) }}</span>
-            </span>
-          </button>
-        </li>
-      </ul>
-    </BottomSheet>
+    <QuickCreateSheet
+      v-model:open="createOpen"
+      :team-id="teamId"
+      :events="events.data.value ?? []"
+    />
 
     <BottomSheet v-model:open="attendOpen" :title="t('events.attendAll.title')">
       <p>{{ t('events.attendAll.text', attendCandidates.length) }}</p>
@@ -449,7 +408,8 @@ function scrollToFirstUnanswered() {
   &__to-top {
     position: fixed;
     right: $space-4;
-    bottom: calc(var(--nav-offset, 0px) + #{$space-3});
+    bottom: calc(var(--nav-offset, 0px) + var(--snackbar-offset, 0px) + #{$space-3});
+    transition: bottom var(--duration-medium) var(--ease-out);
     z-index: 30;
     opacity: 0.85;
     box-shadow: var(--shadow-md);
@@ -480,64 +440,6 @@ function scrollToFirstUnanswered() {
 
   &__hint {
     margin-top: $space-2;
-    color: var(--color-text-muted);
-    font-size: $font-sm;
-  }
-
-  &__options {
-    display: flex;
-    flex-direction: column;
-    gap: $space-2;
-    margin: 0;
-  }
-
-  &__option {
-    --option-color: var(--color-training-text);
-
-    @include focus-visible;
-
-    display: flex;
-    align-items: center;
-    gap: $space-3;
-    width: 100%;
-    min-height: 68px;
-    padding: $space-3;
-    border: 0;
-    border-radius: $radius-lg;
-    background: var(--color-surface);
-    color: var(--color-text);
-    text-align: left;
-
-    &--match {
-      --option-color: var(--color-match-text);
-    }
-
-    &--event {
-      --option-color: var(--color-event-text);
-    }
-  }
-
-  &__option-icon {
-    display: grid;
-    flex-shrink: 0;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 2px dashed var(--color-chalk);
-    border-radius: 50%;
-    color: var(--option-color);
-  }
-
-  &__option-text {
-    display: flex;
-    flex-direction: column;
-  }
-
-  &__option-label {
-    font-weight: 800;
-  }
-
-  &__option-hint {
     color: var(--color-text-muted);
     font-size: $font-sm;
   }

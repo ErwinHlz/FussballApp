@@ -27,7 +27,10 @@ defineEmits<{ click: [] }>()
 
   position: fixed;
   right: $space-4;
-  bottom: calc(var(--nav-offset, 0px) + #{$space-4} + env(safe-area-inset-bottom, 0px));
+  bottom: calc(
+    var(--nav-offset, 0px) + var(--snackbar-offset, 0px) + #{$space-4} +
+      env(safe-area-inset-bottom, 0px)
+  );
   z-index: 46;
   display: inline-flex;
   align-items: center;
@@ -41,7 +44,9 @@ defineEmits<{ click: [] }>()
   color: var(--color-primary-contrast);
   box-shadow: var(--shadow-float);
   font-weight: 800;
-  transition: transform var(--duration-fast) var(--ease-out);
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    bottom var(--duration-medium) var(--ease-out);
 
   &:active {
     transform: scale(0.95);

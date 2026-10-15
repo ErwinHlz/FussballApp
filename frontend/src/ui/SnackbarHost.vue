@@ -1,10 +1,18 @@
 <script setup lang="ts">
+import { onUnmounted, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import UiIcon from './UiIcon.vue'
 import { useSnackbar } from './useSnackbar'
 
 const { t } = useI18n()
 const { current, dismiss, runAction } = useSnackbar()
+
+// Floating buttons (FAB, "back to top") move up while a message is shown, so it never
+// covers them.
+watchEffect(() => {
+  document.documentElement.style.setProperty('--snackbar-offset', current.value ? '64px' : '0px')
+})
+onUnmounted(() => document.documentElement.style.removeProperty('--snackbar-offset'))
 </script>
 
 <template>

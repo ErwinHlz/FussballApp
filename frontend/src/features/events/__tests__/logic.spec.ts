@@ -16,6 +16,8 @@ import {
   type Attendance,
   type TeamEvent,
   groupByWeek,
+  suggestDate,
+  suggestDefaults,
 } from '../logic'
 
 function local(y: number, m: number, d: number, h = 0, min = 0) {
@@ -287,5 +289,63 @@ describe('groupByWeek', () => {
   it('puts a Sunday evening into the week that started on Monday', () => {
     const groups = groupByWeek([at(9, 18, 23)], now)
     expect(groups[0]!.key).toBe('2026-10-12')
+  })
+})
+
+describe('quick create defaults', () => {
+  const event = (overrides: Record<string, unknown>) =>
+    ({
+      type: 'training',
+      is_cancelled: false,
+      created_at: '2026-10-01T10:00:00Z',
+      starts_at: new Date(2026, 9, 13, 18, 30).toISOString(),
+      ends_at: new Date(2026, 9, 13, 20, 0).toISOString(),
+      location: 'Sportpark, Platz 2',
+      response_deadline: new Date(2026, 9, 13, 16, 30).toISOString(),
+      meet_at: null,
+      meet_location: null,
+      ...overrides,
+    }) as Parameters<typeof suggestDefaults>[0][number]
+
+  it('takes time, length, place and deadline from the last created event of the type', () => {
+    const older = event({ created_at: '2026-09-01T10:00:00Z', location: 'Alt' })
+    const match = event({ type: 'match', created_at: '2026-10-05T10:00:00Z' })
+    expect(suggestDefaults([older, event({}), match], 'training')).toEqual({
+      time: '18:30',
+      durationMin: 90,
+      location: 'Sportpark, Platz 2',
+      deadlineHours: 2,
+      meetOffsetMin: null,
+      meetLocation: null,
+      weekday: 2,
+    })
+  })
+
+  it('remembers how long before kick-off a match team meets', () => {
+    const match = event({
+      type: 'match',
+      starts_at: new Date(2026, 9, 18, 15).toISOString(),
+      ends_at: null,
+      meet_at: new Date(2026, 9, 18, 13, 45).toISOString(),
+      meet_location: 'Vereinsheim',
+      response_deadline: null,
+    })
+    const defaults = suggestDefaults([match], 'match')
+    expect(defaults.meetOffsetMin).toBe(75)
+    expect(defaults.meetLocation).toBe('Vereinsheim')
+    expect(defaults.deadlineHours).toBeNull()
+  })
+
+  it('falls back to sensible values without earlier events', () => {
+    expect(suggestDefaults([], 'match').time).toBe('15:00')
+    expect(suggestDefaults([event({ is_cancelled: true })], 'training').location).toBeNull()
+  })
+
+  it('suggests the next date on the same weekday, starting tomorrow', () => {
+    const thursday = new Date(2026, 9, 15, 12)
+    expect(suggestDate(2, thursday)).toBe('2026-10-20')
+    expect(suggestDate(5, thursday)).toBe('2026-10-16')
+    expect(suggestDate(4, thursday)).toBe('2026-10-22')
+    expect(suggestDate(null, thursday)).toBe('2026-10-16')
   })
 })

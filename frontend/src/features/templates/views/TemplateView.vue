@@ -53,13 +53,19 @@ const description = ref('')
 const shared = ref(false)
 const titleError = ref<string | undefined>()
 const metaSaved = ref(false)
+// Server values fill the form, but a background refetch (e.g. after adding a drill) must not
+// overwrite what the coach is typing: only untouched fields follow the server.
+let loaded: { title: string; description: string; shared: boolean } | null = null
 watch(
   tpl,
   (value) => {
     if (!value) return
-    title.value = value.title
-    description.value = value.description
-    shared.value = value.shared
+    const untouched = (key: 'title' | 'description' | 'shared', current: unknown) =>
+      !loaded || current === loaded[key]
+    if (untouched('title', title.value)) title.value = value.title
+    if (untouched('description', description.value)) description.value = value.description
+    if (untouched('shared', shared.value)) shared.value = value.shared
+    loaded = { title: value.title, description: value.description, shared: value.shared }
   },
   { immediate: true },
 )

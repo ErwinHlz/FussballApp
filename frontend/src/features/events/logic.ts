@@ -236,3 +236,94 @@ export function groupByWeek<T extends Pick<EventRow, 'starts_at'>>(
   }
   return [...groups.values()]
 }
+
+// ---------------------------------------------------------------------------
+// Quick create: defaults taken over from the last event of the same type
+// ---------------------------------------------------------------------------
+
+export type CreateDefaults = {
+  /** Local start time "HH:mm". */
+  time: string
+  durationMin: number
+  location: string | null
+  deadlineHours: number | null
+  /** Matches: meeting time as minutes before kick-off, and place. */
+  meetOffsetMin: number | null
+  meetLocation: string | null
+  /** Weekday of the last event (0 = Sunday), to suggest the next date. */
+  weekday: number | null
+}
+
+const FALLBACK_DEFAULTS: Record<'training' | 'match' | 'event', CreateDefaults> = {
+  training: {
+    time: '19:00',
+    durationMin: 90,
+    location: null,
+    deadlineHours: null,
+    meetOffsetMin: null,
+    meetLocation: null,
+    weekday: null,
+  },
+  match: {
+    time: '15:00',
+    durationMin: 90,
+    location: null,
+    deadlineHours: null,
+    meetOffsetMin: null,
+    meetLocation: null,
+    weekday: null,
+  },
+  event: {
+    time: '19:00',
+    durationMin: 120,
+    location: null,
+    deadlineHours: null,
+    meetOffsetMin: null,
+    meetLocation: null,
+    weekday: null,
+  },
+}
+
+/** Takes time, length, place and deadline from the most recently created event of the type. */
+export function suggestDefaults(
+  events: Pick<
+    EventRow,
+    | 'type'
+    | 'created_at'
+    | 'starts_at'
+    | 'ends_at'
+    | 'location'
+    | 'response_deadline'
+    | 'meet_at'
+    | 'meet_location'
+    | 'is_cancelled'
+  >[],
+  type: 'training' | 'match' | 'event',
+): CreateDefaults {
+  const last = events
+    .filter((e) => e.type === type && !e.is_cancelled)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0]
+  if (!last) return { ...FALLBACK_DEFAULTS[type] }
+  const starts = new Date(last.starts_at)
+  const minutes = (later: string) =>
+    Math.round((new Date(later).getTime() - starts.getTime()) / 60000)
+  return {
+    time: format(starts, 'HH:mm'),
+    durationMin: last.ends_at ? minutes(last.ends_at) : FALLBACK_DEFAULTS[type].durationMin,
+    location: last.location,
+    deadlineHours: last.response_deadline
+      ? Math.round(-minutes(last.response_deadline) / 60)
+      : null,
+    meetOffsetMin: last.meet_at ? -minutes(last.meet_at) : null,
+    meetLocation: last.meet_location,
+    weekday: starts.getDay(),
+  }
+}
+
+/** Next date (from tomorrow on) on the given weekday; tomorrow without a weekday. */
+export function suggestDate(weekday: number | null, now: Date = new Date()): string {
+  const tomorrow = addDays(now, 1)
+  if (weekday === null) return format(tomorrow, 'yyyy-MM-dd')
+  const offset = (weekday - tomorrow.getDay() + 7) % 7
+  return format(addDays(tomorrow, offset), 'yyyy-MM-dd')
+}
