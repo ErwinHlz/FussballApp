@@ -15,6 +15,7 @@ import {
   unansweredEvents,
   type Attendance,
   type TeamEvent,
+  groupByWeek,
 } from '../logic'
 
 function local(y: number, m: number, d: number, h = 0, min = 0) {
@@ -260,5 +261,31 @@ describe('event filters', () => {
   it('answers all open dates without an answer, also far ahead', () => {
     expect(attendAllCandidates(events, 'me', now).map((e) => e.id)).toEqual(['t1', 'm1', 'e1'])
     expect(attendAllCandidates(events, null, now)).toEqual([])
+  })
+})
+
+describe('groupByWeek', () => {
+  // Thursday, 15 October 2026, local time.
+  const now = new Date(2026, 9, 15, 12)
+  const at = (month: number, day: number, hour = 18) => ({
+    starts_at: new Date(2026, month, day, hour).toISOString(),
+  })
+
+  it('groups Monday to Sunday and names this and next week', () => {
+    const events = [at(9, 16), at(9, 18, 15), at(9, 19), at(9, 27), at(10, 3)]
+    const groups = groupByWeek(events, now)
+
+    expect(groups.map((g) => [g.key, g.kind, g.events.length])).toEqual([
+      ['2026-10-12', 'thisWeek', 2],
+      ['2026-10-19', 'nextWeek', 1],
+      ['2026-10-26', 'week', 1],
+      ['2026-11-02', 'week', 1],
+    ])
+    expect(groups[2]!.end.getDate()).toBe(1)
+  })
+
+  it('puts a Sunday evening into the week that started on Monday', () => {
+    const groups = groupByWeek([at(9, 18, 23)], now)
+    expect(groups[0]!.key).toBe('2026-10-12')
   })
 })

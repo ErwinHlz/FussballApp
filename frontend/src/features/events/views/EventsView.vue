@@ -3,35 +3,49 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLocalStorage, usePreferredReducedMotion, useWindowScroll } from '@vueuse/core'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
-import BaseModal from '@/components/BaseModal.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiChip from '@/ui/UiChip.vue'
+import UiEmptyState from '@/ui/UiEmptyState.vue'
+import UiIcon, { type UiIconName } from '@/ui/UiIcon.vue'
+import UiIconButton from '@/ui/UiIconButton.vue'
+import UiSkeleton from '@/ui/UiSkeleton.vue'
+import UiSwitch from '@/ui/UiSwitch.vue'
+import { useSnackbar } from '@/ui/useSnackbar'
+import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
-import EventCard from '../components/EventCard.vue'
-import NextEventHero from '@/features/player-view/components/NextEventHero.vue'
-import { nextEvent } from '@/features/player-view/logic'
+import DeclineSheet from '../components/DeclineSheet.vue'
+import EventRow from '../components/EventRow.vue'
+import { useAnswer } from '../composables/useAnswer'
+import { useAttendAll, useMyMember, useTeamEvents } from '../composables/useEvents'
+import { useEventFormat } from '../format'
 import {
   activeFilterCount,
   attendAllCandidates,
   DEFAULT_EVENT_FILTER,
   filterEvents,
+  groupByWeek,
   splitEvents,
   unansweredEvents,
+  type AttendanceStatus,
   type EventFilter,
   type EventTypeFilter,
+  type TeamEvent,
+  type WeekGroup,
 } from '../logic'
-import { useAttendAll, useMyMember, useTeamEvents } from '../composables/useEvents'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
+const fmt = useEventFormat()
+const snackbar = useSnackbar()
 const { activeTeam, isCoach } = useActiveTeam()
 const teamId = computed(() => activeTeam.value?.team_id ?? null)
 const events = useTeamEvents(teamId)
 const { members, myMember } = useMyMember(teamId)
-
 const memberId = computed(() => myMember.value?.id ?? null)
+const playerIds = computed(() =>
+  (members.data.value ?? []).filter((m) => m.role === 'player').map((m) => m.id),
+)
 
 // Filters are a per-device convenience (remembered in the browser).
 const filter = useLocalStorage<EventFilter>(
@@ -39,23 +53,16 @@ const filter = useLocalStorage<EventFilter>(
   { ...DEFAULT_EVENT_FILTER },
   { mergeDefaults: true },
 )
-const filtersOpen = ref(false)
+const filterOpen = ref(false)
 const filterCount = computed(() => activeFilterCount(filter.value))
-const typeOptions = computed(() =>
-  (['all', 'training', 'match', 'event'] as const).map((value) => ({
-    value,
-    label: t(`events.filter.types.${value}`),
-  })),
-)
-const filterType = computed({
-  get: () => filter.value.type,
-  set: (value: EventTypeFilter | EventTypeFilter[] | undefined) => {
-    if (typeof value === 'string') filter.value = { ...filter.value, type: value }
-  },
-})
-function setOnlyUnanswered(event: Event) {
-  filter.value = { ...filter.value, onlyUnanswered: (event.target as HTMLInputElement).checked }
+const types: EventTypeFilter[] = ['all', 'training', 'match', 'event']
+function setType(type: EventTypeFilter) {
+  filter.value = { ...filter.value, type }
 }
+const onlyUnanswered = computed({
+  get: () => filter.value.onlyUnanswered,
+  set: (value: boolean) => (filter.value = { ...filter.value, onlyUnanswered: value }),
+})
 function resetFilter() {
   filter.value = { ...DEFAULT_EVENT_FILTER }
 }
@@ -64,28 +71,47 @@ const allUpcoming = computed(() => splitEvents(events.data.value ?? []).upcoming
 const lists = computed(() =>
   splitEvents(filterEvents(events.data.value ?? [], filter.value, memberId.value)),
 )
-const hero = computed(() => nextEvent(lists.value.upcoming))
-const moreUpcoming = computed(() => lists.value.upcoming.filter((e) => e.id !== hero.value?.id))
+const weeks = computed(() => groupByWeek(lists.value.upcoming))
 const unanswered = computed(() => unansweredEvents(allUpcoming.value, memberId.value))
 const filteredAway = computed(
   () => !!events.data.value?.length && !lists.value.upcoming.length && filterCount.value > 0,
 )
 
+function weekTitle(week: WeekGroup<TeamEvent>) {
+  if (week.kind !== 'week') return t(`events.weeks.${week.kind}`)
+  return t('events.weeks.range', {
+    from: formatDate(week.start, locale.value, 'd.M.'),
+    to: formatDate(week.end, locale.value, 'd.M.'),
+  })
+}
+
+const { answer, decline, declining } = useAnswer()
+function onAnswer(event: TeamEvent, status: AttendanceStatus) {
+  if (!memberId.value) return
+  const previous = event.attendances.find((a) => a.member_id === memberId.value) ?? null
+  const label = `${fmt.title(event)} · ${fmt.weekdayShort(event.starts_at)} ${fmt.dayMonth(event.starts_at)}`
+  answer(event, memberId.value, previous, status, label)
+}
+
 // "Attend all": every shown date that is still open and not answered yet.
 const attendCandidates = computed(() => attendAllCandidates(lists.value.upcoming, memberId.value))
 const attendAll = useAttendAll()
 const attendOpen = ref(false)
-const attendNotice = ref<string | null>(null)
-
 async function confirmAttendAll() {
-  const result = await attendAll.mutateAsync({
-    eventIds: attendCandidates.value.map((e) => e.id),
-    memberId: memberId.value!,
-  })
+  try {
+    const result = await attendAll.mutateAsync({
+      eventIds: attendCandidates.value.map((e) => e.id),
+      memberId: memberId.value!,
+    })
+    snackbar.show({
+      text: result.skipped
+        ? t('events.attendAll.doneSkipped', { n: result.saved, skipped: result.skipped })
+        : t('events.attendAll.done', result.saved),
+    })
+  } catch {
+    snackbar.show({ text: t('events.attendAll.failed'), tone: 'error' })
+  }
   attendOpen.value = false
-  attendNotice.value = result.skipped
-    ? t('events.attendAll.doneSkipped', { n: result.saved, skipped: result.skipped })
-    : t('events.attendAll.done', result.saved)
 }
 
 // Back to top: appears after scrolling down.
@@ -95,14 +121,16 @@ const showToTop = computed(() => y.value > 500)
 function toTop() {
   window.scrollTo({ top: 0, behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth' })
 }
-const playerIds = computed(() =>
-  (members.data.value ?? []).filter((m) => m.role === 'player').map((m) => m.id),
-)
 
-const createOptions = [
+const createOptions: {
+  kind: 'training' | 'series' | 'match' | 'event'
+  icon: UiIconName
+  labelKey: string
+  hintKey: string
+}[] = [
   {
     kind: 'training',
-    icon: 'whistle',
+    icon: 'cone',
     labelKey: 'events.newTraining',
     hintKey: 'events.newTrainingHint',
   },
@@ -114,9 +142,8 @@ const createOptions = [
   },
   { kind: 'match', icon: 'users', labelKey: 'events.newMatch', hintKey: 'events.newMatchHint' },
   { kind: 'event', icon: 'star', labelKey: 'events.newEvent', hintKey: 'events.newEventHint' },
-] as const
+]
 const createOpen = ref(false)
-
 async function create(kind: (typeof createOptions)[number]['kind']) {
   createOpen.value = false
   await router.push({ name: 'event-new', params: { kind } })
@@ -132,121 +159,88 @@ function scrollToFirstUnanswered() {
   <section class="events">
     <header class="events__head">
       <h1>{{ t('events.title') }}</h1>
-      <div class="events__actions">
-        <button
-          v-if="attendCandidates.length"
-          type="button"
-          class="events__action events__action--text"
-          @click="attendOpen = true"
-        >
-          <AppIcon name="check" :size="18" />
-          {{ t('events.attendAll.button') }}
-        </button>
-        <button
-          type="button"
-          class="events__action"
-          :class="{ 'events__action--on': filtersOpen || filterCount > 0 }"
-          :aria-expanded="filtersOpen"
-          aria-controls="events-filters"
-          :aria-label="
-            filterCount
-              ? t('events.filter.labelActive', { n: filterCount })
-              : t('events.filter.label')
-          "
-          @click="filtersOpen = !filtersOpen"
-        >
-          <AppIcon name="filter" :size="20" />
-          <span v-if="filterCount" class="events__badge" aria-hidden="true">{{ filterCount }}</span>
-        </button>
-        <button
-          v-if="isCoach"
-          type="button"
-          class="events__action events__action--primary"
-          :aria-label="t('events.createLabel')"
-          :title="t('events.createLabel')"
-          @click="createOpen = true"
-        >
-          <AppIcon name="plus" :size="24" />
-        </button>
-      </div>
+      <UiIconButton
+        icon="filter"
+        :label="
+          filterCount
+            ? t('events.filter.labelActive', { n: filterCount })
+            : t('events.filter.label')
+        "
+        :class="{ 'events__filter--on': filterCount > 0 }"
+        aria-haspopup="dialog"
+        @click="filterOpen = true"
+      >
+        <UiIcon name="filter" :size="22" />
+        <span v-if="filterCount" class="events__badge" aria-hidden="true">{{ filterCount }}</span>
+      </UiIconButton>
+      <UiIconButton
+        v-if="isCoach"
+        icon="plus"
+        variant="primary"
+        :label="t('events.createLabel')"
+        aria-haspopup="dialog"
+        @click="createOpen = true"
+      />
     </header>
 
-    <section
-      v-if="filtersOpen"
-      id="events-filters"
-      class="events__filters"
-      :aria-label="t('events.filter.label')"
-    >
-      <BaseChipGroup
-        v-model="filterType"
-        :label="t('events.filter.type')"
-        :options="typeOptions"
-        :columns="4"
-      />
-      <label v-if="memberId" class="events__check">
-        <input
-          type="checkbox"
-          class="events__box"
-          :checked="filter.onlyUnanswered"
-          @change="setOnlyUnanswered"
-        />
-        {{ t('events.filter.onlyUnanswered') }}
-      </label>
-      <BaseButton v-if="filterCount" variant="ghost" @click="resetFilter">
-        {{ t('events.filter.reset') }}
-      </BaseButton>
-    </section>
+    <div v-if="unanswered.length || attendCandidates.length" class="events__tools">
+      <button
+        v-if="unanswered.length"
+        type="button"
+        class="events__reminder"
+        @click="scrollToFirstUnanswered"
+      >
+        <UiIcon name="alert" :size="18" />
+        {{ t('events.reminder', unanswered.length) }}
+      </button>
+      <UiButton
+        v-if="attendCandidates.length"
+        variant="secondary"
+        icon="check"
+        @click="attendOpen = true"
+      >
+        {{ t('events.attendAll.button') }}
+      </UiButton>
+    </div>
 
-    <p v-if="attendNotice" class="events__notice" role="status">✓ {{ attendNotice }}</p>
-
-    <button
-      v-if="unanswered.length"
-      type="button"
-      class="events__reminder"
-      @click="scrollToFirstUnanswered"
-    >
-      <span class="events__reminder-icon" aria-hidden="true">!</span>
-      {{ t('events.reminder', unanswered.length) }}
-    </button>
-
-    <p v-if="events.isPending.value" class="events__muted">{{ t('common.loading') }}</p>
+    <div v-if="events.isPending.value" class="events__list" aria-busy="true">
+      <UiSkeleton v-for="n in 4" :key="n" shape="block" height="120px" />
+    </div>
     <p v-else-if="events.isError.value" class="events__error" role="alert">
       {{ t('events.loadFailed') }}
     </p>
 
     <template v-else>
-      <NextEventHero
-        v-if="hero"
-        :id="`event-${hero.id}`"
-        :event="hero"
-        :my-member="myMember"
-        :is-coach="isCoach"
-      />
-      <h2 v-if="hero && moreUpcoming.length" class="events__subtitle">
-        {{ t('player.moreEvents') }}
-      </h2>
-      <ul v-if="moreUpcoming.length" class="events__list" role="list">
-        <li v-for="event in moreUpcoming" :id="`event-${event.id}`" :key="event.id">
-          <EventCard
-            :event="event"
-            :my-member="myMember"
-            :is-coach="isCoach"
-            :player-ids="playerIds"
-          />
-        </li>
-      </ul>
-      <EmptyState
-        v-else-if="!hero && filteredAway"
+      <section
+        v-for="week in weeks"
+        :key="week.key"
+        class="events__week"
+        :aria-labelledby="`week-${week.key}`"
+      >
+        <h2 :id="`week-${week.key}`" class="events__week-title">{{ weekTitle(week) }}</h2>
+        <ul class="events__list" role="list">
+          <li v-for="event in week.events" :id="`event-${event.id}`" :key="event.id">
+            <EventRow
+              :event="event"
+              :my-member="myMember"
+              :is-coach="isCoach"
+              :player-ids="playerIds"
+              @answer="onAnswer(event, $event)"
+            />
+          </li>
+        </ul>
+      </section>
+
+      <UiEmptyState
+        v-if="!weeks.length && filteredAway"
         icon="filter"
         :title="t('events.filter.emptyTitle')"
         :text="t('events.filter.emptyText')"
       >
-        <BaseButton variant="secondary" @click="resetFilter">
-          {{ t('events.filter.reset') }}
-        </BaseButton>
-      </EmptyState>
-      <EmptyState
-        v-else-if="!hero"
+        <UiButton variant="secondary" @click="resetFilter">{{ t('events.filter.reset') }}</UiButton>
+      </UiEmptyState>
+      <UiEmptyState
+        v-else-if="!weeks.length"
         icon="calendar"
         :title="t('events.empty')"
         :text="isCoach ? t('events.emptyHintCoach') : t('events.emptyHint')"
@@ -258,7 +252,7 @@ function scrollToFirstUnanswered() {
         </summary>
         <ul class="events__list" role="list">
           <li v-for="event in lists.past" :key="event.id">
-            <EventCard
+            <EventRow
               :event="event"
               :my-member="null"
               :is-coach="isCoach"
@@ -269,7 +263,50 @@ function scrollToFirstUnanswered() {
       </details>
     </template>
 
-    <BaseModal v-model:open="createOpen" :title="t('events.createLabel')">
+    <Transition name="events-fade">
+      <UiIconButton
+        v-if="showToTop"
+        icon="arrowUp"
+        :label="t('events.toTop')"
+        class="events__to-top"
+        @click="toTop"
+      />
+    </Transition>
+
+    <DeclineSheet :request="declining" @decline="decline" @cancel="declining = null" />
+
+    <BottomSheet v-model:open="filterOpen" :title="t('events.filter.label')">
+      <div class="events__filters">
+        <fieldset class="events__fieldset">
+          <legend class="events__legend">{{ t('events.filter.type') }}</legend>
+          <div class="events__chips">
+            <UiChip
+              v-for="type in types"
+              :key="type"
+              :model-value="filter.type === type"
+              @update:model-value="setType(type)"
+            >
+              {{ t(`events.filter.types.${type}`) }}
+            </UiChip>
+          </div>
+        </fieldset>
+        <UiSwitch
+          v-if="memberId"
+          v-model="onlyUnanswered"
+          :label="t('events.filter.onlyUnanswered')"
+        />
+      </div>
+      <template #footer>
+        <UiButton variant="secondary" :disabled="!filterCount" @click="resetFilter">
+          {{ t('events.filter.reset') }}
+        </UiButton>
+        <UiButton @click="filterOpen = false">
+          {{ t('events.filter.show', { n: lists.upcoming.length }) }}
+        </UiButton>
+      </template>
+    </BottomSheet>
+
+    <BottomSheet v-model:open="createOpen" :title="t('events.createLabel')">
       <ul class="events__options" role="list">
         <li v-for="option in createOptions" :key="option.kind">
           <button
@@ -279,44 +316,29 @@ function scrollToFirstUnanswered() {
             @click="create(option.kind)"
           >
             <span class="events__option-icon" aria-hidden="true">
-              <AppIcon :name="option.icon" :size="22" />
+              <UiIcon :name="option.icon" :size="24" />
             </span>
             <span class="events__option-text">
               <span class="events__option-label">{{ t(option.labelKey) }}</span>
-              <span class="events__muted">{{ t(option.hintKey) }}</span>
+              <span class="events__option-hint">{{ t(option.hintKey) }}</span>
             </span>
           </button>
         </li>
       </ul>
-    </BaseModal>
+    </BottomSheet>
 
-    <BaseModal v-model:open="attendOpen" :title="t('events.attendAll.title')">
+    <BottomSheet v-model:open="attendOpen" :title="t('events.attendAll.title')">
       <p>{{ t('events.attendAll.text', attendCandidates.length) }}</p>
-      <p class="events__muted">{{ t('events.attendAll.hint') }}</p>
-      <p v-if="attendAll.isError.value" class="events__error" role="alert">
-        {{ t('events.attendAll.failed') }}
-      </p>
+      <p class="events__hint">{{ t('events.attendAll.hint') }}</p>
       <template #footer>
-        <BaseButton variant="secondary" @click="attendOpen = false">
-          {{ t('common.cancel') }}
-        </BaseButton>
-        <BaseButton :loading="attendAll.isPending.value" @click="confirmAttendAll">
-          {{ t('events.attendAll.confirm', attendCandidates.length) }}
-        </BaseButton>
+        <UiButton variant="secondary" @click="attendOpen = false">{{
+          t('common.cancel')
+        }}</UiButton>
+        <UiButton :loading="attendAll.isPending.value" @click="confirmAttendAll">
+          {{ t('events.attendAll.confirm', { n: attendCandidates.length }) }}
+        </UiButton>
       </template>
-    </BaseModal>
-
-    <!-- Back to top -->
-    <button
-      v-if="showToTop"
-      type="button"
-      class="events__totop"
-      :aria-label="t('events.toTop')"
-      :title="t('events.toTop')"
-      @click="toTop"
-    >
-      <AppIcon name="arrowUp" :size="22" />
-    </button>
+    </BottomSheet>
   </section>
 </template>
 
@@ -328,69 +350,27 @@ function scrollToFirstUnanswered() {
 
   &__head {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
     gap: $space-2;
+
+    h1 {
+      flex: 1;
+    }
   }
 
-  &__actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-left: auto;
-  }
-
-  &__action {
-    @include focus-visible;
-
+  &__filter--on {
     position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: $space-1;
-    min-width: $touch-target;
-    height: $touch-target;
-    padding: 0 $space-2;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-full;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-weight: 700;
-    cursor: pointer;
-
-    &--text {
-      padding: 0 $space-2 0 6px;
-      border-color: color-mix(in srgb, var(--color-success) 45%, var(--color-border));
-      color: var(--color-success);
-      font-size: $font-sm;
-    }
-
-    &--on {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-
-    &--primary {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
-      color: var(--color-primary-contrast);
-
-      &:hover {
-        background: var(--color-primary-hover);
-      }
-    }
+    outline: 2px solid var(--color-primary);
   }
 
   &__badge {
     position: absolute;
-    top: -4px;
-    right: -4px;
+    top: -2px;
+    right: -2px;
     display: grid;
     place-items: center;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 4px;
+    min-width: 20px;
+    height: 20px;
     border-radius: $radius-full;
     background: var(--color-primary);
     color: var(--color-primary-contrast);
@@ -398,181 +378,178 @@ function scrollToFirstUnanswered() {
     font-weight: 800;
   }
 
+  &__tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-2;
+  }
+
+  &__reminder {
+    @include focus-visible;
+
+    display: inline-flex;
+    flex: 1 1 200px;
+    align-items: center;
+    gap: $space-2;
+    min-height: $touch-target;
+    padding: $space-2 $space-3;
+    border: 2px dashed var(--color-maybe);
+    border-radius: $radius-lg;
+    background: transparent;
+    color: var(--color-text);
+    font-weight: 700;
+    text-align: left;
+
+    :deep(.ui-icon) {
+      color: var(--color-maybe-text);
+    }
+  }
+
+  &__week {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+  }
+
+  &__week-title {
+    position: sticky;
+    top: var(--top-bar-height, 64px);
+    z-index: 5;
+    padding: $space-2 0;
+    background: var(--color-bg);
+    font-size: $font-xl;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+    margin: 0;
+  }
+
+  &__error {
+    color: var(--color-danger);
+  }
+
+  &__past-summary {
+    @include focus-visible;
+
+    min-height: $touch-target;
+    padding: $space-2 0;
+    color: var(--color-text-muted);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  &__past .events__list {
+    opacity: 0.8;
+  }
+
+  &__to-top {
+    position: fixed;
+    right: $space-4;
+    bottom: calc(var(--nav-offset, 0px) + #{$space-3});
+    z-index: 30;
+    opacity: 0.85;
+    box-shadow: var(--shadow-md);
+  }
+
   &__filters {
     display: flex;
     flex-direction: column;
-    gap: $space-3;
-    padding: $space-3;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-lg;
-    background: var(--color-surface);
+    gap: $space-4;
   }
 
-  &__check {
+  &__fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  &__legend {
+    margin-bottom: $space-2;
+    font-weight: 800;
+  }
+
+  &__chips {
     display: flex;
-    align-items: center;
-    gap: $space-3;
-    min-height: $touch-target;
-    font-weight: 600;
+    flex-wrap: wrap;
+    gap: $space-2;
   }
 
-  &__box {
-    @include focus-visible;
-
-    width: 22px;
-    height: 22px;
-    accent-color: var(--color-primary);
-  }
-
-  &__notice {
-    color: var(--color-success);
-    font-weight: 600;
-  }
-
-  // Back to top: small and see-through so it never hides content.
-  &__totop {
-    @include focus-visible;
-
-    position: fixed;
-    right: max($space-4, calc((100vw - 720px) / 2 + #{$space-4}));
-    bottom: calc(#{$bottom-nav-height} + #{$space-3} + env(safe-area-inset-bottom, 0px));
-    z-index: 20;
-    display: grid;
-    place-items: center;
-    width: $touch-target;
-    height: $touch-target;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-full;
-    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
-    color: var(--color-text);
-    box-shadow: var(--shadow-sm);
-    backdrop-filter: blur(6px);
-    opacity: 0.85;
-    cursor: pointer;
-
-    &:hover,
-    &:focus-visible {
-      opacity: 1;
-    }
+  &__hint {
+    margin-top: $space-2;
+    color: var(--color-text-muted);
+    font-size: $font-sm;
   }
 
   &__options {
     display: flex;
     flex-direction: column;
     gap: $space-2;
+    margin: 0;
   }
 
   &__option {
-    @include focus-visible;
+    --option-color: var(--color-training-text);
 
-    --option-color: var(--color-training);
+    @include focus-visible;
 
     display: flex;
     align-items: center;
     gap: $space-3;
     width: 100%;
-    min-height: 64px;
-    padding: $space-2 $space-3;
-    border: 1px solid var(--color-border);
-    border-left: 4px solid var(--option-color);
-    border-radius: $radius-md;
+    min-height: 68px;
+    padding: $space-3;
+    border: 0;
+    border-radius: $radius-lg;
     background: var(--color-surface);
     color: var(--color-text);
     text-align: left;
 
-    &:hover {
-      background: var(--color-surface-muted);
-    }
-
     &--match {
-      --option-color: var(--color-match);
+      --option-color: var(--color-match-text);
     }
 
     &--event {
-      --option-color: var(--color-event);
+      --option-color: var(--color-event-text);
     }
   }
 
   &__option-icon {
     display: grid;
-    flex: none;
+    flex-shrink: 0;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: $radius-full;
-    background: color-mix(in srgb, var(--option-color) 15%, var(--color-surface));
+    width: 44px;
+    height: 44px;
+    border: 2px dashed var(--color-chalk);
+    border-radius: 50%;
     color: var(--option-color);
   }
 
   &__option-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
   }
 
   &__option-label {
-    font-weight: 700;
-  }
-
-  &__reminder {
-    @include focus-visible;
-
-    display: flex;
-    align-items: center;
-    gap: $space-3;
-    min-height: $touch-target;
-    padding: $space-3 $space-4;
-    border: 2px solid var(--color-warning);
-    border-radius: $radius-lg;
-    background: color-mix(in srgb, var(--color-warning) 12%, var(--color-surface));
-    font-weight: 700;
-    text-align: left;
-  }
-
-  &__reminder-icon {
-    display: grid;
-    flex-shrink: 0;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    border-radius: $radius-full;
-    background: var(--color-warning);
-    color: #fff;
     font-weight: 800;
   }
 
-  &__subtitle {
-    font-size: $font-lg;
-  }
-
-  &__list {
-    display: flex;
-    flex-direction: column;
-    gap: $space-3;
-  }
-
-  &__past {
-    margin-top: $space-2;
-  }
-
-  &__past-summary {
-    @include focus-visible;
-
-    display: flex;
-    align-items: center;
-    min-height: $touch-target;
-    margin-bottom: $space-3;
-    font-weight: 700;
+  &__option-hint {
     color: var(--color-text-muted);
-    cursor: pointer;
+    font-size: $font-sm;
   }
+}
 
-  &__muted {
-    color: var(--color-text-muted);
-  }
+.events-fade-enter-active,
+.events-fade-leave-active {
+  transition: opacity var(--duration-medium) var(--ease-out);
+}
 
-  &__error {
-    color: var(--color-danger);
-  }
+.events-fade-enter-from,
+.events-fade-leave-to {
+  opacity: 0;
 }
 </style>

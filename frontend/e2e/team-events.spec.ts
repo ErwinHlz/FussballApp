@@ -11,9 +11,7 @@ test('coach adds a team event with the + button, the player answers it', async (
 
   const coach = await (await browser.newContext()).newPage()
   await login(coach, demo.coach.email)
-  await coach.getByRole('button', { name: 'Filter' }).click()
   await coach.screenshot({ path: 'e2e/__screens__/79-events-head.png' })
-  await coach.getByRole('button', { name: 'Filter' }).click()
   await coach.getByRole('button', { name: 'Termin anlegen' }).click()
   const sheet = coach.getByRole('dialog')
   for (const option of ['Training', 'Trainingsserie', 'Spiel', 'Event']) {
@@ -53,19 +51,23 @@ test('a player attends all open dates, filters the list and jumps back to the to
 
   // Filter: only matches.
   await page.getByRole('button', { name: 'Filter' }).click()
-  await page.getByRole('button', { name: 'Spiel', exact: true }).click()
+  const filter = page.getByRole('dialog', { name: 'Filter' })
+  await filter.getByRole('button', { name: 'Spiel', exact: true }).click()
+  await page.screenshot({ path: 'e2e/__screens__/82-events-filter.png' })
+  await filter.getByRole('button', { name: /^Zeigen/ }).click()
   await expect(page.getByRole('button', { name: 'Filter (1 aktiv)' })).toBeVisible()
   await expect(page.getByText('vs. FC Nachbarort').first()).toBeVisible()
-  await expect(page.locator('.event-card--training')).toHaveCount(0)
-  await page.screenshot({ path: 'e2e/__screens__/82-events-filter.png' })
-  await page.getByRole('button', { name: 'Filter zurücksetzen' }).click()
+  await expect(page.locator('.event-row--training')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Filter (1 aktiv)' }).click()
+  await filter.getByRole('button', { name: 'Filter zurücksetzen' }).click()
+  await filter.getByRole('button', { name: 'Schließen' }).click()
 
   // Attend all open dates at once.
   await page.getByRole('button', { name: 'Alle zusagen' }).click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toContainText('offene Termine')
   await dialog.getByRole('button', { name: /^Zusagen/ }).click()
-  await expect(page.getByRole('status')).toContainText('zugesagt')
+  await expect(page.getByText(/Termine zugesagt/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Alle zusagen' })).toHaveCount(0)
   await expect(page.getByText('noch nicht beantwortet')).toHaveCount(0)
 

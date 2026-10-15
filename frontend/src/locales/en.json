@@ -47,7 +47,11 @@
     },
     "locked": {
       "deadlinePassed": "The response deadline has passed. Only your coach can change it now.",
-      "started": "The event has already started."
+      "started": "The event has already started.",
+      "short": {
+        "deadlinePassed": "Deadline passed",
+        "started": "Already started"
+      }
     },
     "declineTitle": "Decline",
     "reasonLabel": "Reason (optional)",
@@ -169,7 +173,26 @@
       "onlyUnanswered": "Only unanswered",
       "reset": "Reset filter",
       "emptyTitle": "No matching dates",
-      "emptyText": "There are no upcoming dates for this filter."
+      "emptyText": "There are no upcoming dates for this filter.",
+      "show": "Show ({n})"
+    },
+    "declined": "Declined",
+    "declineHint": "Tap the reason – that saves your decline.",
+    "declineWithoutReason": "Decline without reason",
+    "ofPlayers": "{n} of {total}",
+    "openMap": "open map",
+    "state": {
+      "none": "No answer yet",
+      "yes": "You're in",
+      "maybe": "Maybe",
+      "no": "Declined",
+      "absence": "Declined (absence)",
+      "injured": "Declined (injured)"
+    },
+    "weeks": {
+      "thisWeek": "This week",
+      "nextWeek": "Next week",
+      "range": "{from} – {to}"
     }
   },
   "training": {
@@ -569,7 +592,20 @@
     "moreEvents": "More events",
     "planNotYet": "The training plan has not been published yet.",
     "yourGroupAll": "Your group today:",
-    "yourGroupHere": "Your group for this drill:"
+    "yourGroupHere": "Your group for this drill:",
+    "until": "until {time}",
+    "countYes": "{n} in",
+    "countMaybe": "{n} maybe",
+    "countOpen": "{n} open",
+    "flowAndDetails": "Session plan and details",
+    "allDetails": "All details",
+    "yourBibs": "Your bibs",
+    "allDrills": "all drills",
+    "thisWeek": "This week",
+    "dayEvents": "Events on this day",
+    "noEventThatDay": "No event on this day.",
+    "waiting": "Waiting for your answer",
+    "allEvents": "All events"
   },
   "board": {
     "title": "Tactics board",

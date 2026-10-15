@@ -18,15 +18,25 @@ test('screens: player', async ({ page }) => {
   await page.getByRole('heading', { name: 'Konto erstellen' }).waitFor()
   await shot(page, '02-register')
 
-  await login(page, demo.player.email)
-  await page.getByText('Als Nächstes').waitFor()
+  await login(page, demo.player.email, '/')
+  await page.getByRole('button', { name: /dabei/ }).first().waitFor()
   await page.waitForTimeout(500)
   await shot(page, '10-player-home')
+  await page.goto('/events')
+  await page.getByText('Diese Woche').first().waitFor()
+  await page.waitForTimeout(300)
+  await shot(page, '10b-player-events')
 
   await page.goto(`/events/${demo.training.id}`)
   await page.getByText('Trainingsplan').first().waitFor()
   await page.waitForTimeout(500)
   await shot(page, '11-player-training-detail')
+  await page.screenshot({ path: 'e2e/__screens__/11b-player-training-viewport.png' })
+  await page.getByRole('button', { name: 'Absage', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Absagen' }).waitFor()
+  await page.waitForTimeout(400)
+  await page.screenshot({ path: 'e2e/__screens__/11c-decline-sheet.png' })
+  await page.keyboard.press('Escape')
 
   await page.goto(`/events/${demo.match.id}`)
   await page.getByText('FC Nachbarort').first().waitFor()
@@ -53,8 +63,8 @@ test('screens: player', async ({ page }) => {
 
 test('screens: coach', async ({ page }) => {
   const demo = await seedDemo()
-  await login(page, demo.coach.email)
-  await page.getByText('Als Nächstes').waitFor()
+  await login(page, demo.coach.email, '/')
+  await page.getByRole('button', { name: /dabei/ }).first().waitFor()
   await page.waitForTimeout(500)
   await shot(page, '20-coach-home')
 
@@ -103,8 +113,8 @@ test.describe('dark mode', () => {
 
   test('screens: dark', async ({ page }) => {
     const demo = await seedDemo()
-    await login(page, demo.player.email)
-    await page.getByText('Als Nächstes').waitFor()
+    await login(page, demo.player.email, '/')
+    await page.getByRole('button', { name: /dabei/ }).first().waitFor()
     await page.waitForTimeout(500)
     await shot(page, '40-dark-home')
 

@@ -7,11 +7,13 @@ import BaseCard from '@/components/BaseCard.vue'
 import type { TeamMember } from '@/features/teams/api'
 import type { TeamEvent } from '@/features/events/logic'
 import LateDeclines from './LateDeclines.vue'
-import MyTrainingFlow from '@/features/player-view/components/MyTrainingFlow.vue'
 import { itemMinutes, planTotalMinutes } from '../logic'
 import { usePlan } from '../composables/usePlan'
 
-/** Training plan block on the event detail page: summary for coaches, the plan for players. */
+/**
+ * Training plan block on the event detail page for coaches (players see TrainingFlow).
+ * Restyled in UI-PLAN.md phase U3.
+ */
 const props = defineProps<{
   event: TeamEvent
   isCoach: boolean
@@ -41,9 +43,7 @@ const total = computed(() => planTotalMinutes(items.value))
 
     <LateDeclines v-if="isCoach" :event="event" :members="members" />
 
-    <MyTrainingFlow v-if="!isCoach" :event-id="event.id" :member-id="myMemberId ?? null" />
-
-    <ol v-else-if="items.length" class="plan-section__list">
+    <ol v-if="items.length" class="plan-section__list">
       <li v-for="(item, index) in items" :key="item.id" class="plan-section__item">
         <span class="plan-section__index">{{ index + 1 }}</span>
         <RouterLink

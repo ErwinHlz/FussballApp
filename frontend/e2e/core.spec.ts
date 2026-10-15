@@ -48,18 +48,19 @@ test('player answers on the start page, the coach sees it live', async ({ browse
   const yesCount = coach.locator('.overview__total--yes .overview__total-count')
   await expect(yesCount).toContainText('4')
 
-  await login(player, demo.player.email)
-  const hero = player.locator('.hero')
-  await expect(hero).toContainText('Training')
+  await login(player, demo.player.email, '/')
+  const next = player.locator('.next')
+  await expect(next).toContainText('Training')
   // Different group per drill: shown per drill (Rondo: Rot, Abschlussspiel: Blau).
-  await expect(hero.locator('.flow__item', { hasText: 'Rondo' }).locator('.bib')).toHaveText('Rot')
-  // The match is in the list below the hero: answer there.
-  const matchCard = player.locator('.event-card', { hasText: 'FC Nachbarort' })
-  await matchCard.getByRole('button', { name: /Zusage/ }).click()
-  await expect(matchCard.getByRole('button', { name: /Zusage/ })).toHaveAttribute(
+  await expect(next.locator('.bib-chip', { hasText: 'Rondo 4 gegen 2' })).toContainText('Rot')
+  // The match waits for an answer below the next event: answer there.
+  const matchRow = player.locator('.event-row', { hasText: 'FC Nachbarort' })
+  await matchRow.getByRole('button', { name: 'Zusage' }).click()
+  await expect(matchRow.getByRole('button', { name: 'Zusage' })).toHaveAttribute(
     'aria-pressed',
     'true',
   )
+  await expect(matchRow).toContainText('Du bist dabei')
 
   // Live update via Supabase Realtime, no reload on the coach side.
   await expect(yesCount).toContainText('5')
@@ -74,15 +75,13 @@ test('declining asks for a reason and shows it to the coach', async ({ browser }
   const player = await (await browser.newContext()).newPage()
   await login(player, demo.player.email, `/events/${demo.training.id}`)
 
-  await player
-    .getByRole('button', { name: /Absage/ })
-    .first()
-    .click()
+  await player.getByRole('button', { name: 'Absage', exact: true }).click()
   const dialog = player.getByRole('dialog', { name: 'Absagen' })
-  await dialog.getByRole('button', { name: 'Krank' }).click()
+  // Note first, then one tap on the reason saves the decline.
   await dialog.getByLabel('Bemerkung (optional)').fill('Erkältet')
-  await dialog.getByRole('button', { name: 'Absage' }).click()
+  await dialog.getByRole('button', { name: 'Krank' }).click()
   await expect(dialog).toBeHidden()
+  await expect(player.getByText('Abgesagt', { exact: true })).toBeVisible()
 
   const coach = await (await browser.newContext()).newPage()
   await login(coach, demo.coach.email, `/events/${demo.training.id}`)
@@ -144,7 +143,7 @@ test('coach assigns a group by tapping, the player sees the bib color', async ({
   const player = await (await browser.newContext()).newPage()
   await login(player, demo.player.email, `/events/${demo.training.id}`)
   const warmUp = player.locator('.flow__item', { hasText: 'Aufwärmen mit Ball' })
-  await expect(warmUp.locator('.bib')).toHaveText('Blau')
+  await expect(warmUp.locator('.bib-chip')).toHaveText('Blau')
 })
 
 test('a vacation declines events automatically and the coach sees it', async ({ browser }) => {

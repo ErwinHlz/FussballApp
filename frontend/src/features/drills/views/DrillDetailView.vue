@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import BaseBadge from '@/components/BaseBadge.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import YouTubeEmbed from '../components/YouTubeEmbed.vue'
@@ -10,7 +9,8 @@ import DrillVideo from '../components/DrillVideo.vue'
 import DrillVideoUpload from '../components/DrillVideoUpload.vue'
 import AnimationPlayer from '@/features/board/components/AnimationPlayer.vue'
 import { parseAnimation } from '@/features/board/schema'
-import BibBadge from '@/features/player-view/components/BibBadge.vue'
+import BibChip from '@/ui/BibChip.vue'
+import UiBadge from '@/ui/UiBadge.vue'
 import { useEventGroups } from '@/features/groups/composables/useGroups'
 import { useMyMember } from '@/features/events/composables/useEvents'
 import { playersLabel } from '../logic'
@@ -81,19 +81,31 @@ async function remove() {
     </p>
 
     <template v-else>
+      <!-- Media first and full width: players open a drill to see how it works. -->
+      <div v-if="animation || d.video_path || d.video_url" class="drill__media">
+        <section v-if="animation" class="drill__animation" :aria-label="t('board.animation')">
+          <AnimationPlayer
+            :animation="animation"
+            :title="t('board.animationOf', { title: d.title })"
+          />
+        </section>
+        <DrillVideo v-if="d.video_path" :path="d.video_path" :title="d.title" />
+        <YouTubeEmbed v-if="d.video_url" :url="d.video_url" :title="d.title" />
+      </div>
+
       <header class="drill__header">
         <div class="drill__badges">
-          <BaseBadge tone="training">{{ t(`drills.categories.${d.category}`) }}</BaseBadge>
-          <BaseBadge tone="neutral">
+          <UiBadge tone="training">{{ t(`drills.categories.${d.category}`) }}</UiBadge>
+          <UiBadge>
             {{ isPublic ? t('drills.scope.libraryShort') : t('drills.scope.teamShort') }}
-          </BaseBadge>
+          </UiBadge>
         </div>
         <h1>{{ d.title }}</h1>
       </header>
 
       <p v-if="myGroup" class="drill__my-group" role="status">
         {{ t('player.yourGroupHere') }}
-        <BibBadge :color="myGroup.color" :name="myGroup.name" size="lg" />
+        <BibChip :color="myGroup.color" :label="myGroup.name" />
       </p>
 
       <dl class="drill__facts">
@@ -114,16 +126,6 @@ async function remove() {
           </dd>
         </div>
       </dl>
-
-      <section v-if="animation" class="drill__animation" :aria-label="t('board.animation')">
-        <AnimationPlayer
-          :animation="animation"
-          :title="t('board.animationOf', { title: d.title })"
-        />
-      </section>
-
-      <DrillVideo v-if="d.video_path" :path="d.video_path" :title="d.title" />
-      <YouTubeEmbed v-if="d.video_url" :url="d.video_url" :title="d.title" />
 
       <p v-if="d.description" class="drill__description">{{ d.description }}</p>
 
@@ -210,15 +212,26 @@ async function remove() {
     font-size: $font-md;
   }
 
+  &__media {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    // Edge to edge on phones: the field is as big as possible.
+    margin-inline: calc(-1 * #{$space-4});
+
+    @include from($bp-sm) {
+      margin-inline: 0;
+    }
+  }
+
   &__my-group {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: $space-2;
-    padding: $space-3;
+    padding: $space-3 $space-4;
+    border: 2px dashed var(--color-chalk);
     border-radius: $radius-lg;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
     font-weight: 700;
   }
 

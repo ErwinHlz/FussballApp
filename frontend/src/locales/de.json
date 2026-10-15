@@ -47,7 +47,11 @@
     },
     "locked": {
       "deadlinePassed": "Anmeldeschluss vorbei. Änderungen nur noch über den Trainer.",
-      "started": "Der Termin hat schon begonnen."
+      "started": "Der Termin hat schon begonnen.",
+      "short": {
+        "deadlinePassed": "Anmeldeschluss vorbei",
+        "started": "Hat schon begonnen"
+      }
     },
     "declineTitle": "Absagen",
     "reasonLabel": "Grund (optional)",
@@ -169,7 +173,26 @@
       "onlyUnanswered": "Nur unbeantwortete",
       "reset": "Filter zurücksetzen",
       "emptyTitle": "Keine passenden Termine",
-      "emptyText": "Für diesen Filter gibt es keine kommenden Termine."
+      "emptyText": "Für diesen Filter gibt es keine kommenden Termine.",
+      "show": "Zeigen ({n})"
+    },
+    "declined": "Abgesagt",
+    "declineHint": "Tipp auf den Grund – damit ist die Absage gespeichert.",
+    "declineWithoutReason": "Ohne Grund absagen",
+    "ofPlayers": "{n} von {total}",
+    "openMap": "Karte öffnen",
+    "state": {
+      "none": "Noch keine Antwort",
+      "yes": "Du bist dabei",
+      "maybe": "Vielleicht",
+      "no": "Abgesagt",
+      "absence": "Abgesagt (Abwesenheit)",
+      "injured": "Abgesagt (verletzt)"
+    },
+    "weeks": {
+      "thisWeek": "Diese Woche",
+      "nextWeek": "Nächste Woche",
+      "range": "{from} – {to}"
     }
   },
   "training": {
@@ -569,7 +592,20 @@
     "moreEvents": "Weitere Termine",
     "planNotYet": "Der Trainingsplan ist noch nicht veröffentlicht.",
     "yourGroupAll": "Deine Gruppe heute:",
-    "yourGroupHere": "Deine Gruppe bei dieser Übung:"
+    "yourGroupHere": "Deine Gruppe bei dieser Übung:",
+    "until": "bis {time}",
+    "countYes": "{n} dabei",
+    "countMaybe": "{n} vielleicht",
+    "countOpen": "{n} offen",
+    "flowAndDetails": "Ablauf und Details",
+    "allDetails": "Alle Details",
+    "yourBibs": "Deine Leibchen",
+    "allDrills": "alle Übungen",
+    "thisWeek": "Diese Woche",
+    "dayEvents": "Termine an diesem Tag",
+    "noEventThatDay": "An diesem Tag ist kein Termin.",
+    "waiting": "Wartet auf deine Antwort",
+    "allEvents": "Alle Termine"
   },
   "board": {
     "title": "Taktiktafel",

@@ -7,13 +7,14 @@ export type Answer = 'yes' | 'maybe' | 'no'
 
 /**
  * Attendance answer in the "Taktiktafel" look. Hero: one big "I'm in" button with "Maybe" and
- * "Decline" below. Compact: three 44px icon buttons for list rows. The parent saves the answer
+ * "Decline" below. Bar: the big button with two labelled icon buttons beside it, for a fixed
+ * bottom bar. Compact: three 44px icon buttons for list rows. The parent saves the answer
  * (and asks for a decline reason); this control only reports the tap.
  */
 const props = withDefaults(
   defineProps<{
     status: Answer | null
-    variant?: 'hero' | 'compact'
+    variant?: 'hero' | 'bar' | 'compact'
     disabled?: boolean
     /** Accessible name of the group, e.g. "Bist du dabei? Training 16.10." */
     label?: string
@@ -61,6 +62,42 @@ const yesLabel = computed(() =>
         {{ t(`ui.answer.${option}`) }}
       </button>
     </div>
+  </div>
+
+  <div
+    v-else-if="variant === 'bar'"
+    class="answer answer--bar"
+    role="group"
+    :aria-label="groupLabel"
+  >
+    <button
+      type="button"
+      class="answer__main"
+      :class="{
+        'answer__main--on': status === 'yes',
+        'answer__main--off': status && status !== 'yes',
+      }"
+      :aria-pressed="status === 'yes'"
+      :disabled="disabled"
+      @click="emit('answer', 'yes')"
+    >
+      <UiIcon name="check" :size="24" :stroke-width="2.8" />
+      {{ yesLabel }}
+    </button>
+    <button
+      v-for="option in ['maybe', 'no'] as const"
+      :key="option"
+      type="button"
+      class="answer__square"
+      :class="{ [`answer__side--${option}`]: status === option }"
+      :aria-pressed="status === option"
+      :aria-label="t(`ui.answer.${option}`)"
+      :disabled="disabled"
+      @click="emit('answer', option)"
+    >
+      <UiIcon :name="icons[option]" :size="22" :stroke-width="2.6" />
+      <span class="answer__square-label" aria-hidden="true">{{ t(`ui.answer.${option}`) }}</span>
+    </button>
   </div>
 
   <div v-else class="answer answer--compact" role="group" :aria-label="groupLabel">
@@ -148,6 +185,31 @@ const yesLabel = computed(() =>
     min-height: 48px;
     border-radius: $radius-lg;
     font-size: $font-md;
+  }
+
+  &--bar {
+    display: flex;
+    gap: $space-2;
+    width: 100%;
+
+    .answer__main {
+      flex: 1;
+      min-height: 64px;
+    }
+  }
+
+  &__square {
+    flex-direction: column;
+    gap: 0;
+    width: 76px;
+    min-height: 64px;
+    padding: 0;
+    border-radius: $radius-lg;
+  }
+
+  &__square-label {
+    font-size: 11px;
+    font-weight: 800;
   }
 
   &--compact {

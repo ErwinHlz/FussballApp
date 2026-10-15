@@ -48,6 +48,7 @@ test.describe('axe: WCAG 2.1 AA', () => {
     const demo = await seedDemo()
     await login(page, demo.player.email)
     await checkPages(page, [
+      '/',
       '/events',
       `/events/${demo.training.id}`,
       `/events/${demo.match.id}`,
@@ -65,6 +66,7 @@ test.describe('axe: WCAG 2.1 AA', () => {
     const demo = await seedDemo()
     await login(page, demo.coach.email)
     await checkPages(page, [
+      '/',
       '/events',
       `/events/${demo.training.id}`,
       `/events/${demo.match.id}`,
@@ -89,6 +91,7 @@ test.describe('axe: WCAG 2.1 AA', () => {
     await checkPages(page, ['/login'])
     await login(page, demo.coach.email)
     await checkPages(page, [
+      '/',
       '/events',
       `/events/${demo.training.id}`,
       `/events/${demo.match.id}`,
@@ -103,10 +106,7 @@ test.describe('axe: WCAG 2.1 AA', () => {
     const demo = await seedDemo()
     await login(page, demo.player.email, `/events/${demo.match.id}`)
     await ready(page)
-    await page
-      .getByRole('button', { name: /Absage/ })
-      .first()
-      .click()
+    await page.getByRole('button', { name: 'Absage', exact: true }).click()
     await expect(page.getByRole('dialog', { name: 'Absagen' })).toBeVisible()
     await page.waitForTimeout(300)
     // The page behind is checked by the page tests; here only the dialog.
@@ -148,7 +148,7 @@ test.describe('keyboard', () => {
   test('every control on the main pages can be reached with Tab', async ({ page }) => {
     const demo = await seedDemo()
     await login(page, demo.player.email)
-    for (const path of ['/events', `/events/${demo.training.id}`, '/squad', '/profile']) {
+    for (const path of ['/', '/events', `/events/${demo.training.id}`, '/squad', '/profile']) {
       await test.step(path, async () => {
         await page.goto(path)
         await ready(page)
@@ -180,7 +180,7 @@ test.describe('keyboard', () => {
     const demo = await seedDemo()
     await login(page, demo.player.email, `/events/${demo.match.id}`)
     await ready(page)
-    const decline = page.getByRole('button', { name: /Absage/ }).first()
+    const decline = page.getByRole('button', { name: 'Absage', exact: true })
     await decline.focus()
     await page.keyboard.press('Enter')
     const dialog = page.getByRole('dialog', { name: 'Absagen' })
@@ -195,7 +195,7 @@ test.describe('keyboard', () => {
 test('touch targets are at least 44 × 44 px', async ({ page }) => {
   const demo = await seedDemo()
   await login(page, demo.player.email)
-  for (const path of ['/events', `/events/${demo.match.id}`, '/profile']) {
+  for (const path of ['/', '/events', `/events/${demo.match.id}`, '/profile']) {
     await test.step(path, async () => {
       await page.goto(path)
       await ready(page)

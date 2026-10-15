@@ -45,7 +45,7 @@ function item(id: string, title: string, minutes: number): PlanItem {
 function mountSection(planStatus: 'draft' | 'published', isCoach: boolean) {
   return mount(PlanSection, {
     props: { event: event(planStatus), isCoach, members: [], myMemberId: 'me' },
-    global: { plugins: [i18n], stubs: { RouterLink: RouterLinkStub, MyTrainingFlow: true } },
+    global: { plugins: [i18n], stubs: { RouterLink: RouterLinkStub } },
   })
 }
 
@@ -62,12 +62,10 @@ describe('PlanSection', () => {
     expect(queryEnabled.value).toBe(false)
   })
 
-  it('shows players their own training flow once published', () => {
+  it('never offers editing to players', () => {
     const wrapper = mountSection('published', false)
 
-    const flow = wrapper.findComponent({ name: 'MyTrainingFlow' })
-    expect(flow.exists()).toBe(true)
-    expect(flow.props()).toEqual({ eventId: 'e1', memberId: 'me' })
+    expect(wrapper.text()).toContain('Rondo')
     expect(wrapper.text()).not.toContain('Plan bearbeiten')
   })
 

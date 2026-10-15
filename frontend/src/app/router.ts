@@ -73,12 +73,10 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
     children: [
       {
-        // Start tab. Until the dedicated start screen exists (UI-PLAN.md, phase U2) it shows
-        // the event list with the next event on top.
         path: '',
         name: 'home',
         meta: { requiresTeam: true, title: 'nav.start' },
-        component: () => import('@/features/events/views/EventsView.vue'),
+        component: () => import('@/features/player-view/views/HomeView.vue'),
       },
       {
         path: 'events',
@@ -97,7 +95,8 @@ export const routes: RouteRecordRaw[] = [
         path: 'events/:eventId',
         name: 'event',
         props: true,
-        meta: { title: 'events.detailTitle', back: 'events' },
+        // The answer sits in a fixed bar at the bottom, so the tab bar steps aside.
+        meta: { title: 'events.detailTitle', back: 'events', hideNav: true },
         component: () => import('@/features/events/views/EventDetailView.vue'),
       },
       {

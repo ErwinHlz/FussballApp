@@ -38,9 +38,8 @@ test('bottom navigation reaches every tab and marks the active one', async ({ pa
   const demo = await seedDemo()
   await login(page, demo.coach.email)
   const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
-  // Start shows the event list until the start screen exists (UI-PLAN.md, U2).
   const tabs = [
-    ['Start', /\/$/, 'Termine'],
+    ['Start', /\/$/, 'Start'],
     ['Termine', /\/events$/, 'Termine'],
     ['Training', /\/training$/, 'Training'],
     ['Team', /\/squad$/, 'Kader'],
@@ -103,7 +102,7 @@ test('the team switcher sheet closes with Escape and swipe', async ({ page }) =>
 test('the back button returns to the list, also on a deep link', async ({ page }) => {
   const demo = await seedDemo()
   await login(page, demo.player.email)
-  await page.locator('.event-card', { hasText: 'FC Nachbarort' }).getByRole('link').first().click()
+  await page.locator('.event-row', { hasText: 'FC Nachbarort' }).getByRole('link').first().click()
   await expect(page).toHaveURL(new RegExp(`/events/${demo.match.id}$`))
   await page.getByRole('button', { name: 'Zurück' }).click()
   await expect(page).toHaveURL(/\/events$/)
@@ -120,10 +119,12 @@ test('answer buttons toggle and the decline dialog works', async ({ page }) => {
   const demo = await seedDemo()
   await login(page, demo.player.email, `/events/${demo.match.id}`)
   await ready(page)
-  const answers = page.getByRole('group', { name: 'Antwort' }).first()
-  const yes = answers.getByRole('button', { name: /Zusage/ })
-  const maybe = answers.getByRole('button', { name: /Vielleicht/ })
-  const no = answers.getByRole('button', { name: /Absage/ })
+  // The answer bar is fixed at the bottom of the event page.
+  const answers = page.getByRole('group', { name: 'Bist du dabei?' })
+  const yes = answers.getByRole('button', { name: /dabei/ })
+  const maybe = answers.getByRole('button', { name: 'Vielleicht' })
+  const no = answers.getByRole('button', { name: 'Absage' })
+  await expect(page.getByRole('navigation', { name: 'Hauptnavigation' })).toHaveCount(0)
 
   await yes.click()
   await expect(yes).toHaveAttribute('aria-pressed', 'true')
@@ -132,23 +133,25 @@ test('answer buttons toggle and the decline dialog works', async ({ page }) => {
   await expect(maybe).toHaveAttribute('aria-pressed', 'true')
   await expect(yes).toHaveAttribute('aria-pressed', 'false')
 
-  // Decline asks for a reason; Cancel keeps the old answer, the close button too.
+  // Decline asks for a reason; closing the sheet keeps the old answer.
   await no.click()
   const dialog = page.getByRole('dialog', { name: 'Absagen' })
   await expect(dialog).toBeVisible()
-  await dialog.getByRole('button', { name: 'Abbrechen' }).click()
+  await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
   await expect(maybe).toHaveAttribute('aria-pressed', 'true')
   await no.click()
   await dialog.getByRole('button', { name: 'Schließen' }).click()
   await expect(dialog).toBeHidden()
 
+  // Note, then one tap on the reason: saved, with "undo" in the snackbar.
   await no.click()
-  await dialog.getByRole('button', { name: 'Arbeit' }).click()
   await dialog.getByLabel('Bemerkung (optional)').fill('Spätschicht')
-  await dialog.getByRole('button', { name: 'Absage' }).click()
+  await dialog.getByRole('button', { name: 'Arbeit' }).click()
   await expect(dialog).toBeHidden()
   await expect(no).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Rückgängig' }).click()
+  await expect(maybe).toHaveAttribute('aria-pressed', 'true')
   expect(errors).toEqual([])
 })
 
@@ -173,25 +176,27 @@ test('the create menu offers all event types and opens the form', async ({ page 
   await expectNoHorizontalScroll(page)
 })
 
-test('the filter panel narrows the list and is remembered', async ({ page }) => {
+test('the filter sheet narrows the list and is remembered', async ({ page }) => {
   const demo = await seedDemo()
   await login(page, demo.player.email)
   await ready(page)
-  const toggle = page.getByRole('button', { name: /^Filter/ })
-  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
-  await toggle.click()
-  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
-  const panel = page.getByRole('region', { name: 'Filter' })
-  await panel.getByRole('button', { name: 'Spiel' }).click()
+  await page.getByRole('button', { name: 'Filter', exact: true }).click()
+  const sheet = page.getByRole('dialog', { name: 'Filter' })
+  const match = sheet.getByRole('button', { name: 'Spiel', exact: true })
+  await match.click()
+  await expect(match).toHaveAttribute('aria-pressed', 'true')
+  await sheet.getByRole('button', { name: /^Zeigen \(1\)/ }).click()
+  await expect(sheet).toBeHidden()
   await expect(page.getByRole('button', { name: 'Filter (1 aktiv)' })).toBeVisible()
   await expect(page.locator('main')).toContainText('FC Nachbarort')
-  await expect(page.locator('.event-card', { hasText: 'Training' })).toHaveCount(0)
+  await expect(page.locator('.event-row--training')).toHaveCount(0)
 
   await page.reload()
   await ready(page)
   await expect(page.getByRole('button', { name: 'Filter (1 aktiv)' })).toBeVisible()
   await page.getByRole('button', { name: 'Filter (1 aktiv)' }).click()
-  await page.getByRole('button', { name: 'Filter zurücksetzen' }).click()
+  await sheet.getByRole('button', { name: 'Filter zurücksetzen' }).click()
+  await page.keyboard.press('Escape')
   await expect(page.getByRole('button', { name: 'Filter', exact: true })).toBeVisible()
 })
 

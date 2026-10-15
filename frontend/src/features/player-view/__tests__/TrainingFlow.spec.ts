@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import { i18n } from '@/lib/i18n'
 import type { PlanItem } from '@/features/training-plan/logic'
 import type { DrillGroups } from '@/features/groups/api'
-import MyTrainingFlow from '../components/MyTrainingFlow.vue'
+import TrainingFlow from '../components/TrainingFlow.vue'
 
 const plan = ref<PlanItem[]>([])
 const groups = ref<DrillGroups[]>([])
@@ -54,13 +54,13 @@ function drillGroups(id: string, mine: 'red' | 'blue' | null): DrillGroups {
 }
 
 function mountFlow() {
-  return mount(MyTrainingFlow, {
+  return mount(TrainingFlow, {
     props: { eventId: 'e1', memberId: 'me' },
     global: { plugins: [i18n], stubs: { RouterLink: RouterLinkStub } },
   })
 }
 
-describe('MyTrainingFlow', () => {
+describe('TrainingFlow', () => {
   beforeEach(() => {
     i18n.global.locale.value = 'de'
     plan.value = [
@@ -68,39 +68,32 @@ describe('MyTrainingFlow', () => {
       item('ed2', 'Rondo', 20),
       item('ed3', 'Abschluss', 25),
     ]
+    groups.value = [drillGroups('ed2', 'red'), drillGroups('ed3', 'blue')]
   })
 
-  it('shows the own group (color + name) for each drill', () => {
-    groups.value = [drillGroups('ed1', null), drillGroups('ed2', 'red'), drillGroups('ed3', 'blue')]
-    const rows = mountFlow().findAll('.flow__item')
-
-    expect(rows.map((r) => r.find('.flow__title').text())).toEqual([
+  it('lists the drills in order with minutes and the total', () => {
+    const wrapper = mountFlow()
+    const rows = wrapper.findAll('.flow__item')
+    expect(rows.map((r) => r.get('.flow__drill').text())).toEqual([
       'Aufwärmen',
       'Rondo',
       'Abschluss',
     ])
-    expect(rows[0]!.find('.bib').exists()).toBe(false)
-    expect(rows[1]!.find('.bib').text()).toBe('Rot')
-    expect(rows[2]!.find('.bib').text()).toBe('Blau')
-    expect(rows[1]!.classes()).toContain('flow__item--grouped')
+    expect(rows[1]!.get('.flow__minutes').text()).toBe('20 Min.')
+    expect(wrapper.get('.flow__total').text()).toBe('55 Min.')
   })
 
-  it('shows the group once, big, when it is the same in every drill', () => {
-    groups.value = [
-      drillGroups('ed1', 'blue'),
-      drillGroups('ed2', 'blue'),
-      drillGroups('ed3', 'blue'),
-    ]
+  it('shows the own bib with color and name only where the player is in a group', () => {
     const wrapper = mountFlow()
-
-    expect(wrapper.find('.flow__same').text()).toContain('Deine Gruppe heute:')
-    expect(wrapper.find('.flow__same .bib').text()).toBe('Blau')
-    expect(wrapper.findAll('.flow__item .bib')).toHaveLength(0)
+    const rows = wrapper.findAll('.flow__item')
+    expect(rows[0]!.find('.bib-chip').exists()).toBe(false)
+    expect(rows[1]!.get('.bib-chip').text()).toContain('Rot')
+    expect(rows[2]!.get('.bib-chip').text()).toContain('Blau')
   })
 
   it('links each drill with the event context for the drill page', () => {
-    groups.value = []
-    const link = mountFlow().findAllComponents(RouterLinkStub)[1]!
+    const wrapper = mountFlow()
+    const link = wrapper.findAllComponents(RouterLinkStub)[1]!
     expect(link.props('to')).toEqual({
       name: 'drill',
       params: { drillId: 'd-ed2' },

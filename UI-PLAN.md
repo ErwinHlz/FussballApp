@@ -142,11 +142,18 @@ Umsetzungsnotizen U1:
 **Abnahme:** Alle Bausteine laufen auf `/dev/ui` in hell und dunkel und bestehen axe. Die App läuft schon in der neuen Shell (Inhalte noch alt).
 
 ### Phase U2 – Spieler-Kern
-- [ ] **Start:** Wochenleiste oben, darunter der nächste Termin im Kreiderahmen mit großer Uhrzeit, Datum, Ort, eigenen Leibchen bzw. Nominierung und „Ich bin dabei“ (Vielleicht/Absage klein darunter). Darunter „Wartet auf deine Antwort“ als gestrichelte Zeitleiste mit Zusage in der Zeile
-- [ ] **Termine:** nach Wochen gruppiert mit festem Wochenkopf beim Scrollen, kompakte Zeilen mit Datumsblock, Typ-Kennung und Antwort; vergangene Termine darunter; Filter als Sheet
-- [ ] **Termin-Detail:** großer Titel mit Typ und Uhrzeit, Fakten als 2×2-Kacheln, Übungsvorschau als Mini-Spielfeld mit „Abspielen“, Ablauf mit eigenem Leibchen, Antwort als feste Leiste unten (immer erreichbar), Treffpunkt mit Link zur Karten-App
-- [ ] **Absage:** Sheet mit großen Grund-Chips, Absage mit einem Tipp, Bemerkung optional; Snackbar „Abgesagt · Rückgängig“
-- [ ] Übungsdetail für Spieler: Animation bzw. Video in voller Breite, Beschreibung darunter
+- [x] **Start:** Wochenleiste oben, darunter der nächste Termin im Kreiderahmen mit großer Uhrzeit, Datum, Ort, eigenen Leibchen bzw. Nominierung und „Ich bin dabei“ (Vielleicht/Absage klein darunter). Darunter „Wartet auf deine Antwort“ als gestrichelte Zeitleiste mit Zusage in der Zeile
+- [x] **Termine:** nach Wochen gruppiert mit festem Wochenkopf beim Scrollen, kompakte Zeilen mit Datumsblock, Typ-Kennung und Antwort; vergangene Termine darunter; Filter als Sheet
+- [x] **Termin-Detail:** großer Titel mit Typ und Uhrzeit, Fakten als 2×2-Kacheln, Übungsvorschau als Mini-Spielfeld mit „Abspielen“, Ablauf mit eigenem Leibchen, Antwort als feste Leiste unten (immer erreichbar), Treffpunkt mit Link zur Karten-App
+- [x] **Absage:** Sheet mit großen Grund-Chips, Absage mit einem Tipp, Bemerkung optional; Snackbar „Abgesagt · Rückgängig“
+- [x] Übungsdetail für Spieler: Animation bzw. Video in voller Breite, Beschreibung darunter
+
+Umsetzungsnotizen U2:
+- Neue Bausteine: `HomeView`, `NextEventCard`, `MyBibs`, `TrainingFlow` (player-view), `EventRow`, `DeclineSheet`, `useAnswer` (events). Alte `NextEventHero`, `MyTrainingFlow`, `EventCard`, `EventBadges`, `BibBadge` sind entfernt. `AttendanceControl` bleibt, bis die Trainer-Übersicht in U3 umgebaut ist.
+- Termin-Detail blendet die Tab-Leiste aus (`hideNav`), die Antwort sitzt in einer festen Leiste: großer „Ich bin dabei“-Knopf, daneben Vielleicht und Absage (ein Tipp statt ⋯-Menü).
+- Beantwortete Termine bleiben in „Wartet auf deine Antwort“ stehen, bis man die Startseite verlässt (sonst springen Zeilen unter dem Finger weg).
+- Die Übungsvorschau als Mini-Spielfeld im Termin-Detail ist verschoben nach U4 (Vorschaubilder der Bibliothek); bis dahin führt jede Übung im Ablauf zum Übungsdetail mit Animation in voller Breite.
+- **Offen:** „Rückgängig“ nach einer Absage stellt die vorherige Antwort wieder her. War es die erste Antwort, gibt es kein Zurück auf „keine Antwort“, weil Spieler ihre Antwort laut Datenbankregeln nicht löschen dürfen. Lösung bräuchte eine zusätzliche RLS-Regel (Rückfrage beim Nutzer).
 
 **Abnahme:** Ein Spieler sagt vom App-Start aus mit **einem Tipp** zu und erkennt seine Gruppe ohne Scrollen. Die Absage mit Grund braucht höchstens 2 Tipps.
 

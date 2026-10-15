@@ -1,4 +1,11 @@
-import { addDays, addHours, differenceInCalendarDays, parseISO } from 'date-fns'
+import {
+  addDays,
+  addHours,
+  differenceInCalendarDays,
+  format,
+  parseISO,
+  startOfWeek,
+} from 'date-fns'
 import type { Database, Tables } from '@/types/database'
 import type { TeamMember } from '@/features/teams/api'
 
@@ -191,4 +198,41 @@ export function attendAllCandidates(
   return events.filter(
     (e) => responseState(e, now) === 'open' && !e.attendances.some((a) => a.member_id === memberId),
   )
+}
+
+export type WeekGroup<T> = {
+  /** Monday of the week, local date yyyy-MM-dd. */
+  key: string
+  start: Date
+  end: Date
+  /** This week, next week or any later/earlier week (shown with its dates). */
+  kind: 'thisWeek' | 'nextWeek' | 'week'
+  events: T[]
+}
+
+/** Groups events (already sorted) by calendar week, Monday to Sunday, in local time. */
+export function groupByWeek<T extends Pick<EventRow, 'starts_at'>>(
+  events: T[],
+  now: Date = new Date(),
+): WeekGroup<T>[] {
+  const thisWeek = startOfWeek(now, { weekStartsOn: 1 }).getTime()
+  const nextWeek = addDays(new Date(thisWeek), 7).getTime()
+  const groups = new Map<string, WeekGroup<T>>()
+  for (const event of events) {
+    const start = startOfWeek(new Date(event.starts_at), { weekStartsOn: 1 })
+    const key = format(start, 'yyyy-MM-dd')
+    let group = groups.get(key)
+    if (!group) {
+      const kind =
+        start.getTime() === thisWeek
+          ? 'thisWeek'
+          : start.getTime() === nextWeek
+            ? 'nextWeek'
+            : 'week'
+      group = { key, start, end: addDays(start, 6), kind, events: [] }
+      groups.set(key, group)
+    }
+    group.events.push(event)
+  }
+  return [...groups.values()]
 }

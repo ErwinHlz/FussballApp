@@ -104,7 +104,10 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="app-layout" :class="{ 'app-layout--no-nav': !showNav }">
+  <div
+    class="app-layout"
+    :class="{ 'app-layout--no-nav': !showNav, 'app-layout--compact': compact }"
+  >
     <header class="top-bar" :class="{ 'top-bar--compact': compact }">
       <div class="top-bar__inner">
         <UiIconButton
@@ -154,7 +157,14 @@ watchEffect(() => {
 
 <style scoped lang="scss">
 .app-layout {
+  // Sticky headers inside pages (e.g. week headings) sit right below the top bar.
+  --top-bar-height: calc(64px + env(safe-area-inset-top, 0px));
+
   min-height: 100dvh;
+
+  &--compact {
+    --top-bar-height: calc(52px + env(safe-area-inset-top, 0px));
+  }
 
   &__main {
     :deep(h1:focus) {
@@ -272,6 +282,7 @@ watchEffect(() => {
     border-radius: 50%;
     background: var(--color-surface);
     color: var(--color-text);
+    text-decoration: none;
   }
 }
 </style>
