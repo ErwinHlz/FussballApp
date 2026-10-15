@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BibChip from '@/ui/BibChip.vue'
+import DrillThumb from '@/features/drills/components/DrillThumb.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import UiSkeleton from '@/ui/UiSkeleton.vue'
 import { useEventGroups } from '@/features/groups/composables/useGroups'
@@ -48,6 +49,14 @@ const total = computed(() => planTotalMinutes(items.value))
             query: { event: eventId, ed: item.id },
           }"
         >
+          <DrillThumb
+            :drill="{
+              animation: item.drill.animation ?? null,
+              video_url: item.drill.video_url ?? null,
+              video_path: item.drill.video_path ?? null,
+            }"
+            size="small"
+          />
           <span class="flow__text">
             <span class="flow__drill">{{ item.drill.title }}</span>
             <span class="flow__minutes">{{

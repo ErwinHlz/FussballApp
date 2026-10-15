@@ -175,10 +175,17 @@ Umsetzungsnotizen U3:
 **Abnahme:** Der Trainer legt ein Training mit übernommenen Vorgaben in **höchstens 4 Tipps** an, baut einen Plan aus 3 Übungen und veröffentlicht ihn, ohne zu scrollen, um den Veröffentlichen-Knopf zu finden.
 
 ### Phase U4 – Training und Bibliothek
-- [ ] Übungsbibliothek: Kacheln mit Vorschaubild (Standbild der Animation oder Video-Thumbnail), Suche und Kategorie-Chips immer sichtbar
-- [ ] Übung anlegen/bearbeiten in Abschnitten (Basis, Material, Medien) statt einer langen Seite
-- [ ] Taktiktafel mobil: Spielfeld maximal groß, Material-Leiste und Zeitleiste unten, Eigenschaften als Sheet
-- [ ] Vorlagen: Liste mit Gesamtdauer und Übungsanzahl, „Auf Training legen“ als Sheet
+- [x] Übungsbibliothek: Kacheln mit Vorschaubild (Standbild der Animation oder Video-Thumbnail), Suche und Kategorie-Chips immer sichtbar
+- [x] Übung anlegen/bearbeiten in Abschnitten (Basis, Material, Medien) statt einer langen Seite
+- [x] Taktiktafel mobil: Spielfeld maximal groß, Material-Leiste und Zeitleiste unten, Eigenschaften als Sheet
+- [x] Vorlagen: Liste mit Gesamtdauer und Übungsanzahl, „Auf Training legen“ als Sheet
+
+Umsetzungsnotizen U4:
+- Training-Tab mit Bereichs-Navigation `TrainingNav` (Trainings · Übungen · Taktiktafel · Vorlagen, die letzten beiden nur für Trainer); die Bereiche sind Tab-Seiten ohne Zurück-Pfeil.
+- `DrillThumb`: erstes Bild der Animation als Mini-Spielfeld, sonst Kreide-Zeichnung (mit Play-Zeichen bei Video). YouTube-Vorschaubilder werden bewusst nicht geladen (keine Anfrage an Dritte ohne Einwilligung). Vorschaubilder auch im Trainingsablauf der Spieler (aus U2 nachgeholt).
+- Übungsformular: „Das Wichtigste“ offen, „Spieler und Material“ und „Video“ aufklappbar; bei Fehlern öffnet sich der Abschnitt; Speichern in fester Leiste.
+- Taktiktafel: Werkzeuge als wischbare Zeile, darunter das Spielfeld, direkt darunter das Dock (Hinzufügen / Ablauf) mit Kontextzeile für das gewählte Objekt; Eigenschaften als Sheet. Das Dock bleibt bewusst im Seitenfluss: als mitlaufende Leiste hat es das Feld verdeckt, Ablegen war dann unmöglich.
+- Vorlagen: Liste mit Dauer und Übungsanzahl war vorhanden, „Auf Training legen“ ist seit U3 automatisch ein Sheet.
 
 **Abnahme:** Eine Übung finden, öffnen und einem Training hinzufügen geht flüssig mit einer Hand. Die Taktiktafel ist auf 375 px ohne Zoomen bedienbar.
 

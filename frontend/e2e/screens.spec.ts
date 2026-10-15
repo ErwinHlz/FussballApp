@@ -86,7 +86,10 @@ test('screens: coach', async ({ page }) => {
 
   await page.goto('/events')
   await page.getByRole('button', { name: 'Termin anlegen' }).click()
-  await page.getByRole('dialog').getByRole('button', { name: /^Training\s/ }).click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /^Training\s/ })
+    .click()
   await page.waitForTimeout(400)
   await page.screenshot({ path: 'e2e/__screens__/25b-quick-create.png' })
   await page.keyboard.press('Escape')
@@ -101,6 +104,10 @@ test('screens: coach', async ({ page }) => {
   await page.goto('/drills')
   await page.getByText('Rondo 4 gegen 2').first().waitFor()
   await shot(page, '27-drills')
+  await page.screenshot({ path: 'e2e/__screens__/27b-drills-viewport.png' })
+  await page.goto('/drills/new')
+  await page.getByRole('heading', { name: 'Neue Übung' }).waitFor()
+  await page.screenshot({ path: 'e2e/__screens__/27c-drill-form.png' })
 
   await page.goto('/squad')
   await page.getByText('Lena').first().waitFor()

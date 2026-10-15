@@ -239,7 +239,14 @@
     "libraryText": "Standard drills and your team's drills, with description and video.",
     "openLibrary": "Open library",
     "plansSoon": "Training plans for single events are coming next.",
-    "upcoming": "Upcoming trainings"
+    "upcoming": "Upcoming trainings",
+    "nav": {
+      "label": "Training areas",
+      "sessions": "Sessions",
+      "drills": "Drills",
+      "boards": "Tactics board",
+      "templates": "Templates"
+    }
   },
   "squad": {
     "title": "Squad",
@@ -502,7 +509,15 @@
       "equipmentHint": "Separate with commas, e.g. cones, balls, bibs",
       "video": "YouTube link (optional)",
       "videoHint": "youtube.com/watch?v=…, youtu.be/… or Shorts",
-      "saveFailed": "Saving failed. Please check your input."
+      "saveFailed": "Saving failed. Please check your input.",
+      "sections": {
+        "basics": "The essentials",
+        "squad": "Players and equipment",
+        "media": "Video",
+        "check": "check",
+        "mediaHint": "Upload your own video or draw an animation on the drill page after saving.",
+        "actions": "Save drill"
+      }
     },
     "upload": {
       "title": "Own video",
@@ -777,7 +792,14 @@
       "giveBall": "Give ball",
       "releaseBall": "Release ball",
       "duplicate": "Duplicate",
-      "remove": "Remove"
+      "remove": "Remove",
+      "open": "Properties",
+      "deselect": "Clear selection"
+    },
+    "dock": {
+      "label": "Panel below the field",
+      "add": "Add",
+      "steps": "Steps"
     }
   },
   "stats": {

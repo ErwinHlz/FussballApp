@@ -43,7 +43,10 @@ test('coaches build, share and apply training templates', async ({ browser }) =>
   // Tina builds and shares a template.
   const tina = await (await browser.newContext()).newPage()
   await login(tina, demo.coach.email, '/training')
-  await tina.getByRole('button', { name: 'Vorlagen öffnen' }).click()
+  await tina
+    .getByRole('navigation', { name: 'Bereiche im Training' })
+    .getByRole('link', { name: 'Vorlagen' })
+    .click()
   await tina.getByLabel('Name').fill('Passen & Pressing')
   await tina.getByRole('button', { name: 'Vorlage anlegen' }).click()
   await expect(tina.getByRole('heading', { level: 1 })).toHaveText('Passen & Pressing')

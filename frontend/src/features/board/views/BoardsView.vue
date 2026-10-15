@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import TrainingNav from '@/features/training-plan/components/TrainingNav.vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/AppIcon.vue'
@@ -52,6 +53,7 @@ async function onCreate() {
 
 <template>
   <section class="boards">
+    <TrainingNav active="tactic-boards" />
     <header>
       <h1>{{ t('boards.title') }}</h1>
       <p class="boards__muted">{{ t('boards.intro') }}</p>

@@ -5,7 +5,9 @@ import type { PlanItem } from './logic'
 
 type PlanStatus = Database['public']['Enums']['plan_status']
 
-const PLAN_SELECT = '*, drill:drills(id, title, category, duration_min, team_id)'
+// Animation and video come along for the drill previews in the training flow.
+const PLAN_SELECT =
+  '*, drill:drills(id, title, category, duration_min, team_id, animation, video_url, video_path)'
 
 export type TrainingSummary = EventRow & { event_drills: { count: number }[] }
 

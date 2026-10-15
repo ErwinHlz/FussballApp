@@ -38,7 +38,10 @@ test('coach builds an animated board by drag and drop and attaches it to a drill
   ).data!
 
   await login(page, demo.coach.email, '/training')
-  await page.getByRole('button', { name: 'Taktiktafel öffnen' }).click()
+  await page
+    .getByRole('navigation', { name: 'Bereiche im Training' })
+    .getByRole('link', { name: 'Taktiktafel' })
+    .click()
   await page.getByLabel('Name').fill('Ecke kurz')
   await page.getByRole('button', { name: 'Neue Tafel' }).click()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ecke kurz')
@@ -60,12 +63,20 @@ test('coach builds an animated board by drag and drop and attaches it to a drill
   await expect(page.locator('.board--interactive .board__object')).toHaveCount(6)
 
   // Rename player 2 and pass the ball to them in a new step.
+  // Steps are the dock's second panel; properties open as a sheet.
+  await page.getByRole('tab', { name: 'Ablauf' }).click()
   await page.getByRole('button', { name: '+ Schritt' }).click()
   await page.locator('[data-object="p2"]').dispatchEvent('pointerdown')
-  await page.getByLabel('Name', { exact: true }).last().fill('Lena')
+  await page.getByRole('button', { name: 'Eigenschaften' }).click()
+  const props = page.getByRole('dialog', { name: 'Spieler 2' })
+  await props.getByLabel('Name', { exact: true }).fill('Lena')
+  await page.keyboard.press('Escape')
+  await expect(props).toBeHidden()
   await page.getByRole('button', { name: /Ball geben/ }).click()
   await announced(page, 'Ball bei Spieler Lena')
   await page.screenshot({ path: 'e2e/__screens__/70-board-editor.png', fullPage: true })
+  await page.locator('[data-object="p2"]').scrollIntoViewIfNeeded()
+  await page.screenshot({ path: 'e2e/__screens__/70b-board-editor-viewport.png' })
 
   await page.getByRole('button', { name: 'Tafel speichern' }).click()
   await expect(page.getByRole('status')).toContainText('Animation gespeichert')

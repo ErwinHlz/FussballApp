@@ -125,13 +125,13 @@ export const routes: RouteRecordRaw[] = [
       {
         path: 'drills',
         name: 'drills',
-        meta: { requiresTeam: true, title: 'drills.title', back: 'training' },
+        meta: { requiresTeam: true, title: 'drills.title' },
         component: () => import('@/features/drills/views/DrillsView.vue'),
       },
       {
         path: 'drills/new',
         name: 'drill-new',
-        meta: { requiresTeam: true, title: 'drills.form.newTitle', back: 'drills' },
+        meta: { requiresTeam: true, title: 'drills.form.newTitle', back: 'drills', hideNav: true },
         component: () => import('@/features/drills/views/DrillFormView.vue'),
       },
       {
@@ -145,14 +145,14 @@ export const routes: RouteRecordRaw[] = [
         path: 'drills/:drillId/animation',
         name: 'drill-animation',
         props: true,
-        meta: { title: 'board.title' },
+        meta: { title: 'board.title', hideNav: true },
         component: () => import('@/features/board/views/BoardEditorView.vue'),
       },
       {
         path: 'drills/:drillId/edit',
         name: 'drill-edit',
         props: true,
-        meta: { title: 'drills.form.editTitle', back: 'drills' },
+        meta: { title: 'drills.form.editTitle', back: 'drills', hideNav: true },
         component: () => import('@/features/drills/views/DrillFormView.vue'),
       },
       {
@@ -164,20 +164,20 @@ export const routes: RouteRecordRaw[] = [
       {
         path: 'boards',
         name: 'tactic-boards',
-        meta: { requiresTeam: true, title: 'boards.title', back: 'training' },
+        meta: { requiresTeam: true, title: 'boards.title' },
         component: () => import('@/features/board/views/BoardsView.vue'),
       },
       {
         path: 'boards/:boardId',
         name: 'tactic-board',
         props: true,
-        meta: { requiresTeam: true, title: 'boards.eyebrow', back: 'tactic-boards' },
+        meta: { requiresTeam: true, title: 'boards.eyebrow', back: 'tactic-boards', hideNav: true },
         component: () => import('@/features/board/views/TacticBoardView.vue'),
       },
       {
         path: 'templates',
         name: 'templates',
-        meta: { requiresTeam: true, title: 'templates.title', back: 'training' },
+        meta: { requiresTeam: true, title: 'templates.title' },
         component: () => import('@/features/templates/views/TemplatesView.vue'),
       },
       {

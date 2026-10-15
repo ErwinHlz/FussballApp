@@ -4,6 +4,10 @@ import { useI18n } from 'vue-i18n'
 import { useEventListener } from '@vueuse/core'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseChipGroup from '@/components/BaseChipGroup.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiIconButton from '@/ui/UiIconButton.vue'
+import UiSegmented from '@/ui/UiSegmented.vue'
 import AnimationPlayer from './AnimationPlayer.vue'
 import BoardScene from './BoardScene.vue'
 import BoardToken from './BoardToken.vue'
@@ -66,6 +70,12 @@ type Tool = 'move' | ArrowStyle | 'erase'
 const tool = ref<Tool>('move')
 const playerColor = ref<string>(PLAYER_COLORS[0].hex)
 const preview = ref(false)
+// Below the field: "add" shows the material bar, "steps" the timeline (one at a time on phones).
+const dockTab = ref<'add' | 'steps'>('add')
+const propsOpen = ref(false)
+watch(selectedId, (id) => {
+  if (!id) propsOpen.value = false
+})
 const announcement = ref('')
 const sceneRef = ref<InstanceType<typeof BoardScene> | null>(null)
 
@@ -454,6 +464,11 @@ const field = computed({
 const fieldOptions = computed(() =>
   FIELD_TYPES.map((f) => ({ value: f, label: t(`board.fields.${f}`) })),
 )
+const dockOptions = computed(() => [
+  { value: 'add' as const, label: t('board.dock.add') },
+  { value: 'steps' as const, label: t('board.dock.steps') },
+])
+
 const tools = computed<{ value: Tool; label: string; icon: string }[]>(() => [
   { value: 'move', label: t('board.tools.move'), icon: '✥' },
   { value: 'run', label: t('board.tools.run'), icon: '⇢' },
@@ -527,253 +542,268 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
         @object-key="onObjectKey"
       />
 
-      <!-- Palette -->
-      <section class="board-editor__palette" :aria-label="t('board.addLabel')">
-        <BaseChipGroup
-          v-model="paletteTab"
-          :label="t('board.addLabel')"
-          :options="tabs"
-          :columns="3"
-          hide-label
-        />
+      <!-- Dock: add material or edit the steps, always below the field -->
+      <div class="board-editor__dock">
         <div
-          v-if="paletteTab === 'people'"
-          class="board-editor__colors"
+          v-if="selected"
+          class="board-editor__context"
           role="group"
-          :aria-label="t('board.playerColor')"
+          :aria-label="t('board.props.label', { name: objectName(selected) })"
         >
-          <button
-            v-for="c in PLAYER_COLORS"
-            :key="c.key"
-            type="button"
-            class="board-editor__color"
-            :style="{ '--swatch': c.hex }"
-            :class="{ 'board-editor__color--on': playerColor === c.hex }"
-            :aria-pressed="playerColor === c.hex"
-            :aria-label="t(`groups.colors.${c.key}`)"
-            @click="playerColor = c.hex"
-          />
-        </div>
-        <p class="board-editor__hint">{{ t('board.palette.hint') }}</p>
-        <div class="board-editor__items">
-          <button
-            v-for="item in PALETTE[paletteTab]"
-            :key="item.key"
-            type="button"
-            class="board-editor__item"
-            :data-palette="item.key"
-            @pointerdown="onPaletteDown(item, $event)"
-            @click="onPaletteClick(item)"
-          >
-            <svg viewBox="-4 -4 8 8" aria-hidden="true" class="board-editor__icon">
-              <BoardToken :object="previewObject(item)" :r="1.2" />
-            </svg>
-            <span>{{ t(`board.palette.items.${item.key}`) }}</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- Selected object -->
-      <section
-        v-if="selected"
-        class="board-editor__props"
-        :aria-label="t('board.props.label', { name: objectName(selected) })"
-      >
-        <div class="board-editor__props-head">
-          <strong>{{ objectName(selected) }}</strong>
-          <button
-            type="button"
-            class="board-editor__close"
-            :aria-label="t('common.close')"
+          <strong class="board-editor__context-name">{{ objectName(selected) }}</strong>
+          <UiButton variant="secondary" icon="settings" @click="propsOpen = true">
+            {{ t('board.props.open') }}
+          </UiButton>
+          <div class="board-editor__actions board-editor__actions--inline">
+            <template v-if="ROTATABLE.includes(selected.type)">
+              <button
+                type="button"
+                class="board-editor__action"
+                :aria-label="t('board.props.rotateLeft')"
+                @click="rotate(-15)"
+              >
+                ⟲
+              </button>
+              <button
+                type="button"
+                class="board-editor__action"
+                :aria-label="t('board.props.rotateRight')"
+                @click="rotate(15)"
+              >
+                ⟳
+              </button>
+            </template>
+            <button
+              v-if="isCarrier && hasBall && !carriesBall"
+              type="button"
+              class="board-editor__action board-editor__action--text"
+              @click="giveBall"
+            >
+              ⚽ {{ t('board.props.giveBall') }}
+            </button>
+            <button
+              v-if="selected.type === 'ball' && selectedHeld"
+              type="button"
+              class="board-editor__action board-editor__action--text"
+              @click="releaseBall"
+            >
+              {{ t('board.props.releaseBall') }}
+            </button>
+            <button
+              type="button"
+              class="board-editor__action board-editor__action--text"
+              @click="duplicate"
+            >
+              {{ t('board.props.duplicate') }}
+            </button>
+            <button
+              type="button"
+              class="board-editor__action board-editor__action--danger"
+              :aria-label="t('board.props.remove')"
+              @click="remove(selected.id)"
+            >
+              ✕
+            </button>
+          </div>
+          <UiIconButton
+            icon="x"
+            variant="ghost"
+            :label="t('board.props.deselect')"
             @click="selectedId = null"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div
-          v-if="COLORED.includes(selected.type)"
-          class="board-editor__colors"
-          role="group"
-          :aria-label="t('board.props.color')"
-        >
-          <button
-            v-for="c in colorOptions"
-            :key="c.hex"
-            type="button"
-            class="board-editor__color"
-            :style="{ '--swatch': c.hex }"
-            :class="{ 'board-editor__color--on': selected.color === c.hex }"
-            :aria-pressed="selected.color === c.hex"
-            :aria-label="c.label"
-            @click="patchSelected({ color: c.hex })"
           />
         </div>
 
-        <div
-          v-if="selected.type === 'player' || selected.type === 'goalkeeper'"
-          class="board-editor__row"
+        <UiSegmented v-model="dockTab" :label="t('board.dock.label')" :options="dockOptions" />
+
+        <section
+          v-if="dockTab === 'add'"
+          class="board-editor__palette"
+          :aria-label="t('board.addLabel')"
         >
-          <label class="board-editor__field board-editor__field--short">
-            {{ t('board.props.number') }}
-            <input
-              :value="selected.label ?? ''"
-              maxlength="3"
-              inputmode="numeric"
-              @input="
-                patchSelected({ label: ($event.target as HTMLInputElement).value || undefined })
-              "
-            />
-          </label>
-          <label class="board-editor__field">
-            {{ t('board.props.name') }}
-            <input
-              :value="selected.name ?? ''"
-              maxlength="16"
-              :list="squadNames.length ? `${uid}-squad` : undefined"
-              :placeholder="t('board.props.namePlaceholder')"
-              @input="
-                patchSelected({ name: ($event.target as HTMLInputElement).value || undefined })
-              "
-            />
-          </label>
-          <datalist v-if="squadNames.length" :id="`${uid}-squad`">
-            <option v-for="n in squadNames" :key="n" :value="n" />
-          </datalist>
-        </div>
-
-        <label v-if="selected.type === 'text'" class="board-editor__field">
-          {{ t('board.props.text') }}
-          <input
-            :value="selected.text ?? ''"
-            maxlength="40"
-            @input="patchSelected({ text: ($event.target as HTMLInputElement).value })"
+          <BaseChipGroup
+            v-model="paletteTab"
+            :label="t('board.addLabel')"
+            :options="tabs"
+            :columns="3"
+            hide-label
           />
-        </label>
+          <div
+            v-if="paletteTab === 'people'"
+            class="board-editor__colors"
+            role="group"
+            :aria-label="t('board.playerColor')"
+          >
+            <button
+              v-for="c in PLAYER_COLORS"
+              :key="c.key"
+              type="button"
+              class="board-editor__color"
+              :style="{ '--swatch': c.hex }"
+              :class="{ 'board-editor__color--on': playerColor === c.hex }"
+              :aria-pressed="playerColor === c.hex"
+              :aria-label="t(`groups.colors.${c.key}`)"
+              @click="playerColor = c.hex"
+            />
+          </div>
+          <p class="board-editor__hint">{{ t('board.palette.hint') }}</p>
+          <div class="board-editor__items" role="group" :aria-label="t('board.addLabel')">
+            <button
+              v-for="item in PALETTE[paletteTab]"
+              :key="item.key"
+              type="button"
+              class="board-editor__item"
+              :data-palette="item.key"
+              @pointerdown="onPaletteDown(item, $event)"
+              @click="onPaletteClick(item)"
+            >
+              <svg viewBox="-4 -4 8 8" aria-hidden="true" class="board-editor__icon">
+                <BoardToken :object="previewObject(item)" :r="1.2" />
+              </svg>
+              <span>{{ t(`board.palette.items.${item.key}`) }}</span>
+            </button>
+          </div>
+        </section>
+        <div v-else class="board-editor__steps">
+          <section class="board-editor__timeline" :aria-label="t('board.timeline')">
+            <div class="board-editor__keyframes">
+              <button
+                v-for="(k, index) in draft.keyframes"
+                :key="index"
+                type="button"
+                class="board-editor__keyframe"
+                :class="{ 'board-editor__keyframe--on': index === keyframeIndex }"
+                :aria-pressed="index === keyframeIndex"
+                :aria-label="t('board.keyframeLabel', { n: index + 1, s: seconds(k.t) })"
+                @click="keyframeIndex = index"
+              >
+                <span class="board-editor__keyframe-n">{{ index + 1 }}</span>
+                <span>{{ seconds(k.t) }} s</span>
+              </button>
+              <button
+                type="button"
+                class="board-editor__keyframe board-editor__keyframe--add"
+                @click="newKeyframe"
+              >
+                + {{ t('board.addKeyframe') }}
+              </button>
+            </div>
+            <div class="board-editor__timing">
+              <label v-if="keyframeIndex > 0">
+                {{ t('board.keyframeTime') }}
+                <input v-model.lazy="keyframeSeconds" type="number" step="0.1" min="0" />
+              </label>
+              <label>
+                {{ t('board.duration') }}
+                <input v-model.lazy="durationSeconds" type="number" step="0.5" min="0.5" max="60" />
+              </label>
+              <BaseButton v-if="keyframeIndex > 0" variant="ghost" @click="deleteKeyframe">
+                {{ t('board.removeKeyframe') }}
+              </BaseButton>
+            </div>
+            <p class="board-editor__hint">{{ t('board.keyframeHint') }}</p>
+          </section>
 
-        <div v-if="selected.type === 'zone'" class="board-editor__row">
-          <label class="board-editor__field board-editor__field--short">
-            {{ t('board.props.width') }}
+          <BaseChipGroup v-model="field" :label="t('board.field')" :options="fieldOptions" />
+        </div>
+      </div>
+
+      <BottomSheet
+        v-model:open="propsOpen"
+        :title="selected ? objectName(selected) : t('board.props.open')"
+      >
+        <div v-if="selected" class="board-editor__props">
+          <div
+            v-if="COLORED.includes(selected.type)"
+            class="board-editor__colors"
+            role="group"
+            :aria-label="t('board.props.color')"
+          >
+            <button
+              v-for="c in colorOptions"
+              :key="c.hex"
+              type="button"
+              class="board-editor__color"
+              :style="{ '--swatch': c.hex }"
+              :class="{ 'board-editor__color--on': selected.color === c.hex }"
+              :aria-pressed="selected.color === c.hex"
+              :aria-label="c.label"
+              @click="patchSelected({ color: c.hex })"
+            />
+          </div>
+
+          <div
+            v-if="selected.type === 'player' || selected.type === 'goalkeeper'"
+            class="board-editor__row"
+          >
+            <label class="board-editor__field board-editor__field--short">
+              {{ t('board.props.number') }}
+              <input
+                :value="selected.label ?? ''"
+                maxlength="3"
+                inputmode="numeric"
+                @input="
+                  patchSelected({ label: ($event.target as HTMLInputElement).value || undefined })
+                "
+              />
+            </label>
+            <label class="board-editor__field">
+              {{ t('board.props.name') }}
+              <input
+                :value="selected.name ?? ''"
+                maxlength="16"
+                :list="squadNames.length ? `${uid}-squad` : undefined"
+                :placeholder="t('board.props.namePlaceholder')"
+                @input="
+                  patchSelected({ name: ($event.target as HTMLInputElement).value || undefined })
+                "
+              />
+            </label>
+            <datalist v-if="squadNames.length" :id="`${uid}-squad`">
+              <option v-for="n in squadNames" :key="n" :value="n" />
+            </datalist>
+          </div>
+
+          <label v-if="selected.type === 'text'" class="board-editor__field">
+            {{ t('board.props.text') }}
             <input
-              type="number"
-              min="1"
-              max="105"
-              :value="selected.w ?? 10"
-              @change="patchSelected({ w: numberInput($event, 1, 105) ?? selected.w })"
+              :value="selected.text ?? ''"
+              maxlength="40"
+              @input="patchSelected({ text: ($event.target as HTMLInputElement).value })"
             />
           </label>
-          <label class="board-editor__field board-editor__field--short">
-            {{ t('board.props.height') }}
-            <input
-              type="number"
-              min="1"
-              max="105"
-              :value="selected.h ?? 10"
-              @change="patchSelected({ h: numberInput($event, 1, 105) ?? selected.h })"
-            />
-          </label>
-          <BaseButton
-            variant="secondary"
-            @click="patchSelected({ shape: selected.shape === 'circle' ? 'rect' : 'circle' })"
-          >
-            {{ selected.shape === 'circle' ? t('board.props.toRect') : t('board.props.toCircle') }}
-          </BaseButton>
-        </div>
 
-        <div class="board-editor__actions">
-          <template v-if="ROTATABLE.includes(selected.type)">
-            <button
-              type="button"
-              class="board-editor__action"
-              :aria-label="t('board.props.rotateLeft')"
-              @click="rotate(-15)"
+          <div v-if="selected.type === 'zone'" class="board-editor__row">
+            <label class="board-editor__field board-editor__field--short">
+              {{ t('board.props.width') }}
+              <input
+                type="number"
+                min="1"
+                max="105"
+                :value="selected.w ?? 10"
+                @change="patchSelected({ w: numberInput($event, 1, 105) ?? selected.w })"
+              />
+            </label>
+            <label class="board-editor__field board-editor__field--short">
+              {{ t('board.props.height') }}
+              <input
+                type="number"
+                min="1"
+                max="105"
+                :value="selected.h ?? 10"
+                @change="patchSelected({ h: numberInput($event, 1, 105) ?? selected.h })"
+              />
+            </label>
+            <BaseButton
+              variant="secondary"
+              @click="patchSelected({ shape: selected.shape === 'circle' ? 'rect' : 'circle' })"
             >
-              ⟲
-            </button>
-            <button
-              type="button"
-              class="board-editor__action"
-              :aria-label="t('board.props.rotateRight')"
-              @click="rotate(15)"
-            >
-              ⟳
-            </button>
-          </template>
-          <button
-            v-if="isCarrier && hasBall && !carriesBall"
-            type="button"
-            class="board-editor__action board-editor__action--text"
-            @click="giveBall"
-          >
-            ⚽ {{ t('board.props.giveBall') }}
-          </button>
-          <button
-            v-if="selected.type === 'ball' && selectedHeld"
-            type="button"
-            class="board-editor__action board-editor__action--text"
-            @click="releaseBall"
-          >
-            {{ t('board.props.releaseBall') }}
-          </button>
-          <button
-            type="button"
-            class="board-editor__action board-editor__action--text"
-            @click="duplicate"
-          >
-            {{ t('board.props.duplicate') }}
-          </button>
-          <button
-            type="button"
-            class="board-editor__action board-editor__action--danger"
-            :aria-label="t('board.props.remove')"
-            @click="remove(selected.id)"
-          >
-            ✕
-          </button>
+              {{
+                selected.shape === 'circle' ? t('board.props.toRect') : t('board.props.toCircle')
+              }}
+            </BaseButton>
+          </div>
         </div>
-      </section>
-
-      <!-- Steps -->
-      <section class="board-editor__timeline" :aria-label="t('board.timeline')">
-        <div class="board-editor__keyframes">
-          <button
-            v-for="(k, index) in draft.keyframes"
-            :key="index"
-            type="button"
-            class="board-editor__keyframe"
-            :class="{ 'board-editor__keyframe--on': index === keyframeIndex }"
-            :aria-pressed="index === keyframeIndex"
-            :aria-label="t('board.keyframeLabel', { n: index + 1, s: seconds(k.t) })"
-            @click="keyframeIndex = index"
-          >
-            <span class="board-editor__keyframe-n">{{ index + 1 }}</span>
-            <span>{{ seconds(k.t) }} s</span>
-          </button>
-          <button
-            type="button"
-            class="board-editor__keyframe board-editor__keyframe--add"
-            @click="newKeyframe"
-          >
-            + {{ t('board.addKeyframe') }}
-          </button>
-        </div>
-        <div class="board-editor__timing">
-          <label v-if="keyframeIndex > 0">
-            {{ t('board.keyframeTime') }}
-            <input v-model.lazy="keyframeSeconds" type="number" step="0.1" min="0" />
-          </label>
-          <label>
-            {{ t('board.duration') }}
-            <input v-model.lazy="durationSeconds" type="number" step="0.5" min="0.5" max="60" />
-          </label>
-          <BaseButton v-if="keyframeIndex > 0" variant="ghost" @click="deleteKeyframe">
-            {{ t('board.removeKeyframe') }}
-          </BaseButton>
-        </div>
-        <p class="board-editor__hint">{{ t('board.keyframeHint') }}</p>
-      </section>
-
-      <BaseChipGroup v-model="field" :label="t('board.field')" :options="fieldOptions" />
+      </BottomSheet>
     </template>
 
     <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
@@ -830,10 +860,14 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
     }
   }
 
+  // One swipeable row, so the field starts high on the screen.
   &__tools {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
     gap: $space-1;
+    margin-inline: -$space-4;
+    padding: 2px $space-4;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
 
   &__tool {
@@ -841,13 +875,13 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
     @include focus-visible;
 
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     gap: $space-1;
-    min-width: 0;
-    padding: $space-1;
+    padding: $space-1 $space-3;
     border: 2px solid var(--color-border);
-    border-radius: $radius-md;
+    border-radius: $radius-full;
     background: var(--color-surface);
     color: var(--color-text);
     font-size: $font-sm;
@@ -868,19 +902,52 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
     color: var(--color-text-muted);
   }
 
-  &__props,
-  &__palette {
+  // Directly below the field (never on top of it, so drops always land on the field).
+  &__dock {
+    @include safe-area-padding(bottom, $space-3);
+
     display: flex;
     flex-direction: column;
     gap: $space-2;
-    padding: $space-3;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-lg;
-    background: var(--color-surface);
+    margin-inline: -$space-4;
+    padding-top: $space-3;
+    padding-inline: $space-4;
+    border-top: 1px solid var(--color-border);
+    border-radius: 22px 22px 0 0;
+    background: var(--color-bar);
+    box-shadow: 0 -8px 24px rgb(0 0 0 / 12%);
   }
 
+  &__context {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-2;
+    padding-bottom: $space-2;
+    border-bottom: 1px dashed var(--color-chalk);
+  }
+
+  &__context-name {
+    flex: 1 1 auto;
+    max-width: 140px;
+    font-family: var(--font-display);
+    font-size: $font-lg;
+
+    @include truncate;
+  }
+
+  &__actions--inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-1;
+  }
+
+  &__palette,
+  &__steps,
   &__props {
-    border-color: var(--color-primary);
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
   }
 
   &__props-head {
@@ -983,8 +1050,8 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
 
   &__items {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: $space-2;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: $space-1;
   }
 
   &__item {
@@ -1011,8 +1078,8 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
   }
 
   &__icon {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
   }
 
   &__ghost {

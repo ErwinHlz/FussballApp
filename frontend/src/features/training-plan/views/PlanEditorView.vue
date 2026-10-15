@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { VueDraggable } from 'vue-draggable-plus'
@@ -78,7 +78,8 @@ const saveTemplateOpen = ref(false)
 const announcement = ref('')
 
 // Local copy for drag & drop and instant minute changes; refreshed from the server.
-const items = ref<PlanItem[]>([])
+// Shallow: the list is always replaced as a whole (and drill animations are deep JSON).
+const items = shallowRef<PlanItem[]>([])
 watch(
   () => plan.data.value,
   (data) => {

@@ -4,7 +4,8 @@ import type { Drill } from '@/features/drills/logic'
 import type { Attendance, EventRow } from '@/features/events/logic'
 
 export type EventDrill = Tables<'event_drills'>
-export type PlanDrill = Pick<Drill, 'id' | 'title' | 'category' | 'duration_min' | 'team_id'>
+export type PlanDrill = Pick<Drill, 'id' | 'title' | 'category' | 'duration_min' | 'team_id'> &
+  Partial<Pick<Drill, 'animation' | 'video_url' | 'video_path'>>
 export type PlanItem = EventDrill & { drill: PlanDrill }
 
 /** Duration of a plan item: own override, else the drill's default. */

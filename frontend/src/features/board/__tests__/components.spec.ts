@@ -106,6 +106,8 @@ describe('BoardEditorView', () => {
     const player = wrapper.get('.board__object')
     expect(player.attributes('aria-label')).toBe('Spieler 1')
 
+    // Steps live in the dock's second panel.
+    await button(wrapper, 'Ablauf').trigger('click')
     await button(wrapper, '+ Schritt').trigger('click')
     await wrapper.get('.board__object').trigger('keydown', { key: 'ArrowRight', shiftKey: true })
     await wrapper.get('.board__object').trigger('keydown', { key: 'ArrowDown' })

@@ -239,7 +239,14 @@
     "libraryText": "Standardübungen und die Übungen deiner Mannschaft, mit Beschreibung und Video.",
     "openLibrary": "Bibliothek öffnen",
     "plansSoon": "Trainingspläne für einzelne Termine folgen im nächsten Schritt.",
-    "upcoming": "Nächste Trainings"
+    "upcoming": "Nächste Trainings",
+    "nav": {
+      "label": "Bereiche im Training",
+      "sessions": "Trainings",
+      "drills": "Übungen",
+      "boards": "Taktiktafel",
+      "templates": "Vorlagen"
+    }
   },
   "squad": {
     "title": "Kader",
@@ -502,7 +509,15 @@
       "equipmentHint": "Mit Komma trennen, z. B. Hütchen, Bälle, Leibchen",
       "video": "YouTube-Link (optional)",
       "videoHint": "youtube.com/watch?v=…, youtu.be/… oder Shorts",
-      "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben."
+      "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben.",
+      "sections": {
+        "basics": "Das Wichtigste",
+        "squad": "Spieler und Material",
+        "media": "Video",
+        "check": "prüfen",
+        "mediaHint": "Eigene Videos und Animationen fügst du nach dem Speichern auf der Übungsseite hinzu.",
+        "actions": "Übung speichern"
+      }
     },
     "upload": {
       "title": "Eigenes Video",
@@ -777,7 +792,14 @@
       "giveBall": "Ball geben",
       "releaseBall": "Ball lösen",
       "duplicate": "Duplizieren",
-      "remove": "Entfernen"
+      "remove": "Entfernen",
+      "open": "Eigenschaften",
+      "deselect": "Auswahl aufheben"
+    },
+    "dock": {
+      "label": "Bereich unter dem Spielfeld",
+      "add": "Hinzufügen",
+      "steps": "Ablauf"
     }
   },
   "stats": {
