@@ -13,6 +13,8 @@ declare module 'vue-router' {
     title?: string
     /** Sub-page: the header shows a back button; this route is the fallback target. */
     back?: string
+    /** Focused screens (editors, detail with a fixed action bar) hide the tab bar. */
+    hideNav?: boolean
   }
 }
 
@@ -70,7 +72,14 @@ export const routes: RouteRecordRaw[] = [
     component: AppLayout,
     meta: { requiresAuth: true },
     children: [
-      { path: '', redirect: { name: 'events' } },
+      {
+        // Start tab. Until the dedicated start screen exists (UI-PLAN.md, phase U2) it shows
+        // the event list with the next event on top.
+        path: '',
+        name: 'home',
+        meta: { requiresTeam: true, title: 'nav.start' },
+        component: () => import('@/features/events/views/EventsView.vue'),
+      },
       {
         path: 'events',
         name: 'events',
@@ -225,6 +234,17 @@ export const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  // Living style guide of the design system, only in development builds.
+  ...(import.meta.env.DEV
+    ? [
+        {
+          path: '/dev/ui',
+          name: 'dev-ui',
+          meta: { title: 'ui.dev.title' },
+          component: () => import('./views/DevUiView.vue'),
+        },
+      ]
+    : []),
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',

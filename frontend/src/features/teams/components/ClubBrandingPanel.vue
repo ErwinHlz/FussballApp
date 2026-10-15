@@ -172,7 +172,7 @@ async function onSave() {
         <label class="branding__swatch branding__swatch--custom" :title="t('branding.custom')">
           <input
             type="color"
-            :value="color ?? '#15803d'"
+            :value="color ?? '#3f6212'"
             :aria-label="t('branding.custom')"
             @input="pick(($event.target as HTMLInputElement).value)"
           />
@@ -332,13 +332,13 @@ async function onSave() {
   }
 
   &__preview {
-    // Inline style provides --preview-*; defaults are the app's own green.
-    --bg: var(--preview-bg, #15803d);
+    // Inline style provides --preview-*; defaults are the app's own accent (olive / lime).
+    --bg: var(--preview-bg, #3f6212);
     --text: var(--preview-text, #fff);
 
     @media (prefers-color-scheme: dark) {
-      --bg: var(--preview-bg-dark, #3ccf72);
-      --text: var(--preview-text-dark, #08160d);
+      --bg: var(--preview-bg-dark, #c6f25b);
+      --text: var(--preview-text-dark, #16210a);
     }
 
     display: flex;

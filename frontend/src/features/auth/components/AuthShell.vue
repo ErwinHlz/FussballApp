@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import BaseCard from '@/components/BaseCard.vue'
+import RondoLogo from '@/ui/RondoLogo.vue'
 
 defineProps<{ title: string; intro?: string }>()
 
@@ -10,8 +11,7 @@ const { t } = useI18n()
 <template>
   <main class="auth-shell">
     <div class="auth-shell__brand">
-      <span class="auth-shell__logo" aria-hidden="true">⚽</span>
-      <p class="auth-shell__name">{{ t('app.name') }}</p>
+      <RondoLogo :size="48" class="auth-shell__logo" />
       <p class="auth-shell__tagline">{{ t('auth.tagline') }}</p>
     </div>
 
@@ -47,16 +47,17 @@ const { t } = useI18n()
   padding-inline: $space-4;
 
   &__brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-1;
     text-align: center;
   }
 
   &__logo {
-    font-size: 2.5rem;
-  }
-
-  &__name {
-    font-size: $font-2xl;
-    font-weight: 800;
+    :deep(.rondo-logo__word) {
+      font-size: 2.75rem;
+    }
   }
 
   &__tagline,

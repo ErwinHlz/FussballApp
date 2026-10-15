@@ -6,59 +6,73 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '../App.vue'
 import { routes } from '../router'
 import { i18n } from '@/lib/i18n'
-import type { MyClub } from '@/features/teams/api'
+import type { MyClub, MyTeam } from '@/features/teams/api'
 import { teamKeys } from '@/features/teams/composables/useTeams'
 
 // Uses a router without the auth guard: this test covers layout and navigation only.
-async function mountAt(path: string, clubs?: MyClub[]) {
+async function mountAt(path: string, clubs?: MyClub[], teams?: Partial<MyTeam>[]) {
   const router = createRouter({ history: createMemoryHistory(), routes })
   await router.push(path)
   await router.isReady()
   const queryClient = new QueryClient()
   // Signed-out test user: queries are disabled but still read cached data.
   if (clubs) queryClient.setQueryData(teamKeys.myClubs(null), clubs)
+  if (teams) queryClient.setQueryData(teamKeys.myTeams(null), teams)
   const wrapper = mount(App, {
+    attachTo: document.body,
     global: { plugins: [createPinia(), router, i18n, [VueQueryPlugin, { queryClient }]] },
   })
   return { wrapper, router }
 }
 
 const tabLabels = (wrapper: Awaited<ReturnType<typeof mountAt>>['wrapper']) =>
-  wrapper.findAll('.bottom-nav__link').map((l) => l.text())
+  wrapper.findAll('.tab-bar__link').map((l) => l.text())
 
 describe('App layout', () => {
-  it('redirects / to the events tab and shows the bottom navigation', async () => {
+  it('starts on the start tab and shows the four tabs', async () => {
     i18n.global.locale.value = 'de'
     const { wrapper, router } = await mountAt('/')
     await flush()
 
-    expect(router.currentRoute.value.name).toBe('events')
-    expect(tabLabels(wrapper)).toEqual(['Termine', 'Training', 'Kader', 'Profil'])
-    expect(wrapper.get('.bottom-nav__link--active').text()).toBe('Termine')
+    expect(router.currentRoute.value.name).toBe('home')
+    expect(tabLabels(wrapper)).toEqual(['Start', 'Termine', 'Training', 'Team'])
+    expect(wrapper.get('[aria-current="page"]').text()).toBe('Start')
+    wrapper.unmount()
   })
 
-  it('shows the club tab only for club admins and links to the club', async () => {
+  it('marks the tab of sub-pages and links the profile from the header', async () => {
     i18n.global.locale.value = 'de'
-    const { wrapper: member } = await mountAt('/events', [
-      { club_id: 'c1', club_name: 'SV Test', role: 'member' },
-    ])
-    expect(tabLabels(member)).not.toContain('Verein')
-
-    const { wrapper: admin } = await mountAt('/events', [
-      { club_id: 'c1', club_name: 'SV Test', role: 'admin' },
-    ])
+    const { wrapper } = await mountAt('/stats')
     await flush()
-    expect(tabLabels(admin)).toEqual(['Termine', 'Training', 'Kader', 'Verein', 'Profil'])
-    const clubTab = admin.findAll('.bottom-nav__link')[3]!
-    expect(clubTab.attributes('href')).toBe('/clubs/c1')
+
+    expect(wrapper.get('.tab-bar [aria-current="page"]').text()).toBe('Team')
+    expect(wrapper.get('.top-bar__profile').attributes('aria-label')).toBe('Profil')
+    expect(wrapper.get('.top-bar__profile').attributes('href')).toBe('/profile')
+    wrapper.unmount()
   })
 
-  it('opens the club list when the user administers several clubs', async () => {
-    const { wrapper } = await mountAt('/events', [
-      { club_id: 'c1', club_name: 'A', role: 'admin' },
-      { club_id: 'c2', club_name: 'B', role: 'admin' },
-    ])
-    expect(wrapper.findAll('.bottom-nav__link')[3]!.attributes('href')).toBe('/teams')
+  it('switches teams and reaches club administration through the header sheet', async () => {
+    i18n.global.locale.value = 'de'
+    const { wrapper } = await mountAt(
+      '/squad',
+      [{ club_id: 'c1', club_name: 'SV Test', role: 'admin' }],
+      [
+        { team_id: 't1', team_name: 'U17', club_name: 'SV Test', team_role: 'coach' },
+        { team_id: 't2', team_name: 'U19', club_name: 'SV Test', team_role: 'player' },
+      ],
+    )
+    await flush()
+    expect(wrapper.get('.top-bar__name').text()).toBe('U17')
+
+    await wrapper.get('.top-bar__team').trigger('click')
+    await flush()
+    const sheet = document.body.querySelector('[role="dialog"]')!
+    expect(sheet.textContent).toContain('Verein verwalten: SV Test')
+    const u19 = [...sheet.querySelectorAll('button')].find((b) => b.textContent?.includes('U19'))!
+    u19.click()
+    await flush()
+    expect(wrapper.get('.top-bar__name').text()).toBe('U19')
+    wrapper.unmount()
   })
 
   it('switches language to English', async () => {
@@ -67,7 +81,9 @@ describe('App layout', () => {
     await flush()
 
     expect(wrapper.get('h1').text()).toBe('Squad')
+    expect(tabLabels(wrapper)).toEqual(['Home', 'Events', 'Training', 'Team'])
     i18n.global.locale.value = 'de'
+    wrapper.unmount()
   })
 })
 

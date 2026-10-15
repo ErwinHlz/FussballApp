@@ -29,6 +29,21 @@ test.describe('axe: WCAG 2.1 AA', () => {
     await checkPages(page, ['/login', '/register', '/forgot-password', '/privacy', '/imprint'])
   })
 
+  test('design system in light and dark', async ({ page }) => {
+    for (const scheme of ['light', 'dark'] as const) {
+      await test.step(scheme, async () => {
+        await page.emulateMedia({ colorScheme: scheme })
+        await page.goto('/dev/ui')
+        await ready(page)
+        await expectAccessible(page)
+      })
+    }
+    await page.getByRole('button', { name: 'Sheet öffnen' }).click()
+    await expect(page.getByRole('dialog', { name: 'Absagen' })).toBeVisible()
+    await page.waitForTimeout(300)
+    await expectAccessible(page, { include: '[role="dialog"]' })
+  })
+
   test('player pages', async ({ page }) => {
     const demo = await seedDemo()
     await login(page, demo.player.email)
@@ -155,9 +170,9 @@ test.describe('keyboard', () => {
     await login(page, demo.player.email)
     await ready(page)
     const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
-    await nav.getByRole('link', { name: 'Kader' }).click()
+    await nav.getByRole('link', { name: 'Team' }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'Kader' })).toBeFocused()
-    await nav.getByRole('link', { name: 'Profil' }).click()
+    await page.getByRole('link', { name: 'Profil' }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'Profil' })).toBeFocused()
   })
 

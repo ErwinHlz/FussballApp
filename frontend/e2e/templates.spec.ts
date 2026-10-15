@@ -10,14 +10,12 @@ test('coaches build, share and apply training templates', async ({ browser }) =>
   const demo = await seedDemo()
 
   // U17 has its own drill; U19 has a coach and an upcoming training.
-  await demo.coach.sb
-    .from('drills')
-    .insert({
-      team_id: demo.team.id,
-      title: 'Gegenpressing-Spiel',
-      category: 'tactics',
-      duration_min: 20,
-    })
+  await demo.coach.sb.from('drills').insert({
+    team_id: demo.team.id,
+    title: 'Gegenpressing-Spiel',
+    category: 'tactics',
+    duration_min: 20,
+  })
   const u19 = (
     await demo.coach.sb
       .from('teams')
@@ -85,7 +83,10 @@ test('coaches build, share and apply training templates', async ({ browser }) =>
   await tina.getByRole('button', { name: 'Als Vorlage speichern' }).click()
   await tina.getByRole('dialog').getByLabel('Name').fill('Dienstagstraining')
   await tina.getByRole('dialog').getByRole('button', { name: 'Speichern' }).click()
-  await expect(tina.getByRole('status')).toContainText('Als Vorlage gespeichert')
+  // The plan page may also show the late-decline notice (role=status): pick the save message.
+  await expect(
+    tina.getByRole('status').filter({ hasText: 'Als Vorlage gespeichert' }),
+  ).toBeVisible()
   await tina.goto('/templates')
   await expect(tina.getByRole('link', { name: /Dienstagstraining/ })).toContainText('3 Übungen')
   await tina.screenshot({ path: 'e2e/__screens__/61-templates.png', fullPage: true })

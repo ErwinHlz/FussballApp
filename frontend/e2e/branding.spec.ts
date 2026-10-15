@@ -48,7 +48,7 @@ test('the admin uploads a logo and the app takes on its color', async ({ browser
 
   const admin = await (await browser.newContext()).newPage()
   await login(admin, demo.coach.email, `/clubs/${demo.club.id}`)
-  expect(await primary(admin)).toBe('#15803d')
+  expect(await primary(admin)).toBe('#3f6212')
 
   await admin.getByLabel('Logo hochladen').setInputFiles({
     name: 'logo.png',
@@ -62,7 +62,7 @@ test('the admin uploads a logo and the app takes on its color', async ({ browser
   await admin.getByRole('button', { name: 'Speichern' }).click()
   await expect(admin.getByRole('status')).toContainText('Vereinsfarbe')
   await expect.poll(() => primary(admin)).toBe('#c8102e')
-  await expect(admin.locator('.app-header__logo')).toBeVisible()
+  await expect(admin.locator('.top-bar__logo')).toBeVisible()
   await admin.screenshot({ path: 'e2e/__screens__/50-branding.png', fullPage: true })
 
   // A player in dark mode: logo in the header, color lightened for readability.
@@ -70,16 +70,16 @@ test('the admin uploads a logo and the app takes on its color', async ({ browser
   await login(player, demo.player.email)
   await expect
     .poll(() =>
-      player.locator('.app-header__logo').evaluate((img: HTMLImageElement) => img.naturalWidth),
+      player.locator('.top-bar__logo').evaluate((img: HTMLImageElement) => img.naturalWidth),
     )
     .toBeGreaterThan(0)
   const dark = await primary(player)
-  expect(dark).not.toBe('#3ccf72')
+  expect(dark).not.toBe('#c6f25b')
   expect(dark).not.toBe('#c8102e')
   await player.screenshot({ path: 'e2e/__screens__/51-branding-dark.png' })
 
   // Back to the default.
-  await admin.getByRole('button', { name: 'Standard (Grün)' }).click()
+  await admin.getByRole('button', { name: 'Standard (Rondo-Grün)' }).click()
   await admin.getByRole('button', { name: 'Speichern' }).click()
-  await expect.poll(() => primary(admin)).toBe('#15803d')
+  await expect.poll(() => primary(admin)).toBe('#3f6212')
 })

@@ -8,13 +8,19 @@
   color-scheme: light;
 }
 
-// Follows the phone/OS setting.
+// Follows the phone/OS setting unless the user picked a theme (data-theme, stores/theme.ts).
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     @include root-dark-custom-properties;
 
     color-scheme: dark;
   }
+}
+
+:root[data-theme='dark'] {
+  @include root-dark-custom-properties;
+
+  color-scheme: dark;
 }
 
 // Text for screen readers only (used across views).

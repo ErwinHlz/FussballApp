@@ -38,12 +38,12 @@ test('bottom navigation reaches every tab and marks the active one', async ({ pa
   const demo = await seedDemo()
   await login(page, demo.coach.email)
   const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
+  // Start shows the event list until the start screen exists (UI-PLAN.md, U2).
   const tabs = [
+    ['Start', /\/$/, 'Termine'],
     ['Termine', /\/events$/, 'Termine'],
     ['Training', /\/training$/, 'Training'],
-    ['Kader', /\/squad$/, 'Kader'],
-    ['Verein', /\/clubs\//, 'SV Demo 09'],
-    ['Profil', /\/profile$/, 'Profil'],
+    ['Team', /\/squad$/, 'Kader'],
   ] as const
   for (const [label, url, heading] of tabs) {
     await test.step(label, async () => {
@@ -56,7 +56,48 @@ test('bottom navigation reaches every tab and marks the active one', async ({ pa
       await expectNoHorizontalScroll(page)
     })
   }
+
+  // Profile and club administration sit behind the header.
+  await page.getByRole('link', { name: 'Profil' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Profil' })).toBeVisible()
+  await page.getByRole('button', { name: /Mannschaft wechseln/ }).click()
+  const switcher = page.getByRole('dialog', { name: 'Mannschaft wechseln' })
+  await expect(switcher.getByRole('button', { name: /U17/ })).toHaveAttribute(
+    'aria-current',
+    'true',
+  )
+  await switcher.getByRole('button', { name: 'Verein verwalten: SV Demo 09' }).click()
+  await expect(page).toHaveURL(/\/clubs\//)
+  await expect(page.getByRole('heading', { level: 1, name: 'SV Demo 09' })).toBeVisible()
+  await expect(nav.getByRole('link', { name: 'Team' })).toHaveAttribute('aria-current', 'page')
   expect(errors).toEqual([])
+})
+
+test('the team switcher sheet closes with Escape and swipe', async ({ page }) => {
+  const demo = await seedDemo()
+  await login(page, demo.player.email)
+  await ready(page)
+  const opener = page.getByRole('button', { name: /Mannschaft wechseln/ })
+  const sheet = page.getByRole('dialog', { name: 'Mannschaft wechseln' })
+
+  await opener.click()
+  await expect(sheet).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(sheet).toBeHidden()
+  await expect(opener).toBeFocused()
+
+  // Drag the handle area down: the sheet follows and closes.
+  await opener.click()
+  // Wait until the sheet finished sliding in, otherwise the handle is still off screen.
+  await expect(sheet).toBeVisible()
+  await page.waitForTimeout(400)
+  const head = sheet.locator('.sheet__head')
+  const box = (await head.boundingBox())!
+  await page.mouse.move(box.x + 40, box.y + 20)
+  await page.mouse.down()
+  await page.mouse.move(box.x + 40, box.y + 200, { steps: 8 })
+  await page.mouse.up()
+  await expect(sheet).toBeHidden()
 })
 
 test('the back button returns to the list, also on a deep link', async ({ page }) => {

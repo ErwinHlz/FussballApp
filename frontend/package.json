@@ -40,6 +40,8 @@
     "vue-tsc": "^3.3.12"
   },
   "dependencies": {
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource/saira-condensed": "^5.3.0",
     "@supabase/supabase-js": "^2.117.3",
     "@tanstack/vue-query": "^5.104.1",
     "@vee-validate/zod": "^4.15.1",

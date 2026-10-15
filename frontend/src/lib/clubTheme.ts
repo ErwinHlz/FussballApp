@@ -3,7 +3,6 @@ import { accentTheme } from './color'
 
 export const LOGO_BUCKET = 'club-logos'
 const STYLE_ID = 'club-theme'
-const DEFAULT_THEME_COLOR = '#15803d'
 
 /** Public URL of a club logo (the bucket is public, paths change with every upload). */
 export function clubLogoUrl(path: string): string {
@@ -12,32 +11,32 @@ export function clubLogoUrl(path: string): string {
 
 /**
  * CSS that replaces the primary color family in light and dark mode. Meaning colors (training,
- * match, yes/no) stay as they are.
+ * match, yes/no) stay as they are. Dark applies with the OS setting unless the user forced
+ * light, and always when the user forced dark (data-theme, see stores/theme.ts).
  */
 export function clubThemeCss(accent: string): string {
   const { light, dark } = accentTheme(accent)
+  const vars = (c: { primary: string; hover: string; contrast: string }) =>
+    `--color-primary:${c.primary};--color-primary-hover:${c.hover};--color-primary-contrast:${c.contrast}`
   // :root:root beats the base tokens regardless of stylesheet order.
   return [
-    `:root:root{--color-primary:${light.primary};--color-primary-hover:${light.hover};--color-primary-contrast:${light.contrast}}`,
-    `@media (prefers-color-scheme: dark){:root:root{--color-primary:${dark.primary};--color-primary-hover:${dark.hover};--color-primary-contrast:${dark.contrast}}}`,
+    `:root:root{${vars(light)}}`,
+    `@media (prefers-color-scheme: dark){:root:root:not([data-theme='light']){${vars(dark)}}}`,
+    `:root:root[data-theme='dark']{${vars(dark)}}`,
   ].join('\n')
 }
 
-/** Themes the app with the club color, or restores the default green for null. */
+/** Themes the app with the club color, or restores the default accent for null. */
 export function applyClubTheme(accent: string | null) {
   let style = document.getElementById(STYLE_ID)
   if (!accent) {
     style?.remove()
-  } else {
-    if (!style) {
-      style = document.createElement('style')
-      style.id = STYLE_ID
-      document.head.append(style)
-    }
-    style.textContent = clubThemeCss(accent)
+    return
   }
-  const meta = document.querySelector<HTMLMetaElement>(
-    'meta[name="theme-color"][media="(prefers-color-scheme: light)"]',
-  )
-  if (meta) meta.content = accent ? accentTheme(accent).light.primary : DEFAULT_THEME_COLOR
+  if (!style) {
+    style = document.createElement('style')
+    style.id = STYLE_ID
+    document.head.append(style)
+  }
+  style.textContent = clubThemeCss(accent)
 }

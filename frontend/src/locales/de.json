@@ -8,7 +8,9 @@
     "training": "Training",
     "squad": "Kader",
     "profile": "Profil",
-    "club": "Verein"
+    "club": "Verein",
+    "start": "Start",
+    "team": "Team"
   },
   "events": {
     "title": "Termine",
@@ -872,7 +874,7 @@
     "color": "Akzentfarbe",
     "logoColor": "Farbe aus dem Logo {color}",
     "custom": "Eigene Farbe wählen",
-    "default": "Standard (Grün)",
+    "default": "Standard (Rondo-Grün)",
     "noColors": "Im Logo wurde keine kräftige Farbe gefunden. Wähle eine eigene Farbe oder bleib beim Standard.",
     "previewButton": "Zusagen",
     "previewLink": "Mehr anzeigen",
@@ -947,5 +949,48 @@
     "loadFailed": "Die Tafeln konnten nicht geladen werden.",
     "loadFailedOne": "Die Tafel konnte nicht geladen werden.",
     "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+  },
+  "ui": {
+    "showPassword": "Passwort anzeigen",
+    "more": "Weitere Aktionen",
+    "undo": "Rückgängig",
+    "stepper": {
+      "units": "Minuten",
+      "less": "{n} {unit} weniger",
+      "more": "{n} {unit} mehr"
+    },
+    "answer": {
+      "question": "Bist du dabei?",
+      "yes": "Ich bin dabei",
+      "yesDone": "Du bist dabei",
+      "maybe": "Vielleicht",
+      "no": "Absage",
+      "short": {
+        "yes": "Zusage",
+        "maybe": "Vielleicht",
+        "no": "Absage"
+      }
+    },
+    "week": {
+      "today": "heute",
+      "training": "Training",
+      "match": "Spiel",
+      "event": "Event"
+    },
+    "teamSwitcher": {
+      "title": "Mannschaft wechseln",
+      "open": "Mannschaft wechseln",
+      "manageClub": "Verein verwalten: {name}",
+      "all": "Alle Mannschaften und Vereine"
+    },
+    "theme": {
+      "label": "Darstellung",
+      "auto": "Automatisch",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "dev": {
+      "title": "Design-System"
+    }
   }
 }

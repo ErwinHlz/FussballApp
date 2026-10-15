@@ -10,16 +10,25 @@ body {
 h1,
 h2,
 h3 {
-  line-height: 1.2;
+  line-height: 1.15;
   text-wrap: balance;
 }
 
+// Headings use the condensed display face, like a tactics board or a scoreboard.
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.005em;
+}
+
 h1 {
-  font-size: $font-2xl;
+  font-size: $font-3xl;
+  line-height: 1.05;
 }
 
 h2 {
-  font-size: $font-xl;
+  font-size: $font-2xl;
 }
 
 h3 {

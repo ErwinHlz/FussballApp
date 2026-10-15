@@ -1,22 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Rondo app icon: football on pitch green. Content stays inside the maskable safe zone. -->
-  <rect width="512" height="512" fill="#15803d"/>
-  <path d="M0 360 H512 V512 H0 Z" fill="#166534"/>
-  <circle cx="256" cy="256" r="150" fill="#ffffff"/>
-  <g fill="#17201a">
-    <polygon points="256,196 313,237 291,304 221,304 199,237"/>
-    <path d="M256 106 l38 22 -10 42 -56 0 -10 -42 z" transform="rotate(0 256 256)"/>
-    <path d="M256 106 l38 22 -10 42 -56 0 -10 -42 z" transform="rotate(72 256 256)"/>
-    <path d="M256 106 l38 22 -10 42 -56 0 -10 -42 z" transform="rotate(144 256 256)"/>
-    <path d="M256 106 l38 22 -10 42 -56 0 -10 -42 z" transform="rotate(216 256 256)"/>
-    <path d="M256 106 l38 22 -10 42 -56 0 -10 -42 z" transform="rotate(288 256 256)"/>
+  <!-- Rondo app icon: the rondo drill on a tactics board. Content stays inside the maskable safe zone. -->
+  <rect width="512" height="512" fill="#0f1412"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#eef2ec" stroke-opacity="0.45" stroke-width="12" stroke-dasharray="28 26"/>
+  <g fill="#eef2ec">
+    <circle cx="256" cy="106" r="38"/>
+    <circle cx="406" cy="256" r="38"/>
+    <circle cx="256" cy="406" r="38"/>
+    <circle cx="106" cy="256" r="38"/>
   </g>
-  <g stroke="#17201a" stroke-width="8" fill="none">
-    <path d="M256 196 V170"/>
-    <path d="M256 196 V170" transform="rotate(72 256 256)"/>
-    <path d="M256 196 V170" transform="rotate(144 256 256)"/>
-    <path d="M256 196 V170" transform="rotate(216 256 256)"/>
-    <path d="M256 196 V170" transform="rotate(288 256 256)"/>
+  <g fill="#c6f25b">
+    <circle cx="226" cy="240" r="30"/>
+    <circle cx="288" cy="280" r="30"/>
   </g>
-  <circle cx="256" cy="256" r="150" fill="none" stroke="#17201a" stroke-width="8"/>
 </svg>

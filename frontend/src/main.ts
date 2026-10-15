@@ -1,3 +1,8 @@
+// Self-hosted fonts (bundled, no third-party font CDN).
+import '@fontsource/saira-condensed/latin-600.css'
+import '@fontsource/saira-condensed/latin-700.css'
+import '@fontsource/saira-condensed/latin-800.css'
+import '@fontsource-variable/manrope/wght.css'
 import '@/styles/main.scss'
 
 import { createApp } from 'vue'

@@ -135,3 +135,17 @@ test('screens: statistics', async ({ page }) => {
   await page.getByText('(du)').waitFor()
   await shot(page, '52-stats-player')
 })
+
+test('screens: design system', async ({ page }) => {
+  for (const scheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: scheme })
+    await page.goto('/dev/ui')
+    await page.getByRole('heading', { name: 'Design-System' }).waitFor()
+    await page.waitForTimeout(400)
+    await shot(page, `90-design-system-${scheme}`)
+  }
+  await page.getByRole('button', { name: 'Sheet öffnen' }).click()
+  await page.getByRole('dialog', { name: 'Absagen' }).waitFor()
+  await page.waitForTimeout(400)
+  await page.screenshot({ path: 'e2e/__screens__/91-design-system-sheet.png' })
+})

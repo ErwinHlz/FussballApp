@@ -96,7 +96,7 @@ Gewählt wurde **Richtung B** aus den Mockups (`docs/ui/u0-mockups/`, Canvas „
 ## 5. Technischer Aufbau
 
 ```
-src/ui/                 # neues Design-System (ersetzt src/components/Base*)
+src/ui/                 # neues Design-System (ersetzt src/components/Base*), Stand U1: flache Struktur
   tokens/               # Farben, Typo, Abstände, Radien, Schatten, Bewegung (SCSS + CSS-Variablen)
   fonts/                # selbst gehostete WOFF2-Dateien
   icons/                # eigenes SVG-Icon-Set + <UiIcon>
@@ -125,12 +125,19 @@ src/ui/                 # neues Design-System (ersetzt src/components/Base*)
 **Abnahme:** Du hast eine Richtung gewählt. Erst danach wird gebaut.
 
 ### Phase U1 – Fundament
-- [ ] Tokens v2 (inkl. Dunkelmodus, Vereinsfarbe, Bewegung), Schriften selbst gehostet, Icon-Set
-- [ ] Primitives und Patterns aus Abschnitt 5, mit Unit-Tests
-- [ ] Neue AppShell: TopBar (schrumpft beim Scrollen, Profil-Avatar), TabBar mit Safe Area, Mannschaftswechsel als Sheet
-- [ ] Snackbar mit „Rückgängig“ und Skeletons als Standard für Mutationen und Laden
-- [ ] Entwickler-Seite `/dev/ui`
-- [ ] Neues Logo und App-Icon (Manifest)
+- [x] Tokens v2 (inkl. Dunkelmodus, Vereinsfarbe, Bewegung), Schriften selbst gehostet, Icon-Set
+- [x] Primitives und Patterns aus Abschnitt 5, mit Unit-Tests
+- [x] Neue AppShell: TopBar (schrumpft beim Scrollen, Profil-Avatar), TabBar mit Safe Area, Mannschaftswechsel als Sheet
+- [x] Snackbar mit „Rückgängig“ und Skeletons als Standard für Mutationen und Laden (Bausteine fertig; eingesetzt werden sie beim Umbau der jeweiligen Seite ab U2)
+- [x] Entwickler-Seite `/dev/ui`
+- [x] Neues Logo und App-Icon (Manifest)
+
+Umsetzungsnotizen U1:
+- Die Tokens bleiben in `src/styles/_tokens.scss` (eine Quelle für alte und neue Komponenten, global per `additionalData`). Die alten Variablennamen tragen die neuen Werte, dadurch haben auch die noch alten Seiten schon Farben und Schriften der Taktiktafel.
+- Darstellung hell/dunkel/automatisch: `stores/theme.ts` setzt `data-theme` auf `<html>`; die Auswahl im Profil folgt in U5 (auf `/dev/ui` schon umschaltbar).
+- Schriften als npm-Pakete (`@fontsource/saira-condensed`, `@fontsource-variable/manrope`), werden mitgebündelt, kein externes CDN.
+- Bausteine liegen flach in `src/ui/` (keine Unterordner). `SwipeRow` und `PullToRefresh` werden gebaut, wenn U2/U3 sie brauchen.
+- Der Tab „Start“ zeigt bis U2 die Terminliste (mit dem nächsten Termin oben). Vereinsverwaltung erreicht man über den Mannschaftswechsel im Kopf.
 
 **Abnahme:** Alle Bausteine laufen auf `/dev/ui` in hell und dunkel und bestehen axe. Die App läuft schon in der neuen Shell (Inhalte noch alt).
 

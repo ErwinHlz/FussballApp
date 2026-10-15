@@ -8,7 +8,9 @@
     "training": "Training",
     "squad": "Squad",
     "profile": "Profile",
-    "club": "Club"
+    "club": "Club",
+    "start": "Home",
+    "team": "Team"
   },
   "events": {
     "title": "Events",
@@ -872,7 +874,7 @@
     "color": "Accent color",
     "logoColor": "Logo color {color}",
     "custom": "Choose your own color",
-    "default": "Default (green)",
+    "default": "Default (Rondo green)",
     "noColors": "No strong color was found in the logo. Choose your own color or keep the default.",
     "previewButton": "Attend",
     "previewLink": "Show more",
@@ -947,5 +949,48 @@
     "loadFailed": "The boards could not be loaded.",
     "loadFailedOne": "The board could not be loaded.",
     "saveFailed": "Saving failed. Please try again."
+  },
+  "ui": {
+    "showPassword": "Show password",
+    "more": "More actions",
+    "undo": "Undo",
+    "stepper": {
+      "units": "minutes",
+      "less": "{n} {unit} less",
+      "more": "{n} {unit} more"
+    },
+    "answer": {
+      "question": "Are you in?",
+      "yes": "I'm in",
+      "yesDone": "You're in",
+      "maybe": "Maybe",
+      "no": "Decline",
+      "short": {
+        "yes": "Yes",
+        "maybe": "Maybe",
+        "no": "No"
+      }
+    },
+    "week": {
+      "today": "today",
+      "training": "Training",
+      "match": "Match",
+      "event": "Event"
+    },
+    "teamSwitcher": {
+      "title": "Switch team",
+      "open": "Switch team",
+      "manageClub": "Manage club: {name}",
+      "all": "All teams and clubs"
+    },
+    "theme": {
+      "label": "Appearance",
+      "auto": "Automatic",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "dev": {
+      "title": "Design system"
+    }
   }
 }

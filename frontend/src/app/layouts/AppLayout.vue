@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, watch, watchEffect } from 'vue'
-import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import AppIcon, { type IconName } from '@/components/AppIcon.vue'
+import { useWindowScroll } from '@vueuse/core'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
-import { useMyClubs } from '@/features/teams/composables/useTeams'
+import { useProfile } from '@/features/auth/composables/useProfile'
 import { applyClubTheme, clubLogoUrl } from '@/lib/clubTheme'
+import SnackbarHost from '@/ui/SnackbarHost.vue'
+import TabBar, { type Tab } from '@/ui/TabBar.vue'
+import UiAvatar from '@/ui/UiAvatar.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiIconButton from '@/ui/UiIconButton.vue'
+import RondoLogo from '@/ui/RondoLogo.vue'
+import TeamSwitcherSheet from './TeamSwitcherSheet.vue'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { myTeams, activeTeam } = useActiveTeam()
-const myClubs = useMyClubs()
-
-type Tab = { key: string; to: RouteLocationRaw; match: string[]; icon: IconName; labelKey: string }
+const profile = useProfile()
 
 // The app takes on the colors of the active team's club.
 watch(
@@ -26,48 +31,41 @@ const logoUrl = computed(() =>
   activeTeam.value?.club_logo_path ? clubLogoUrl(activeTeam.value.club_logo_path) : null,
 )
 
-const adminClubs = computed(() => (myClubs.data.value ?? []).filter((c) => c.role === 'admin'))
-
-// The club tab only exists for club admins: one club opens it directly, several open the list.
-const tabs = computed<Tab[]>(() => {
-  const result: Tab[] = [
-    { key: 'events', to: '/events', match: ['/events'], icon: 'calendar', labelKey: 'nav.events' },
-    {
-      key: 'training',
-      to: '/training',
-      match: ['/training', '/drills'],
-      icon: 'whistle',
-      labelKey: 'nav.training',
-    },
-    {
-      key: 'squad',
-      to: '/squad',
-      match: ['/squad', '/stats'],
-      icon: 'users',
-      labelKey: 'nav.squad',
-    },
-  ]
-  const [onlyClub, ...others] = adminClubs.value
-  if (onlyClub) {
-    result.push({
-      key: 'club',
-      to: others.length
-        ? { name: 'teams' }
-        : { name: 'club', params: { clubId: onlyClub.club_id } },
-      match: ['/clubs'],
-      icon: 'building',
-      labelKey: 'nav.club',
-    })
-  }
-  result.push({
-    key: 'profile',
-    to: '/profile',
-    match: ['/profile'],
-    icon: 'user',
-    labelKey: 'nav.profile',
-  })
-  return result
+// Tabs (UI-PLAN.md, section 4). Profile and club administration live behind the header.
+const tabs = computed<Tab[]>(() => [
+  { key: 'home', to: { name: 'home' }, icon: 'home', label: t('nav.start') },
+  { key: 'events', to: { name: 'events' }, icon: 'calendar', label: t('nav.events') },
+  { key: 'training', to: { name: 'training' }, icon: 'cone', label: t('nav.training') },
+  { key: 'team', to: { name: 'squad' }, icon: 'users', label: t('nav.team') },
+])
+const tabPrefixes: [string, string[]][] = [
+  ['events', ['/events']],
+  ['training', ['/training', '/drills', '/boards', '/templates']],
+  ['team', ['/squad', '/stats', '/teams', '/clubs']],
+]
+const activeTab = computed(() => {
+  if (route.name === 'home') return 'home'
+  return (
+    tabPrefixes.find(([, prefixes]) => prefixes.some((p) => route.path.startsWith(p)))?.[0] ?? null
+  )
 })
+
+const showNav = computed(() => !route.meta.hideNav)
+// Fixed elements (snackbar, action bars, floating buttons) keep clear of the tab bar.
+watchEffect(() => {
+  const root = document.documentElement.style
+  if (showNav.value)
+    root.setProperty('--nav-offset', `calc(76px + env(safe-area-inset-bottom, 0px))`)
+  else root.removeProperty('--nav-offset')
+})
+onUnmounted(() => document.documentElement.style.removeProperty('--nav-offset'))
+
+// The header gets smaller once the page scrolls.
+const { y } = useWindowScroll()
+const compact = computed(() => y.value > 12)
+
+const switcherOpen = ref(false)
+const displayName = computed(() => profile.data.value?.display_name ?? '')
 
 /** Back to where the user came from; direct visits (deep links) go to the parent page. */
 function goBack() {
@@ -97,10 +95,6 @@ watch(
   },
 )
 
-function isActive(tab: Tab) {
-  return tab.match.some((prefix) => route.path.startsWith(prefix))
-}
-
 // Without any team, team pages make no sense: send the user to club/team setup.
 watchEffect(() => {
   if (route.meta.requiresTeam && myTeams.isSuccess.value && myTeams.data.value?.length === 0) {
@@ -110,31 +104,40 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="app-layout">
-    <header class="app-header">
-      <div class="app-header__inner">
-        <button
+  <div class="app-layout" :class="{ 'app-layout--no-nav': !showNav }">
+    <header class="top-bar" :class="{ 'top-bar--compact': compact }">
+      <div class="top-bar__inner">
+        <UiIconButton
           v-if="route.meta.back"
-          type="button"
-          class="app-header__back"
-          :aria-label="t('common.back')"
+          icon="chevronLeft"
+          :label="t('common.back')"
           @click="goBack"
+        />
+        <button
+          type="button"
+          class="top-bar__team"
+          aria-haspopup="dialog"
+          @click="switcherOpen = true"
         >
-          <AppIcon name="chevronLeft" :size="24" />
-        </button>
-        <RouterLink :to="{ name: 'teams' }" class="app-header__team">
-          <img v-if="logoUrl" :src="logoUrl" alt="" class="app-header__logo" />
-          <span class="app-header__text">
+          <img v-if="logoUrl" :src="logoUrl" alt="" class="top-bar__logo" />
+          <RondoLogo v-else-if="!activeTeam" :size="32" :wordmark="false" />
+          <span class="top-bar__text">
             <template v-if="activeTeam">
-              <span class="app-header__club">{{ activeTeam.club_name }}</span>
-              <span class="app-header__name">{{ activeTeam.team_name }}</span>
+              <span class="top-bar__name">{{ activeTeam.team_name }}</span>
+              <span class="top-bar__club">{{ activeTeam.club_name }}</span>
             </template>
-            <span v-else class="app-header__name">{{ t('app.name') }}</span>
+            <span v-else class="top-bar__name">{{ t('app.name') }}</span>
           </span>
-          <span class="app-header__switch">
-            <AppIcon name="swap" :size="18" />
-            <span class="app-header__switch-label">{{ t('teams.switch') }}</span>
-          </span>
+          <UiIcon name="chevronDown" :size="18" class="top-bar__chevron" />
+          <span class="visually-hidden">{{ t('ui.teamSwitcher.open') }}</span>
+        </button>
+        <RouterLink
+          :to="{ name: 'profile' }"
+          class="top-bar__profile"
+          :aria-label="t('nav.profile')"
+        >
+          <UiAvatar v-if="displayName" :name="displayName" :size="40" />
+          <UiIcon v-else name="user" :size="22" />
         </RouterLink>
       </div>
     </header>
@@ -143,21 +146,9 @@ watchEffect(() => {
       <RouterView />
     </main>
 
-    <nav class="bottom-nav" :aria-label="t('nav.label')">
-      <ul class="bottom-nav__list" role="list">
-        <li v-for="tab in tabs" :key="tab.key">
-          <RouterLink
-            :to="tab.to"
-            class="bottom-nav__link"
-            :class="{ 'bottom-nav__link--active': isActive(tab) }"
-            :aria-current="isActive(tab) ? 'page' : undefined"
-          >
-            <AppIcon :name="tab.icon" />
-            <span class="bottom-nav__label">{{ t(tab.labelKey) }}</span>
-          </RouterLink>
-        </li>
-      </ul>
-    </nav>
+    <TabBar v-if="showNav" :tabs="tabs" :active="activeTab" :label="t('nav.label')" />
+    <TeamSwitcherSheet v-model:open="switcherOpen" />
+    <SnackbarHost />
   </div>
 </template>
 
@@ -172,26 +163,59 @@ watchEffect(() => {
 
     max-width: 720px;
     margin: 0 auto;
-    padding: $space-4 $space-4 0;
-    // Keep content clear of the fixed bottom navigation.
-    padding-bottom: calc(#{$bottom-nav-height} + #{$space-5} + env(safe-area-inset-bottom, 0px));
+    padding: $space-2 $space-4 0;
+    // Keep content clear of the floating tab bar.
+    padding-bottom: calc(#{$bottom-nav-height} + #{$space-6} + env(safe-area-inset-bottom, 0px));
+  }
+
+  &--no-nav &__main {
+    padding-bottom: calc(#{$space-6} + env(safe-area-inset-bottom, 0px));
   }
 }
 
-.app-header {
+.top-bar {
   @include safe-area-padding(top);
 
   position: sticky;
   top: 0;
   z-index: 40;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  transition: box-shadow var(--duration-medium) var(--ease-out);
+
+  &--compact {
+    box-shadow: 0 1px 0 var(--color-border);
+  }
 
   &__inner {
     display: flex;
     align-items: center;
+    gap: $space-2;
     max-width: 720px;
+    min-height: 64px;
     margin: 0 auto;
+    padding: $space-2 $space-3 $space-2 $space-3;
+    transition: min-height var(--duration-medium) var(--ease-out);
+  }
+
+  &--compact &__inner {
+    min-height: 52px;
+  }
+
+  &__team {
+    @include focus-visible;
+
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: $space-2;
+    min-width: 0;
+    min-height: $touch-target;
+    padding: 0 $space-2;
+    border: 0;
+    border-radius: $radius-lg;
+    background: transparent;
+    color: inherit;
+    text-align: left;
   }
 
   &__logo {
@@ -201,124 +225,53 @@ watchEffect(() => {
     object-fit: contain;
   }
 
-  &__back {
-    @include touch-target;
-    @include focus-visible;
-
-    display: grid;
-    flex-shrink: 0;
-    place-items: center;
-    margin-left: $space-1;
-    border: 0;
-    border-radius: $radius-md;
-    background: transparent;
-    color: var(--color-primary);
-  }
-
-  &__team {
-    @include focus-visible;
-
-    display: flex;
-    flex: 1;
-    align-items: center;
-    gap: $space-3;
-    min-width: 0;
-    min-height: 56px;
-    padding: $space-2 $space-4;
-    color: inherit;
-    text-decoration: none;
-  }
-
   &__text {
     display: flex;
-    flex: 1;
     flex-direction: column;
     min-width: 0;
-    line-height: 1.25;
-  }
-
-  &__club {
-    @include truncate;
-
-    font-size: $font-xs;
-    font-weight: 700;
-    color: var(--color-text-muted);
+    line-height: 1.1;
   }
 
   &__name {
     @include truncate;
 
-    font-size: $font-lg;
+    font-family: var(--font-display);
+    font-size: $font-2xl;
     font-weight: 800;
+    transition: font-size var(--duration-medium) var(--ease-out);
   }
 
-  &__switch {
-    display: inline-flex;
-    align-items: center;
-    gap: $space-1;
-    color: var(--color-primary);
-    font-size: $font-sm;
-    font-weight: 600;
+  &--compact &__name {
+    font-size: $font-xl;
   }
 
-  &__switch-label {
-    @include visually-hidden;
-
-    @include from($bp-sm) {
-      position: static;
-      width: auto;
-      height: auto;
-      margin: 0;
-      overflow: visible;
-      clip: auto;
-    }
-  }
-}
-
-.bottom-nav {
-  @include safe-area-padding(bottom);
-
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 50;
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
-  box-shadow: 0 -2px 10px rgb(0 0 0 / 5%);
-
-  &__list {
-    display: grid;
-    grid-auto-columns: 1fr;
-    grid-auto-flow: column;
-    max-width: 720px;
-    height: $bottom-nav-height;
-    margin: 0 auto;
-  }
-
-  &__link {
-    @include touch-target;
-    @include focus-visible;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    height: 100%;
-    color: var(--color-text-muted);
-    text-decoration: none;
-    font-size: $font-xs;
-    font-weight: 600;
-
-    &--active {
-      color: var(--color-primary);
-    }
-  }
-
-  &__label {
+  &__club {
     @include truncate;
 
-    max-width: 100%;
+    color: var(--color-text-muted);
+    font-size: $font-xs;
+    font-weight: 700;
+  }
+
+  &--compact &__club {
+    display: none;
+  }
+
+  &__chevron {
+    color: var(--color-text-muted);
+  }
+
+  &__profile {
+    @include focus-visible;
+
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: $touch-target;
+    height: $touch-target;
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-text);
   }
 }
 </style>

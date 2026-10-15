@@ -76,11 +76,14 @@ function shift(hex: string, delta: number): string {
 
 export type ThemeColors = { primary: string; hover: string; contrast: string }
 
-/** Surfaces the accent is used on (see styles/_tokens.scss). */
-export const LIGHT_SURFACE = '#ffffff'
-export const DARK_SURFACE = '#18221b'
+/**
+ * Surfaces the accent is used on (see styles/_tokens.scss): the one with the lowest contrast
+ * per theme (light: page background, dark: raised surface), so all surfaces reach 4.5:1.
+ */
+export const LIGHT_SURFACE = '#f3f5f0'
+export const DARK_SURFACE = '#1f2922'
 const LIGHT_TEXT = '#ffffff'
-const DARK_TEXT = '#08160d'
+const DARK_TEXT = '#16210a'
 
 /**
  * Readable theme colors for an accent: the primary works as text on the surface and as a
