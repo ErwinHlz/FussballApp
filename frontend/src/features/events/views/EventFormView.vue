@@ -5,11 +5,11 @@ import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { addDays, addMonths, differenceInHours, format } from 'date-fns'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseTextarea from '@/components/BaseTextarea.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiCard from '@/ui/UiCard.vue'
+import UiChipGroup from '@/ui/UiChipGroup.vue'
+import UiInput from '@/ui/UiInput.vue'
+import UiTextarea from '@/ui/UiTextarea.vue'
 import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import type { EventInput } from '../api'
@@ -273,7 +273,7 @@ const onSubmit = handleSubmit(async (raw) => {
 
     <form v-else class="event-form__form" novalidate @submit="onSubmit">
       <!-- Team event -->
-      <BaseInput
+      <UiInput
         v-if="kind === 'event'"
         v-model="eventTitle"
         :label="t('events.form.eventTitle')"
@@ -284,14 +284,14 @@ const onSubmit = handleSubmit(async (raw) => {
 
       <!-- Match -->
       <template v-if="kind === 'match'">
-        <BaseInput
+        <UiInput
           v-model="opponent"
           :label="t('events.form.opponent')"
           required
           :error="err('opponent')"
         />
-        <BaseChipGroup v-model="venue" :label="t('events.form.venue')" :options="venueOptions" />
-        <BaseChipGroup
+        <UiChipGroup v-model="venue" :label="t('events.form.venue')" :options="venueOptions" />
+        <UiChipGroup
           v-model="competition"
           :label="t('events.form.competition')"
           :options="competitionOptions"
@@ -300,7 +300,7 @@ const onSubmit = handleSubmit(async (raw) => {
 
       <!-- Series -->
       <template v-if="kind === 'series'">
-        <BaseChipGroup
+        <UiChipGroup
           v-model="weekdays"
           :label="t('events.form.weekdays')"
           :options="weekdayOptions"
@@ -309,14 +309,14 @@ const onSubmit = handleSubmit(async (raw) => {
         />
         <p v-if="err('weekdays')" class="event-form__error" role="alert">{{ err('weekdays') }}</p>
         <div class="event-form__row">
-          <BaseInput
+          <UiInput
             v-model="validFrom"
             :label="t('events.form.validFrom')"
             type="date"
             required
             :error="err('validFrom')"
           />
-          <BaseInput
+          <UiInput
             v-model="validUntil"
             :label="t('events.form.validUntil')"
             type="date"
@@ -325,7 +325,7 @@ const onSubmit = handleSubmit(async (raw) => {
           />
         </div>
       </template>
-      <BaseInput
+      <UiInput
         v-else
         v-model="date"
         :label="t('events.form.date')"
@@ -335,7 +335,7 @@ const onSubmit = handleSubmit(async (raw) => {
       />
 
       <div class="event-form__row">
-        <BaseInput
+        <UiInput
           v-if="kind === 'match'"
           v-model="kickoffTime"
           :label="t('events.form.kickoff')"
@@ -343,7 +343,7 @@ const onSubmit = handleSubmit(async (raw) => {
           required
           :error="err('kickoffTime')"
         />
-        <BaseInput
+        <UiInput
           v-else
           v-model="startTime"
           :label="t('events.form.startTime')"
@@ -351,7 +351,7 @@ const onSubmit = handleSubmit(async (raw) => {
           required
           :error="err('startTime')"
         />
-        <BaseInput
+        <UiInput
           v-if="kind !== 'match'"
           v-model="durationMin"
           :label="t('events.form.duration')"
@@ -359,7 +359,7 @@ const onSubmit = handleSubmit(async (raw) => {
           required
           :error="err('durationMin')"
         />
-        <BaseInput
+        <UiInput
           v-else
           v-model="meetTime"
           :label="t('events.form.meetTime')"
@@ -368,43 +368,43 @@ const onSubmit = handleSubmit(async (raw) => {
         />
       </div>
 
-      <BaseInput
+      <UiInput
         v-if="kind === 'match'"
         v-model="meetLocation"
         :label="t('events.form.meetLocation')"
         :error="err('meetLocation')"
       />
-      <BaseInput
+      <UiInput
         v-model="location"
         :label="kind === 'match' ? t('events.form.venueLocation') : t('events.form.location')"
         :error="err('location')"
       />
-      <BaseChipGroup
+      <UiChipGroup
         v-model="deadline"
         :label="t('events.form.deadline')"
         :options="deadlineOptions"
       />
-      <BaseTextarea
+      <UiTextarea
         v-if="kind !== 'series'"
         v-model="notes"
         :label="t('events.form.notes')"
         :error="err('notes')"
       />
 
-      <BaseCard v-if="kind === 'series'" padding="sm" class="event-form__preview" role="status">
+      <UiCard v-if="kind === 'series'" padding="sm" class="event-form__preview" role="status">
         <strong>{{ t('events.form.seriesCount', seriesCount) }}</strong>
         <span v-if="seriesFirstDate" class="event-form__muted">
           {{ t('events.form.seriesFirst', { date: seriesFirstDate }) }}
         </span>
-      </BaseCard>
+      </UiCard>
 
       <p v-if="saveFailed" class="event-form__error" role="alert">
         {{ t('events.form.saveFailed') }}
       </p>
 
       <div class="event-form__actions">
-        <BaseButton variant="secondary" @click="router.back()">{{ t('common.cancel') }}</BaseButton>
-        <BaseButton
+        <UiButton variant="secondary" @click="router.back()">{{ t('common.cancel') }}</UiButton>
+        <UiButton
           type="submit"
           :loading="isSaving"
           :disabled="kind === 'series' && seriesCount === 0"
@@ -414,7 +414,7 @@ const onSubmit = handleSubmit(async (raw) => {
               ? t('events.form.createSeries', seriesCount)
               : t('common.save')
           }}
-        </BaseButton>
+        </UiButton>
       </div>
     </form>
   </section>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import BaseModal from '@/components/BaseModal.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import { useEventFormat } from '@/features/events/format'
 import { useUpcomingTrainings } from '@/features/training-plan/composables/usePlan'
 import { useApplyTemplate } from '../composables/useTemplates'
@@ -23,7 +23,7 @@ async function applyTo(eventId: string) {
 </script>
 
 <template>
-  <BaseModal v-model:open="open" :title="t('templates.applyTitle')">
+  <BottomSheet v-model:open="open" :title="t('templates.applyTitle')">
     <p class="pick__muted">{{ t('templates.applyHint') }}</p>
     <p v-if="trainings.isPending.value" class="pick__muted">{{ t('common.loading') }}</p>
     <p v-else-if="!trainings.data.value?.filter((e) => !e.is_cancelled).length" class="pick__muted">
@@ -51,7 +51,7 @@ async function applyTo(eventId: string) {
     <p v-if="apply.isError.value" class="pick__error" role="alert">
       {{ t('templates.applyFailed') }}
     </p>
-  </BaseModal>
+  </BottomSheet>
 </template>
 
 <style scoped lang="scss">

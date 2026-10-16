@@ -14,3 +14,6 @@ coverage/
 e2e/__screens__/
 test-results/
 playwright-report/
+
+# Lighthouse reports (frontend/scripts/lighthouse.mjs)
+lighthouse/

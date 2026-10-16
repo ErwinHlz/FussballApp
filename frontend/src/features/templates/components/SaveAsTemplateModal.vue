@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseModal from '@/components/BaseModal.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiInput from '@/ui/UiInput.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import type { Template } from '../api'
 import { useCreateTemplateFromEvent } from '../composables/useTemplates'
 
@@ -43,9 +43,9 @@ async function save() {
 </script>
 
 <template>
-  <BaseModal v-model:open="open" :title="t('templates.saveAsTitle')">
+  <BottomSheet v-model:open="open" :title="t('templates.saveAsTitle')">
     <form class="save" novalidate @submit.prevent="save">
-      <BaseInput
+      <UiInput
         v-model="title"
         :label="t('templates.name')"
         :placeholder="t('templates.namePlaceholder')"
@@ -64,12 +64,12 @@ async function save() {
       </p>
     </form>
     <template #footer>
-      <BaseButton variant="secondary" @click="open = false">{{ t('common.cancel') }}</BaseButton>
-      <BaseButton :loading="create.isPending.value" @click="save">
+      <UiButton variant="secondary" @click="open = false">{{ t('common.cancel') }}</UiButton>
+      <UiButton :loading="create.isPending.value" @click="save">
         {{ t('common.save') }}
-      </BaseButton>
+      </UiButton>
     </template>
-  </BaseModal>
+  </BottomSheet>
 </template>
 
 <style scoped lang="scss">

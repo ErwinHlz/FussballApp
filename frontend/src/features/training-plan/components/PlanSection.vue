@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseBadge from '@/components/BaseBadge.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
+import UiBadge from '@/ui/UiBadge.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiCard from '@/ui/UiCard.vue'
 import type { TeamMember } from '@/features/teams/api'
 import type { TeamEvent } from '@/features/events/logic'
 import LateDeclines from './LateDeclines.vue'
@@ -33,12 +33,12 @@ const total = computed(() => planTotalMinutes(items.value))
 </script>
 
 <template>
-  <BaseCard v-if="isCoach || isPublished" class="plan-section">
+  <UiCard v-if="isCoach || isPublished" class="plan-section">
     <header class="plan-section__header">
       <h2 class="plan-section__title">{{ t('plan.title') }}</h2>
-      <BaseBadge v-if="isCoach" :tone="isPublished ? 'success' : 'warning'">
+      <UiBadge v-if="isCoach" :tone="isPublished ? 'yes' : 'maybe'">
         {{ isPublished ? t('plan.published') : t('plan.draft') }}
-      </BaseBadge>
+      </UiBadge>
     </header>
 
     <LateDeclines v-if="isCoach" :event="event" :members="members" />
@@ -70,9 +70,9 @@ const total = computed(() => planTotalMinutes(items.value))
       custom
       :to="{ name: 'event-plan', params: { eventId: event.id } }"
     >
-      <BaseButton :variant="items.length ? 'secondary' : 'primary'" block @click="navigate">
+      <UiButton :variant="items.length ? 'secondary' : 'primary'" block @click="navigate">
         {{ items.length ? t('plan.edit') : t('plan.create') }}
-      </BaseButton>
+      </UiButton>
     </RouterLink>
     <RouterLink
       v-if="isCoach && items.length"
@@ -80,9 +80,9 @@ const total = computed(() => planTotalMinutes(items.value))
       custom
       :to="{ name: 'event-groups', params: { eventId: event.id } }"
     >
-      <BaseButton variant="secondary" block @click="navigate">{{ t('groups.assign') }}</BaseButton>
+      <UiButton variant="secondary" block @click="navigate">{{ t('groups.assign') }}</UiButton>
     </RouterLink>
-  </BaseCard>
+  </UiCard>
 </template>
 
 <style scoped lang="scss">

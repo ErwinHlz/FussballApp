@@ -12,8 +12,8 @@ withDefaults(
 <template>
   <component
     :is="as"
-    class="base-card"
-    :class="[`base-card--pad-${padding}`, { 'base-card--accent': !!accent }]"
+    class="ui-card"
+    :class="[`ui-card--pad-${padding}`, { 'ui-card--accent': !!accent }]"
     :style="accent ? { '--card-accent': accent } : undefined"
   >
     <slot />
@@ -21,11 +21,9 @@ withDefaults(
 </template>
 
 <style scoped lang="scss">
-.base-card {
+.ui-card {
+  border-radius: $radius-xl;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: $radius-lg;
-  box-shadow: var(--shadow-sm);
 
   &--pad-sm {
     padding: $space-3;
@@ -36,7 +34,7 @@ withDefaults(
   }
 
   &--accent {
-    border-left: 6px solid var(--card-accent);
+    box-shadow: inset 5px 0 0 var(--card-accent);
   }
 }
 </style>

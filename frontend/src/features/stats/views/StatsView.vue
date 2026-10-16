@@ -207,7 +207,7 @@ function reasonsText(reasons: unknown) {
     display: flex;
     flex-direction: column;
     gap: $space-5;
-    transition: opacity 0.15s ease;
+    transition: opacity var(--duration-fast) var(--ease-out);
 
     // Refetch keeps the frame: previous numbers stay, slightly dimmed.
     &--refetching {

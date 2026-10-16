@@ -4,8 +4,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
-import BaseTextarea from '@/components/BaseTextarea.vue'
+import UiChipGroup from '@/ui/UiChipGroup.vue'
+import UiTextarea from '@/ui/UiTextarea.vue'
 import ActionBar from '@/ui/ActionBar.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiIcon from '@/ui/UiIcon.vue'
@@ -120,11 +120,7 @@ const onSubmit = handleSubmit(
           required
           :error="err(errors.title)"
         />
-        <BaseChipGroup
-          v-model="category"
-          :label="t('drills.category')"
-          :options="categoryOptions"
-        />
+        <UiChipGroup v-model="category" :label="t('drills.category')" :options="categoryOptions" />
         <div class="drill-form__row">
           <UiInput
             v-model="durationMin"
@@ -134,7 +130,7 @@ const onSubmit = handleSubmit(
             :error="err(errors.durationMin)"
           />
         </div>
-        <BaseTextarea
+        <UiTextarea
           v-model="description"
           :label="t('drills.form.description')"
           :placeholder="t('drills.form.descriptionPlaceholder')"

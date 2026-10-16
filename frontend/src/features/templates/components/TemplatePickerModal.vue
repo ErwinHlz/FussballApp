@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import BaseBadge from '@/components/BaseBadge.vue'
-import BaseModal from '@/components/BaseModal.vue'
+import UiBadge from '@/ui/UiBadge.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import { useApplyTemplate, useTemplates } from '../composables/useTemplates'
 
 /** Plan editor: picks a template (own or shared in the club) and appends it to the training. */
@@ -21,7 +21,7 @@ async function applyTemplate(templateId: string) {
 </script>
 
 <template>
-  <BaseModal v-model:open="open" :title="t('templates.pickTitle')">
+  <BottomSheet v-model:open="open" :title="t('templates.pickTitle')">
     <p class="pick__muted">{{ t('templates.pickHint') }}</p>
     <p v-if="templates.isPending.value" class="pick__muted">{{ t('common.loading') }}</p>
     <p v-else-if="!templates.data.value?.length" class="pick__muted">
@@ -38,7 +38,7 @@ async function applyTemplate(templateId: string) {
         >
           <span class="pick__title">
             {{ template.title }}
-            <BaseBadge v-if="!template.is_own" tone="match">{{ template.team_name }}</BaseBadge>
+            <UiBadge v-if="!template.is_own" tone="match">{{ template.team_name }}</UiBadge>
           </span>
           <span class="pick__muted">
             {{ t('plan.drillCount', template.drill_count) }} ·
@@ -50,7 +50,7 @@ async function applyTemplate(templateId: string) {
     <p v-if="apply.isError.value" class="pick__error" role="alert">
       {{ t('templates.applyFailed') }}
     </p>
-  </BaseModal>
+  </BottomSheet>
 </template>
 
 <style scoped lang="scss">

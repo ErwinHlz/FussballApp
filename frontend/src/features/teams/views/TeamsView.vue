@@ -2,10 +2,8 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseBadge from '@/components/BaseBadge.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseModal from '@/components/BaseModal.vue'
+import UiBadge from '@/ui/UiBadge.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import RondoLogo from '@/ui/RondoLogo.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiIcon from '@/ui/UiIcon.vue'
@@ -115,7 +113,7 @@ async function onClubCreated(club: Club) {
             :to="{ name: 'club', params: { clubId: club.club_id } }"
           >
             {{ t('clubs.manage') }}
-            <AppIcon name="chevronRight" :size="18" />
+            <UiIcon name="chevronRight" :size="18" />
           </RouterLink>
         </header>
 
@@ -132,10 +130,10 @@ async function onClubCreated(club: Club) {
                 {{ team.team_name }}
                 <span v-if="team.team_season" class="teams__muted">{{ team.team_season }}</span>
               </span>
-              <BaseBadge :tone="team.team_role === 'player' ? 'neutral' : 'training'">
+              <UiBadge :tone="team.team_role === 'player' ? 'neutral' : 'training'">
                 {{ roleLabel(team) }}
-              </BaseBadge>
-              <AppIcon
+              </UiBadge>
+              <UiIcon
                 v-if="team.team_id === activeTeam?.team_id"
                 name="check"
                 :size="20"
@@ -147,16 +145,16 @@ async function onClubCreated(club: Club) {
         <p v-else class="teams__muted">{{ t('clubs.noTeamsYet') }}</p>
       </article>
 
-      <BaseButton variant="secondary" block @click="createOpen = true">
-        <template #icon><AppIcon name="plus" :size="18" /></template>
+      <UiButton variant="secondary" block @click="createOpen = true">
+        <template #icon><UiIcon name="plus" :size="18" /></template>
         {{ t('clubs.createAnother') }}
-      </BaseButton>
+      </UiButton>
     </template>
 
-    <BaseModal v-model:open="createOpen" :title="t('clubs.create')">
+    <BottomSheet v-model:open="createOpen" :title="t('clubs.create')">
       <p class="teams__muted teams__modal-intro">{{ t('clubs.createIntro') }}</p>
       <CreateClubForm @created="onClubCreated" />
-    </BaseModal>
+    </BottomSheet>
   </section>
 </template>
 

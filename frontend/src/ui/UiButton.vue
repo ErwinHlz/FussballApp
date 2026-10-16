@@ -7,7 +7,7 @@ const props = withDefaults(
   defineProps<{
     variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
     size?: 'md' | 'lg'
-    type?: 'button' | 'submit'
+    type?: 'button' | 'submit' | 'reset'
     block?: boolean
     loading?: boolean
     disabled?: boolean
@@ -29,6 +29,7 @@ const isDisabled = computed(() => props.disabled || props.loading)
     :class="[`ui-button--${variant}`, `ui-button--${size}`, { 'ui-button--block': block }]"
   >
     <UiIcon v-if="icon" :name="icon" :size="20" />
+    <slot v-else name="icon" />
     <slot />
   </RouterLink>
   <button
@@ -41,6 +42,7 @@ const isDisabled = computed(() => props.disabled || props.loading)
   >
     <span v-if="loading" class="ui-button__spinner" aria-hidden="true" />
     <UiIcon v-else-if="icon" :name="icon" :size="20" />
+    <slot v-else name="icon" />
     <slot />
   </button>
 </template>

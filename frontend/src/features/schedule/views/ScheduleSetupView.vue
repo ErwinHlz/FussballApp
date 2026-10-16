@@ -4,11 +4,11 @@ import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { addDays, parseISO } from 'date-fns'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseBadge from '@/components/BaseBadge.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiBadge from '@/ui/UiBadge.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiCard from '@/ui/UiCard.vue'
+import UiInput from '@/ui/UiInput.vue'
 import { formatDate } from '@/lib/date'
 import SlotForm from '../components/SlotForm.vue'
 import {
@@ -81,12 +81,10 @@ function confirmDelete(key: string, action: () => void) {
 
     <p v-if="pitches.isPending.value" class="setup__muted">{{ t('common.loading') }}</p>
 
-    <BaseCard v-for="pitch in pitches.data.value" :key="pitch.id" class="setup__pitch">
+    <UiCard v-for="pitch in pitches.data.value" :key="pitch.id" class="setup__pitch">
       <div class="setup__pitch-head">
         <h2 class="setup__pitch-name">{{ pitch.name }}</h2>
-        <BaseBadge v-if="pitch.splittable" tone="training">{{
-          t('schedule.splittable')
-        }}</BaseBadge>
+        <UiBadge v-if="pitch.splittable" tone="training">{{ t('schedule.splittable') }}</UiBadge>
       </div>
 
       <ul v-if="slotsByPitch.get(pitch.id)?.length" class="setup__slots" role="list">
@@ -98,15 +96,15 @@ function confirmDelete(key: string, action: () => void) {
               {{ date(slot.valid_from) }} – {{ date(slot.valid_until) }}
             </span>
           </span>
-          <BaseButton
+          <UiButton
             :variant="armed === slot.id ? 'danger' : 'ghost'"
             :aria-label="armed === slot.id ? undefined : t('schedule.deleteSlot')"
             :loading="deleteSlot.isPending.value && deleteSlot.variables.value === slot.id"
             @click="confirmDelete(slot.id, () => deleteSlot.mutate(slot.id))"
           >
             <template v-if="armed === slot.id">{{ t('schedule.confirmDelete') }}</template>
-            <AppIcon v-else name="x" :size="18" />
-          </BaseButton>
+            <UiIcon v-else name="x" :size="18" />
+          </UiButton>
         </li>
       </ul>
       <p v-else class="setup__muted">{{ t('schedule.noSlots') }}</p>
@@ -117,14 +115,14 @@ function confirmDelete(key: string, action: () => void) {
         {{ t('schedule.deleteWarning') }}
       </p>
 
-      <BaseButton
+      <UiButton
         variant="secondary"
         block
         :aria-expanded="addingSlotTo === pitch.id"
         @click="addingSlotTo = addingSlotTo === pitch.id ? null : pitch.id"
       >
         {{ addingSlotTo === pitch.id ? t('common.close') : t('schedule.addSlot') }}
-      </BaseButton>
+      </UiButton>
       <SlotForm
         v-if="addingSlotTo === pitch.id"
         :club-id="clubId"
@@ -132,15 +130,15 @@ function confirmDelete(key: string, action: () => void) {
         @saved="addingSlotTo = null"
       />
 
-      <BaseButton
+      <UiButton
         :variant="armed === pitch.id ? 'danger' : 'ghost'"
         block
         :loading="deletePitch.isPending.value && deletePitch.variables.value === pitch.id"
         @click="confirmDelete(pitch.id, () => deletePitch.mutate(pitch.id))"
       >
         {{ armed === pitch.id ? t('schedule.confirmDelete') : t('schedule.deletePitch') }}
-      </BaseButton>
-    </BaseCard>
+      </UiButton>
+    </UiCard>
 
     <p
       v-if="deleteSlot.isError.value || deletePitch.isError.value"
@@ -150,10 +148,10 @@ function confirmDelete(key: string, action: () => void) {
       {{ t('schedule.errors.saveFailed') }}
     </p>
 
-    <BaseCard>
+    <UiCard>
       <form class="setup__form" novalidate @submit="onCreatePitch">
         <h2 class="setup__pitch-name">{{ t('schedule.addPitch') }}</h2>
-        <BaseInput
+        <UiInput
           v-model="name"
           :label="t('schedule.pitchName')"
           :placeholder="t('schedule.pitchNamePlaceholder')"
@@ -170,12 +168,12 @@ function confirmDelete(key: string, action: () => void) {
         <p v-if="createPitch.isError.value" class="setup__error" role="alert">
           {{ t('schedule.errors.saveFailed') }}
         </p>
-        <BaseButton type="submit" block :loading="createPitch.isPending.value">
-          <template #icon><AppIcon name="plus" :size="18" /></template>
+        <UiButton type="submit" block :loading="createPitch.isPending.value">
+          <template #icon><UiIcon name="plus" :size="18" /></template>
           {{ t('schedule.addPitch') }}
-        </BaseButton>
+        </UiButton>
       </form>
-    </BaseCard>
+    </UiCard>
   </section>
 </template>
 

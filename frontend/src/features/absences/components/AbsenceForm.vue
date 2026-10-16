@@ -2,9 +2,9 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { format } from 'date-fns'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiChipGroup from '@/ui/UiChipGroup.vue'
+import UiInput from '@/ui/UiInput.vue'
 import { DECLINE_REASONS, type DeclineReason } from '@/features/events/logic'
 import { absenceRange } from '../logic'
 import { useCreateAbsences } from '../composables/useAbsences'
@@ -54,8 +54,8 @@ async function submit() {
 <template>
   <form class="absence-form" novalidate @submit.prevent="submit">
     <div class="absence-form__row">
-      <BaseInput v-model="from" :label="t('absences.from')" type="date" required />
-      <BaseInput
+      <UiInput v-model="from" :label="t('absences.from')" type="date" required />
+      <UiInput
         v-model="to"
         :label="t('absences.to')"
         type="date"
@@ -63,12 +63,8 @@ async function submit() {
         :error="range ? undefined : t('validation.dateRange')"
       />
     </div>
-    <BaseChipGroup
-      v-model="reasonModel"
-      :label="t('events.reasonLabel')"
-      :options="reasonOptions"
-    />
-    <BaseInput
+    <UiChipGroup v-model="reasonModel" :label="t('events.reasonLabel')" :options="reasonOptions" />
+    <UiInput
       v-model="note"
       :label="t('events.reasonNote')"
       :placeholder="t('absences.notePlaceholder')"
@@ -80,9 +76,9 @@ async function submit() {
     <p v-else-if="declined !== null" class="absence-form__done" role="status">
       ✓ {{ t('absences.created', declined) }}
     </p>
-    <BaseButton type="submit" block :disabled="!range" :loading="create.isPending.value">
+    <UiButton type="submit" block :disabled="!range" :loading="create.isPending.value">
       {{ t('absences.save') }}
-    </BaseButton>
+    </UiButton>
   </form>
 </template>
 

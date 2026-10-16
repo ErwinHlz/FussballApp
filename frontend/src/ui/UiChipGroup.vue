@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends string">
+import UiIcon from './UiIcon.vue'
 import { useId } from 'vue'
 
 const props = withDefaults(
@@ -33,17 +34,17 @@ function toggle(value: T) {
 </script>
 
 <template>
-  <div class="chip-group">
+  <div class="ui-chip-group">
     <span
       :id="labelId"
-      class="chip-group__label"
-      :class="{ 'chip-group__label--hidden': hideLabel }"
+      class="ui-chip-group__label"
+      :class="{ 'ui-chip-group__label--hidden': hideLabel }"
     >
       {{ label }}
     </span>
     <div
-      class="chip-group__chips"
-      :class="{ 'chip-group__chips--grid': columns }"
+      class="ui-chip-group__chips"
+      :class="{ 'ui-chip-group__chips--grid': columns }"
       :style="columns ? { '--columns': columns } : undefined"
       role="group"
       :aria-labelledby="labelId"
@@ -52,21 +53,18 @@ function toggle(value: T) {
         v-for="option in options"
         :key="option.value"
         type="button"
-        class="chip-group__chip"
-        :class="{ 'chip-group__chip--selected': isSelected(option.value) }"
+        class="ui-chip-group__chip"
+        :class="{ 'ui-chip-group__chip--selected': isSelected(option.value) }"
         :aria-pressed="isSelected(option.value)"
         @click="toggle(option.value)"
       >
-        <svg
+        <UiIcon
           v-if="isSelected(option.value)"
-          class="chip-group__check"
-          viewBox="0 0 24 24"
-          width="16"
-          height="16"
-          aria-hidden="true"
-        >
-          <path d="M5 12l5 5L20 7" fill="none" stroke="currentColor" stroke-width="3" />
-        </svg>
+          name="check"
+          :size="16"
+          :stroke-width="2.8"
+          class="ui-chip-group__check"
+        />
         {{ option.label }}
       </button>
     </div>
@@ -74,7 +72,7 @@ function toggle(value: T) {
 </template>
 
 <style scoped lang="scss">
-.chip-group {
+.ui-chip-group {
   display: flex;
   flex-direction: column;
   gap: $space-1;
@@ -115,15 +113,15 @@ function toggle(value: T) {
     padding: $space-1 $space-3;
     border: 2px solid var(--color-border);
     border-radius: $radius-full;
-    background: var(--color-surface);
+    background: transparent;
     font-size: $font-sm;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-text);
 
     &--selected {
-      border-color: var(--color-primary);
-      background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
-      color: var(--color-primary-hover);
+      border-color: var(--color-text);
+      background: var(--color-text);
+      color: var(--color-bg);
     }
   }
 }

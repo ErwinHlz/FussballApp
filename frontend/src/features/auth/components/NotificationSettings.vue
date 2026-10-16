@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/BaseButton.vue'
+import UiButton from '@/ui/UiButton.vue'
 import {
   disablePush,
   enablePush,
@@ -65,16 +65,14 @@ const test = () =>
         <span aria-hidden="true">{{ state === 'on' ? '🔔' : '🔕' }}</span>
         {{ state === 'on' ? t('push.on') : t('push.off') }}
       </p>
-      <BaseButton v-if="state === 'off'" block :loading="busy" @click="enable">
+      <UiButton v-if="state === 'off'" block :loading="busy" @click="enable">
         {{ t('push.enable') }}
-      </BaseButton>
+      </UiButton>
       <div v-else class="notifications__actions">
-        <BaseButton variant="secondary" :loading="busy" @click="test">{{
-          t('push.test')
-        }}</BaseButton>
-        <BaseButton variant="ghost" :disabled="busy" @click="disable">{{
+        <UiButton variant="secondary" :loading="busy" @click="test">{{ t('push.test') }}</UiButton>
+        <UiButton variant="ghost" :disabled="busy" @click="disable">{{
           t('push.disable')
-        }}</BaseButton>
+        }}</UiButton>
       </div>
       <p v-if="testSent" class="notifications__done" role="status">✓ {{ t('push.testSent') }}</p>
     </template>

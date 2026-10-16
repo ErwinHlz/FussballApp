@@ -3,10 +3,10 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseModal from '@/components/BaseModal.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiChipGroup from '@/ui/UiChipGroup.vue'
+import UiInput from '@/ui/UiInput.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import AbsenceForm from '@/features/absences/components/AbsenceForm.vue'
 import { useAuthStore } from '@/stores/auth'
 import type { TeamMember } from '@/features/teams/api'
@@ -125,31 +125,31 @@ async function onLink() {
 </script>
 
 <template>
-  <BaseModal v-model:open="open" :title="isEdit ? t('squad.editPlayer') : t('squad.addPlayer')">
+  <BottomSheet v-model:open="open" :title="isEdit ? t('squad.editPlayer') : t('squad.addPlayer')">
     <form id="member-form" class="member-form" novalidate @submit="onSubmit">
       <p v-if="!isEdit" class="member-form__hint">{{ t('squad.addPlayerHint') }}</p>
 
-      <BaseInput
+      <UiInput
         v-model="displayName"
         :label="t('squad.name')"
         required
         :error="errors.displayName ? t(errors.displayName) : undefined"
       />
-      <BaseInput
+      <UiInput
         v-model="shirtNumber"
         :label="t('squad.shirtNumber')"
         type="tel"
         autocomplete="off"
         :error="errors.shirtNumber ? t(errors.shirtNumber) : undefined"
       />
-      <BaseChipGroup
+      <UiChipGroup
         v-model="positions"
         :label="t('squad.positionsLabel')"
         :options="positionOptions"
         multiple
       />
-      <BaseChipGroup v-model="status" :label="t('squad.statusLabel')" :options="statusOptions" />
-      <BaseChipGroup
+      <UiChipGroup v-model="status" :label="t('squad.statusLabel')" :options="statusOptions" />
+      <UiChipGroup
         v-if="isEdit && !isSelf"
         v-model="role"
         :label="t('squad.roleLabel')"
@@ -170,7 +170,7 @@ async function onLink() {
           <option value="" disabled>{{ t('squad.linkChoose') }}</option>
           <option v-for="c in candidates" :key="c.id" :value="c.id">{{ c.display_name }}</option>
         </select>
-        <BaseButton
+        <UiButton
           variant="secondary"
           block
           :disabled="!linkTargetId"
@@ -178,7 +178,7 @@ async function onLink() {
           @click="onLink"
         >
           {{ t('squad.linkAction') }}
-        </BaseButton>
+        </UiButton>
         <p v-if="linkMember.isError.value" class="member-form__error" role="alert">
           {{ t('squad.errors.unknown') }}
         </p>
@@ -192,7 +192,7 @@ async function onLink() {
     </section>
 
     <section v-if="member && !isSelf" class="member-form__section">
-      <BaseButton
+      <UiButton
         :variant="confirmDelete ? 'danger' : 'ghost'"
         block
         :loading="deleteMember.isPending.value"
@@ -203,19 +203,19 @@ async function onLink() {
             ? t('squad.removeConfirm', { name: member.display_name })
             : t('squad.remove')
         }}
-      </BaseButton>
+      </UiButton>
       <p v-if="deleteMember.isError.value" class="member-form__error" role="alert">
         {{ t('squad.errors.unknown') }}
       </p>
     </section>
 
     <template #footer>
-      <BaseButton variant="secondary" @click="open = false">{{ t('common.cancel') }}</BaseButton>
-      <BaseButton type="submit" form="member-form" :loading="isSaving">
+      <UiButton variant="secondary" @click="open = false">{{ t('common.cancel') }}</UiButton>
+      <UiButton type="submit" form="member-form" :loading="isSaving">
         {{ t('common.save') }}
-      </BaseButton>
+      </UiButton>
     </template>
-  </BaseModal>
+  </BottomSheet>
 </template>
 
 <style scoped lang="scss">

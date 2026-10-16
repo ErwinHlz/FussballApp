@@ -14,6 +14,8 @@ const props = withDefaults(
     disabled?: boolean
     autocomplete?: string
     inputmode?: 'text' | 'numeric' | 'email' | 'tel' | 'search' | 'url'
+    /** Label only for screen readers (when the context already says what the field is). */
+    hideLabel?: boolean
   }>(),
   {
     type: 'text',
@@ -43,7 +45,7 @@ const describedBy = computed(() => {
 <template>
   <div class="ui-input" :class="{ 'ui-input--error': !!error }">
     <!-- The required mark sits next to the label, so the field's name stays exactly the label. -->
-    <span class="ui-input__label-row">
+    <span class="ui-input__label-row" :class="{ 'visually-hidden': hideLabel }">
       <label :for="id" class="ui-input__label">{{ label }}</label>
       <span v-if="required" class="ui-input__required" aria-hidden="true">*</span>
     </span>

@@ -2,8 +2,7 @@
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEventListener } from '@vueuse/core'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
+import UiChipGroup from '@/ui/UiChipGroup.vue'
 import BottomSheet from '@/ui/BottomSheet.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiIconButton from '@/ui/UiIconButton.vue'
@@ -620,7 +619,7 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
           class="board-editor__palette"
           :aria-label="t('board.addLabel')"
         >
-          <BaseChipGroup
+          <UiChipGroup
             v-model="paletteTab"
             :label="t('board.addLabel')"
             :options="tabs"
@@ -696,14 +695,14 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
                 {{ t('board.duration') }}
                 <input v-model.lazy="durationSeconds" type="number" step="0.5" min="0.5" max="60" />
               </label>
-              <BaseButton v-if="keyframeIndex > 0" variant="ghost" @click="deleteKeyframe">
+              <UiButton v-if="keyframeIndex > 0" variant="ghost" @click="deleteKeyframe">
                 {{ t('board.removeKeyframe') }}
-              </BaseButton>
+              </UiButton>
             </div>
             <p class="board-editor__hint">{{ t('board.keyframeHint') }}</p>
           </section>
 
-          <BaseChipGroup v-model="field" :label="t('board.field')" :options="fieldOptions" />
+          <UiChipGroup v-model="field" :label="t('board.field')" :options="fieldOptions" />
         </div>
       </div>
 
@@ -793,14 +792,14 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
                 @change="patchSelected({ h: numberInput($event, 1, 105) ?? selected.h })"
               />
             </label>
-            <BaseButton
+            <UiButton
               variant="secondary"
               @click="patchSelected({ shape: selected.shape === 'circle' ? 'rect' : 'circle' })"
             >
               {{
                 selected.shape === 'circle' ? t('board.props.toRect') : t('board.props.toCircle')
               }}
-            </BaseButton>
+            </UiButton>
           </div>
         </div>
       </BottomSheet>

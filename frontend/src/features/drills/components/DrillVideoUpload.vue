@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/BaseButton.vue'
+import UiButton from '@/ui/UiButton.vue'
 import type { Drill } from '../logic'
 import {
   formatBytes,
@@ -69,9 +69,9 @@ function onRemove() {
       <p class="upload__muted" aria-live="polite">
         {{ t('drills.upload.uploading', { n: percent }) }}
       </p>
-      <BaseButton variant="secondary" block @click="upload.cancel()">{{
+      <UiButton variant="secondary" block @click="upload.cancel()">{{
         t('common.cancel')
-      }}</BaseButton>
+      }}</UiButton>
     </template>
 
     <template v-else>
@@ -99,7 +99,7 @@ function onRemove() {
         ✓ {{ t('drills.upload.done') }}
       </p>
 
-      <BaseButton
+      <UiButton
         v-if="drill.video_path"
         :variant="confirmRemove ? 'danger' : 'ghost'"
         block
@@ -107,7 +107,7 @@ function onRemove() {
         @click="onRemove"
       >
         {{ confirmRemove ? t('drills.upload.removeConfirm') : t('drills.upload.remove') }}
-      </BaseButton>
+      </UiButton>
       <p v-if="remove.isError.value" class="upload__error" role="alert">
         {{ t('squad.errors.unknown') }}
       </p>
@@ -160,7 +160,7 @@ function onRemove() {
     display: block;
     height: 100%;
     background: var(--color-primary);
-    transition: width 0.2s ease;
+    transition: width var(--duration-medium) var(--ease-out);
   }
 
   &__muted {

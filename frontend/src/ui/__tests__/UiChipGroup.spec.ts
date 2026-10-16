@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import BaseChipGroup from '../BaseChipGroup.vue'
+import UiChipGroup from '../UiChipGroup.vue'
 
 const options = [
   { value: 'a', label: 'A' },
@@ -8,7 +8,7 @@ const options = [
 ]
 
 function mountGroup(modelValue: string | string[], multiple = false) {
-  const wrapper = mount(BaseChipGroup, {
+  const wrapper = mount(UiChipGroup, {
     props: {
       label: 'Pick',
       options,
@@ -20,7 +20,7 @@ function mountGroup(modelValue: string | string[], multiple = false) {
   return wrapper
 }
 
-describe('BaseChipGroup', () => {
+describe('UiChipGroup', () => {
   it('selects a single value and marks it as pressed', async () => {
     const wrapper = mountGroup('a')
     const [a, b] = wrapper.findAll('button')

@@ -4,9 +4,9 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { format } from 'date-fns'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseModal from '@/components/BaseModal.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiInput from '@/ui/UiInput.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import { deleteMyAccount, exportMyData, isSoleAdminError } from '../api'
 
 const { t } = useI18n()
@@ -56,14 +56,14 @@ function openDelete() {
 <template>
   <div class="account">
     <p class="account__text">{{ t('account.exportText') }}</p>
-    <BaseButton variant="secondary" block :loading="exporting" @click="download">
+    <UiButton variant="secondary" block :loading="exporting" @click="download">
       {{ t('account.export') }}
-    </BaseButton>
+    </UiButton>
     <p v-if="exportFailed" class="account__error" role="alert">{{ t('account.exportFailed') }}</p>
 
-    <BaseButton variant="ghost" block @click="openDelete">{{ t('account.delete') }}</BaseButton>
+    <UiButton variant="ghost" block @click="openDelete">{{ t('account.delete') }}</UiButton>
 
-    <BaseModal v-model:open="deleteOpen" :title="t('account.deleteTitle')">
+    <BottomSheet v-model:open="deleteOpen" :title="t('account.deleteTitle')">
       <div class="account__dialog">
         <p>{{ t('account.deleteText') }}</p>
         <ul class="account__list">
@@ -71,7 +71,7 @@ function openDelete() {
           <li>{{ t('account.deleteItems.answers') }}</li>
           <li>{{ t('account.deleteItems.clubs') }}</li>
         </ul>
-        <BaseInput
+        <UiInput
           v-model="confirmation"
           :label="t('account.confirmLabel', { word: confirmWord })"
           autocomplete="off"
@@ -85,19 +85,19 @@ function openDelete() {
         </p>
       </div>
       <template #footer>
-        <BaseButton variant="secondary" @click="deleteOpen = false">{{
+        <UiButton variant="secondary" @click="deleteOpen = false">{{
           t('common.cancel')
-        }}</BaseButton>
-        <BaseButton
+        }}</UiButton>
+        <UiButton
           variant="danger"
           :disabled="confirmation.trim().toUpperCase() !== confirmWord.toUpperCase()"
           :loading="remove.isPending.value"
           @click="remove.mutate()"
         >
           {{ t('account.deleteFinal') }}
-        </BaseButton>
+        </UiButton>
       </template>
-    </BaseModal>
+    </BottomSheet>
   </div>
 </template>
 

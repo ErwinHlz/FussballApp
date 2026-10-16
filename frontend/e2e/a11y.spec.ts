@@ -242,3 +242,12 @@ async function expectVisibleFocus(page: Page) {
   })
   expect(indicator, 'focused element has no visible focus indicator').toBe(true)
 }
+
+test('reduced motion stops endless animations instead of speeding them up', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/dev/ui')
+  await ready(page)
+  const shine = page.locator('.ui-skeleton__line').first()
+  await expect(shine).toHaveCSS('animation-iteration-count', '1')
+  await expect(shine).toHaveCSS('animation-duration', /^0\.00001s|1e-05s$/)
+})

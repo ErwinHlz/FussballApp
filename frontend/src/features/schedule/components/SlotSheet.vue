@@ -2,9 +2,9 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { parseISO } from 'date-fns'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
-import BaseModal from '@/components/BaseModal.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiChipGroup from '@/ui/UiChipGroup.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import { formatDate } from '@/lib/date'
 import { scheduleErrorHint, type BookResult } from '../api'
 import { useBookSlot, useEndSlotBooking, useReleaseSlotDate } from '../composables/useSchedule'
@@ -127,7 +127,7 @@ async function endBooking() {
 </script>
 
 <template>
-  <BaseModal
+  <BottomSheet
     v-model:open="open"
     :title="
       booking
@@ -140,14 +140,14 @@ async function endBooking() {
 
       <!-- Free: book -->
       <template v-if="!booking">
-        <BaseChipGroup v-model="part" :label="t('schedule.part')" :options="partOptions" />
-        <BaseChipGroup
+        <UiChipGroup v-model="part" :label="t('schedule.part')" :options="partOptions" />
+        <UiChipGroup
           v-if="teams.length > 1"
           v-model="teamId"
           :label="t('schedule.team')"
           :options="teamOptions"
         />
-        <BaseChipGroup v-model="repeat" :label="t('schedule.repeat')" :options="repeatOptions" />
+        <UiChipGroup v-model="repeat" :label="t('schedule.repeat')" :options="repeatOptions" />
         <p class="slot-sheet__hint">{{ t('schedule.bookHint') }}</p>
         <p v-if="bookError" class="slot-sheet__error" role="alert">{{ bookError }}</p>
       </template>
@@ -164,16 +164,16 @@ async function endBooking() {
 
     <template #footer>
       <template v-if="!booking">
-        <BaseButton variant="secondary" @click="open = false">{{ t('common.cancel') }}</BaseButton>
-        <BaseButton :disabled="!teamId" :loading="book.isPending.value" @click="submitBooking">
+        <UiButton variant="secondary" @click="open = false">{{ t('common.cancel') }}</UiButton>
+        <UiButton :disabled="!teamId" :loading="book.isPending.value" @click="submitBooking">
           {{ t('schedule.book') }}
-        </BaseButton>
+        </UiButton>
       </template>
       <div v-else-if="canManage" class="slot-sheet__actions">
-        <BaseButton variant="danger" block :loading="release.isPending.value" @click="releaseDate">
+        <UiButton variant="danger" block :loading="release.isPending.value" @click="releaseDate">
           {{ t('schedule.releaseDate', { date: dayLabel(date) }) }}
-        </BaseButton>
-        <BaseButton
+        </UiButton>
+        <UiButton
           v-if="isRecurring"
           variant="secondary"
           block
@@ -181,13 +181,13 @@ async function endBooking() {
           @click="endBooking"
         >
           {{ t('schedule.releaseFrom', { date: dayLabel(date) }) }}
-        </BaseButton>
+        </UiButton>
       </div>
-      <BaseButton v-else variant="secondary" @click="open = false">
+      <UiButton v-else variant="secondary" @click="open = false">
         {{ t('common.close') }}
-      </BaseButton>
+      </UiButton>
     </template>
-  </BaseModal>
+  </BottomSheet>
 </template>
 
 <style scoped lang="scss">

@@ -3,11 +3,11 @@ import { computed, ref } from 'vue'
 import TrainingNav from '@/features/training-plan/components/TrainingNav.vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseBadge from '@/components/BaseBadge.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiBadge from '@/ui/UiBadge.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiCard from '@/ui/UiCard.vue'
+import UiInput from '@/ui/UiInput.vue'
 import UiEmptyState from '@/ui/UiEmptyState.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useCreateTemplate, useTemplates } from '../composables/useTemplates'
@@ -74,16 +74,14 @@ async function onCreate() {
               <span class="templates__main">
                 <span class="templates__name">
                   {{ template.title }}
-                  <BaseBadge v-if="template.shared" tone="info">{{
-                    t('templates.shared')
-                  }}</BaseBadge>
+                  <UiBadge v-if="template.shared" tone="match">{{ t('templates.shared') }}</UiBadge>
                 </span>
                 <span class="templates__muted">
                   {{ t('plan.drillCount', template.drill_count) }} ·
                   {{ t('plan.minutesShort', { n: template.total_minutes }) }}
                 </span>
               </span>
-              <AppIcon name="chevronRight" :size="20" />
+              <UiIcon name="chevronRight" :size="20" />
             </RouterLink>
           </li>
         </ul>
@@ -100,23 +98,23 @@ async function onCreate() {
               <span class="templates__main">
                 <span class="templates__name">
                   {{ template.title }}
-                  <BaseBadge tone="match">{{ template.team_name }}</BaseBadge>
+                  <UiBadge tone="match">{{ template.team_name }}</UiBadge>
                 </span>
                 <span class="templates__muted">
                   {{ t('plan.drillCount', template.drill_count) }} ·
                   {{ t('plan.minutesShort', { n: template.total_minutes }) }}
                 </span>
               </span>
-              <AppIcon name="chevronRight" :size="20" />
+              <UiIcon name="chevronRight" :size="20" />
             </RouterLink>
           </li>
         </ul>
       </section>
 
-      <BaseCard>
+      <UiCard>
         <form class="templates__form" novalidate @submit.prevent="onCreate">
           <h2 class="templates__subtitle">{{ t('templates.new') }}</h2>
-          <BaseInput
+          <UiInput
             v-model="title"
             :label="t('templates.name')"
             :placeholder="t('templates.namePlaceholder')"
@@ -126,13 +124,13 @@ async function onCreate() {
           <p v-if="create.isError.value" class="templates__error" role="alert">
             {{ t('templates.saveFailed') }}
           </p>
-          <BaseButton type="submit" block :loading="create.isPending.value">
-            <template #icon><AppIcon name="plus" :size="18" /></template>
+          <UiButton type="submit" block :loading="create.isPending.value">
+            <template #icon><UiIcon name="plus" :size="18" /></template>
             {{ t('templates.create') }}
-          </BaseButton>
+          </UiButton>
           <p class="templates__muted">{{ t('templates.fromPlanHint') }}</p>
         </form>
-      </BaseCard>
+      </UiCard>
     </template>
   </section>
 </template>

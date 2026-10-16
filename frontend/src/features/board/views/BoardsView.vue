@@ -3,10 +3,10 @@ import { computed, ref } from 'vue'
 import TrainingNav from '@/features/training-plan/components/TrainingNav.vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiCard from '@/ui/UiCard.vue'
+import UiInput from '@/ui/UiInput.vue'
 import UiEmptyState from '@/ui/UiEmptyState.vue'
 import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
@@ -62,9 +62,9 @@ async function onCreate() {
     <p v-if="!isCoach" role="alert">{{ t('plan.coachOnly') }}</p>
 
     <template v-else>
-      <BaseCard>
+      <UiCard>
         <form class="boards__form" novalidate @submit.prevent="onCreate">
-          <BaseInput
+          <UiInput
             v-model="title"
             :label="t('boards.name')"
             :placeholder="t('boards.namePlaceholder')"
@@ -74,12 +74,12 @@ async function onCreate() {
           <p v-if="create.isError.value" class="boards__error" role="alert">
             {{ t('boards.saveFailed') }}
           </p>
-          <BaseButton type="submit" block :loading="create.isPending.value">
-            <template #icon><AppIcon name="plus" :size="18" /></template>
+          <UiButton type="submit" block :loading="create.isPending.value">
+            <template #icon><UiIcon name="plus" :size="18" /></template>
             {{ t('boards.create') }}
-          </BaseButton>
+          </UiButton>
         </form>
-      </BaseCard>
+      </UiCard>
 
       <p v-if="boards.isPending.value" class="boards__muted">{{ t('common.loading') }}</p>
       <p v-else-if="boards.isError.value" class="boards__error" role="alert">

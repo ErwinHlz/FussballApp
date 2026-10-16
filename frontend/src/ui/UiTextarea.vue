@@ -24,25 +24,25 @@ const describedBy = computed(() => {
 </script>
 
 <template>
-  <div class="base-textarea" :class="{ 'base-textarea--error': !!error }">
-    <label :for="id" class="base-textarea__label">{{ label }}</label>
+  <div class="ui-textarea" :class="{ 'ui-textarea--error': !!error }">
+    <label :for="id" class="ui-textarea__label">{{ label }}</label>
     <textarea
       :id="id"
       v-model="model"
-      class="base-textarea__field"
+      class="ui-textarea__field"
       :rows="rows"
       :placeholder="placeholder"
       :maxlength="maxlength"
       :aria-invalid="!!error || undefined"
       :aria-describedby="describedBy"
     />
-    <p v-if="error" :id="`${id}-error`" class="base-textarea__error" role="alert">{{ error }}</p>
-    <p v-else-if="hint" :id="`${id}-hint`" class="base-textarea__hint">{{ hint }}</p>
+    <p v-if="error" :id="`${id}-error`" class="ui-textarea__error" role="alert">{{ error }}</p>
+    <p v-else-if="hint" :id="`${id}-hint`" class="ui-textarea__hint">{{ hint }}</p>
   </div>
 </template>
 
 <style scoped lang="scss">
-.base-textarea {
+.ui-textarea {
   display: flex;
   flex-direction: column;
   gap: $space-1;
@@ -55,8 +55,9 @@ const describedBy = computed(() => {
   &__field {
     padding: $space-2 $space-3;
     border: 2px solid var(--color-border);
-    border-radius: $radius-md;
+    border-radius: $radius-lg;
     background: var(--color-surface);
+    color: var(--color-text);
     font-size: $font-md;
     line-height: 1.5;
     resize: vertical;

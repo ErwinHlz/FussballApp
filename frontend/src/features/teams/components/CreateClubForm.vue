@@ -2,8 +2,8 @@
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiInput from '@/ui/UiInput.vue'
 import type { Club } from '../api'
 import { clubSchema } from '../schemas'
 import { useCreateClub } from '../composables/useTeams'
@@ -26,7 +26,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 <template>
   <form class="create-club" novalidate @submit="onSubmit">
-    <BaseInput
+    <UiInput
       v-model="name"
       :label="t('clubs.name')"
       :placeholder="t('clubs.namePlaceholder')"
@@ -36,9 +36,9 @@ const onSubmit = handleSubmit(async (values) => {
     <p v-if="createClub.isError.value" class="create-club__error" role="alert">
       {{ t('clubs.createFailed') }}
     </p>
-    <BaseButton type="submit" block :loading="createClub.isPending.value">
+    <UiButton type="submit" block :loading="createClub.isPending.value">
       {{ t('clubs.create') }}
-    </BaseButton>
+    </UiButton>
   </form>
 </template>
 

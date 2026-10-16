@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseBadge from '@/components/BaseBadge.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiBadge from '@/ui/UiBadge.vue'
 import { formatDate } from '@/lib/date'
 import { useAuthStore } from '@/stores/auth'
 import type { Absence } from '../api'
@@ -42,7 +42,7 @@ function canDelete(a: Absence) {
           {{ t(`events.reasons.${a.reason}`) }}<template v-if="a.note"> · {{ a.note }}</template>
         </span>
       </span>
-      <BaseBadge v-if="isCurrent(a)" tone="warning">{{ t('absences.now') }}</BaseBadge>
+      <UiBadge v-if="isCurrent(a)" tone="maybe">{{ t('absences.now') }}</UiBadge>
       <button
         v-if="canDelete(a)"
         type="button"
@@ -51,7 +51,7 @@ function canDelete(a: Absence) {
         :disabled="remove.isPending.value"
         @click="remove.mutate(a.id)"
       >
-        <AppIcon name="x" :size="18" />
+        <UiIcon name="x" :size="18" />
       </button>
     </li>
   </ul>

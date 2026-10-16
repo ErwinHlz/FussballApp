@@ -3,11 +3,11 @@ import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { VueDraggable } from 'vue-draggable-plus'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseTextarea from '@/components/BaseTextarea.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiCard from '@/ui/UiCard.vue'
+import UiInput from '@/ui/UiInput.vue'
+import UiTextarea from '@/ui/UiTextarea.vue'
 import type { Drill } from '@/features/drills/logic'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import DrillPickerModal from '@/features/training-plan/components/DrillPickerModal.vue'
@@ -191,16 +191,16 @@ async function onApplied(eventId: string) {
       </header>
 
       <!-- Name, description, sharing -->
-      <BaseCard v-if="canEdit">
+      <UiCard v-if="canEdit">
         <form class="template__form" novalidate @submit.prevent="saveMeta">
-          <BaseInput
+          <UiInput
             v-model="title"
             :label="t('templates.name')"
             required
             :error="titleError"
             @update:model-value="metaSaved = false"
           />
-          <BaseTextarea
+          <UiTextarea
             v-model="description"
             :label="t('templates.description')"
             :placeholder="t('templates.descriptionPlaceholder')"
@@ -216,7 +216,7 @@ async function onApplied(eventId: string) {
             </span>
           </label>
           <p v-if="metaSaved" class="template__saved" role="status">✓ {{ t('profile.saved') }}</p>
-          <BaseButton
+          <UiButton
             type="submit"
             variant="secondary"
             block
@@ -224,9 +224,9 @@ async function onApplied(eventId: string) {
             :loading="updateTemplate.isPending.value"
           >
             {{ t('common.save') }}
-          </BaseButton>
+          </UiButton>
         </form>
-      </BaseCard>
+      </UiCard>
 
       <div class="template__total">
         <strong>{{ t('plan.total', { n: total }) }}</strong>
@@ -323,7 +323,7 @@ async function onApplied(eventId: string) {
               :disabled="anyPending"
               @click="removeItem.mutate(item.id)"
             >
-              <AppIcon name="x" :size="18" />
+              <UiIcon name="x" :size="18" />
             </button>
           </div>
 
@@ -347,26 +347,26 @@ async function onApplied(eventId: string) {
       <p v-if="foreignDrills && !canEdit" class="template__muted">{{ t('templates.copyHint') }}</p>
 
       <div class="template__actions">
-        <BaseButton
+        <UiButton
           v-if="canEdit"
           variant="secondary"
           block
           :loading="addDrill.isPending.value"
           @click="pickerOpen = true"
         >
-          <template #icon><AppIcon name="plus" :size="18" /></template>
+          <template #icon><UiIcon name="plus" :size="18" /></template>
           {{ t('plan.addDrill') }}
-        </BaseButton>
-        <BaseButton
+        </UiButton>
+        <UiButton
           v-if="isCoach && activeTeam"
           block
           :disabled="!items.length"
           @click="applyOpen = true"
         >
-          <template #icon><AppIcon name="calendar" :size="18" /></template>
+          <template #icon><UiIcon name="calendar" :size="18" /></template>
           {{ t('templates.apply') }}
-        </BaseButton>
-        <BaseButton
+        </UiButton>
+        <UiButton
           v-if="canEdit"
           :variant="confirmDelete ? 'danger' : 'ghost'"
           block
@@ -374,7 +374,7 @@ async function onApplied(eventId: string) {
           @click="onDelete"
         >
           {{ confirmDelete ? t('schedule.confirmDelete') : t('templates.delete') }}
-        </BaseButton>
+        </UiButton>
       </div>
 
       <DrillPickerModal

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseBadge from '@/components/BaseBadge.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseModal from '@/components/BaseModal.vue'
+import UiBadge from '@/ui/UiBadge.vue'
+import UiInput from '@/ui/UiInput.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import { filterDrills, type Drill } from '@/features/drills/logic'
 import { useDrills } from '@/features/drills/composables/useDrills'
 
@@ -28,9 +28,9 @@ function pick(drill: Drill) {
 </script>
 
 <template>
-  <BaseModal v-model:open="open" :title="t('plan.addDrill')">
+  <BottomSheet v-model:open="open" :title="t('plan.addDrill')">
     <div class="picker">
-      <BaseInput
+      <UiInput
         v-model="query"
         :label="t('drills.search')"
         type="search"
@@ -50,12 +50,12 @@ function pick(drill: Drill) {
                 </template>
               </span>
             </span>
-            <BaseBadge v-if="used.has(drill.id)" tone="neutral">{{
+            <UiBadge v-if="used.has(drill.id)" tone="neutral">{{
               t('plan.alreadyInPlan')
-            }}</BaseBadge>
-            <BaseBadge v-else-if="drill.team_id" tone="training">{{
+            }}</UiBadge>
+            <UiBadge v-else-if="drill.team_id" tone="training">{{
               t('drills.scope.teamShort')
-            }}</BaseBadge>
+            }}</UiBadge>
           </button>
         </li>
       </ul>
@@ -63,7 +63,7 @@ function pick(drill: Drill) {
         {{ t('drills.empty') }}
       </p>
     </div>
-  </BaseModal>
+  </BottomSheet>
 </template>
 
 <style scoped lang="scss">

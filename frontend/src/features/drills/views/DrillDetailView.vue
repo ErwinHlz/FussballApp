@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/BaseButton.vue'
+import UiButton from '@/ui/UiButton.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import YouTubeEmbed from '../components/YouTubeEmbed.vue'
 import DrillVideo from '../components/DrillVideo.vue'
@@ -130,14 +130,14 @@ async function remove() {
       <p v-if="d.description" class="drill__description">{{ d.description }}</p>
 
       <section v-if="canEdit || (isPublic && canCopy)" class="drill__actions">
-        <BaseButton
+        <UiButton
           v-if="isPublic && canCopy"
           block
           :loading="copyDrill.isPending.value"
           @click="copy"
         >
           {{ t('drills.copyToTeam', { team: activeTeam?.team_name }) }}
-        </BaseButton>
+        </UiButton>
         <template v-if="canEdit">
           <section class="drill__upload" :aria-label="t('drills.upload.title')">
             <h2 class="drill__subtitle">{{ t('drills.upload.title') }}</h2>
@@ -148,27 +148,25 @@ async function remove() {
             custom
             :to="{ name: 'drill-animation', params: { drillId: d.id } }"
           >
-            <BaseButton variant="secondary" block @click="navigate">
+            <UiButton variant="secondary" block @click="navigate">
               {{ animation ? t('board.editAnimation') : t('board.createAnimation') }}
-            </BaseButton>
+            </UiButton>
           </RouterLink>
           <RouterLink
             v-slot="{ navigate }"
             custom
             :to="{ name: 'drill-edit', params: { drillId: d.id } }"
           >
-            <BaseButton variant="secondary" block @click="navigate">{{
-              t('drills.edit')
-            }}</BaseButton>
+            <UiButton variant="secondary" block @click="navigate">{{ t('drills.edit') }}</UiButton>
           </RouterLink>
-          <BaseButton
+          <UiButton
             :variant="confirmDelete ? 'danger' : 'ghost'"
             block
             :loading="deleteDrill.isPending.value"
             @click="remove"
           >
             {{ confirmDelete ? t('drills.deleteConfirm') : t('drills.delete') }}
-          </BaseButton>
+          </UiButton>
         </template>
         <p
           v-if="copyDrill.isError.value || deleteDrill.isError.value"

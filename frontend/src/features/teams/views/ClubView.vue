@@ -3,11 +3,11 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseBadge from '@/components/BaseBadge.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiBadge from '@/ui/UiBadge.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiCard from '@/ui/UiCard.vue'
+import UiInput from '@/ui/UiInput.vue'
 import { useAuthStore } from '@/stores/auth'
 import ClubBrandingPanel from '../components/ClubBrandingPanel.vue'
 import InvitePanel from '../components/InvitePanel.vue'
@@ -79,9 +79,9 @@ function toggleAdmin(member: ClubMember) {
       <section class="club__section" aria-labelledby="club-branding">
         <h2 id="club-branding" class="club__subtitle">{{ t('branding.title') }}</h2>
         <p class="club__muted">{{ t('branding.intro') }}</p>
-        <BaseCard v-if="club.data.value">
+        <UiCard v-if="club.data.value">
           <ClubBrandingPanel :club="club.data.value" />
-        </BaseCard>
+        </UiCard>
       </section>
 
       <!-- Shared pitch schedule -->
@@ -94,20 +94,20 @@ function toggleAdmin(member: ClubMember) {
             custom
             :to="{ name: 'club-schedule', params: { clubId } }"
           >
-            <BaseButton variant="secondary" block @click="navigate">
-              <template #icon><AppIcon name="calendar" :size="18" /></template>
+            <UiButton variant="secondary" block @click="navigate">
+              <template #icon><UiIcon name="calendar" :size="18" /></template>
               {{ t('schedule.title') }}
-            </BaseButton>
+            </UiButton>
           </RouterLink>
           <RouterLink
             v-slot="{ navigate }"
             custom
             :to="{ name: 'club-schedule-setup', params: { clubId } }"
           >
-            <BaseButton variant="secondary" block @click="navigate">
-              <template #icon><AppIcon name="building" :size="18" /></template>
+            <UiButton variant="secondary" block @click="navigate">
+              <template #icon><UiIcon name="building" :size="18" /></template>
               {{ t('schedule.setup') }}
-            </BaseButton>
+            </UiButton>
           </RouterLink>
         </div>
       </section>
@@ -121,7 +121,7 @@ function toggleAdmin(member: ClubMember) {
           {{ t('clubs.noTeamsHint') }}
         </p>
 
-        <BaseCard v-for="team in teams.data.value" :key="team.id" class="club__team">
+        <UiCard v-for="team in teams.data.value" :key="team.id" class="club__team">
           <div class="club__team-head">
             <div>
               <h3>{{ team.name }}</h3>
@@ -137,33 +137,33 @@ function toggleAdmin(member: ClubMember) {
             <span v-else class="club__warning">{{ t('clubs.noCoachYet') }}</span>
           </p>
 
-          <BaseButton
+          <UiButton
             variant="secondary"
             block
             :aria-expanded="openInviteTeamId === team.id"
             @click="openInviteTeamId = openInviteTeamId === team.id ? null : team.id"
           >
             {{ openInviteTeamId === team.id ? t('common.close') : t('clubs.inviteCoach') }}
-          </BaseButton>
+          </UiButton>
           <InvitePanel
             v-if="openInviteTeamId === team.id"
             :team-id="team.id"
             :team-name="team.name"
             role="coach"
           />
-        </BaseCard>
+        </UiCard>
 
-        <BaseCard>
+        <UiCard>
           <form class="club__form" novalidate @submit="onCreateTeam">
             <h3>{{ t('clubs.addTeam') }}</h3>
-            <BaseInput
+            <UiInput
               v-model="teamName"
               :label="t('clubs.teamName')"
               :placeholder="t('clubs.teamNamePlaceholder')"
               required
               :error="errors.name ? t(errors.name) : undefined"
             />
-            <BaseInput
+            <UiInput
               v-model="season"
               :label="t('clubs.season')"
               :placeholder="t('clubs.seasonPlaceholder')"
@@ -172,12 +172,12 @@ function toggleAdmin(member: ClubMember) {
             <p v-if="createTeam.isError.value" class="club__error" role="alert">
               {{ t('clubs.addTeamFailed') }}
             </p>
-            <BaseButton type="submit" block :loading="createTeam.isPending.value">
-              <template #icon><AppIcon name="plus" :size="18" /></template>
+            <UiButton type="submit" block :loading="createTeam.isPending.value">
+              <template #icon><UiIcon name="plus" :size="18" /></template>
               {{ t('clubs.addTeam') }}
-            </BaseButton>
+            </UiButton>
           </form>
-        </BaseCard>
+        </UiCard>
       </section>
 
       <!-- Members & admins -->
@@ -193,11 +193,11 @@ function toggleAdmin(member: ClubMember) {
                 ({{ t('common.you') }})
               </span>
             </span>
-            <BaseBadge v-if="member.role === 'admin'" tone="training">
-              <template #icon><AppIcon name="shield" :size="14" /></template>
+            <UiBadge v-if="member.role === 'admin'" tone="training">
+              <UiIcon name="shield" :size="14" />
               {{ t('roles.admin') }}
-            </BaseBadge>
-            <BaseButton
+            </UiBadge>
+            <UiButton
               variant="ghost"
               :disabled="member.role === 'admin' && adminCount <= 1"
               :loading="
@@ -206,7 +206,7 @@ function toggleAdmin(member: ClubMember) {
               @click="toggleAdmin(member)"
             >
               {{ member.role === 'admin' ? t('clubs.removeAdmin') : t('clubs.makeAdmin') }}
-            </BaseButton>
+            </UiButton>
           </li>
         </ul>
         <p v-if="setRole.isError.value" class="club__error" role="alert">

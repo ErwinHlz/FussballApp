@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test --project=phone",
     "test:screens": "playwright test --project=screens",
-    "test:browsers": "playwright test --project=chromium --project=firefox --project=opera"
+    "test:browsers": "playwright test --project=chromium --project=firefox --project=opera",
+    "lighthouse": "node --experimental-strip-types scripts/lighthouse.mjs"
   },
   "engines": {
     "node": "^22.12.0 || >=24.0.0"
@@ -32,6 +33,7 @@
     "eslint-plugin-vue": "^9.33.0",
     "jiti": "^2.7.0",
     "jsdom": "^28.1.0",
+    "lighthouse": "^13.5.0",
     "prettier": "^3.9.9",
     "sass": "^1.105.1",
     "typescript": "^6.0.3",

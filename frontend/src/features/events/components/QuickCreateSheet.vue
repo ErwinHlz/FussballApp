@@ -65,6 +65,24 @@ watch(open, (isOpen) => {
   tried.value = false
 })
 
+// Suggested date and time; set again when the events arrive late, unless already edited.
+let suggested = { date: '', time: '' }
+function applySuggestion() {
+  if (!kind.value) return
+  const d = suggestDefaults(props.events, kind.value)
+  suggested = { date: suggestDate(d.weekday), time: d.time }
+  date.value = suggested.date
+  time.value = suggested.time
+}
+watch(
+  () => props.events,
+  () => {
+    if (kind.value && date.value === suggested.date && time.value === suggested.time) {
+      applySuggestion()
+    }
+  },
+)
+
 function choose(next: Kind) {
   if (next === 'series') {
     open.value = false
@@ -72,9 +90,7 @@ function choose(next: Kind) {
     return
   }
   kind.value = next
-  const d = suggestDefaults(props.events, next)
-  date.value = suggestDate(d.weekday)
-  time.value = d.time
+  applySuggestion()
   title.value = ''
   opponent.value = ''
   isHome.value = true

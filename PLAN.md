@@ -401,4 +401,4 @@ Gespeichert in `drills.animation` als JSON:
   - [x] Gefundene Barrierefreiheits-Fehler beheben (nicht per Ausnahme wegdefinieren; begründete Ausnahmen im Test kommentieren) – Kontraste der Bedeutungsfarben (neue `--color-*-text`-Tokens), Kader-Buttons, Push-Status in Firefox
   - [ ] Opera-Lauf auf einem Rechner mit installiertem Opera bestätigen
   - [x] README: wie man die Browser installiert (`npx playwright install chromium firefox`) und die Suite startet
-- [ ] **UI-Neuaufbau:** eigener Plan in [UI-PLAN.md](UI-PLAN.md) (Phasen U0–U7). Die Oberfläche wird weniger generisch und konsequent mobil und mit einer Hand bedienbar neu gebaut; Daten- und Logikschicht bleiben. Beginnt mit Phase U0 (Designrichtung wählen).
+- [ ] **UI-Neuaufbau:** eigener Plan in [UI-PLAN.md](UI-PLAN.md) (Phasen U0–U7). Die Oberfläche wird weniger generisch und konsequent mobil und mit einer Hand bedienbar neu gebaut; Daten- und Logikschicht bleiben. Stand: U0–U7 umgesetzt (Richtung „Taktiktafel“); offen ist nur der Usability-Test mit echten Nutzern.

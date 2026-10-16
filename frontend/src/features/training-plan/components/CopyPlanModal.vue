@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseModal from '@/components/BaseModal.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import { useEventFormat } from '@/features/events/format'
 import { useCopyPlan, usePlannedTrainings } from '../composables/usePlan'
 
@@ -26,7 +26,7 @@ async function copyFrom(sourceId: string) {
 </script>
 
 <template>
-  <BaseModal v-model:open="open" :title="t('plan.copyTitle')">
+  <BottomSheet v-model:open="open" :title="t('plan.copyTitle')">
     <p class="copy__muted">{{ t('plan.copyHint') }}</p>
     <p v-if="planned.isPending.value" class="copy__muted">{{ t('common.loading') }}</p>
     <p v-else-if="!sources.length" class="copy__muted">{{ t('plan.copyNone') }}</p>
@@ -46,7 +46,7 @@ async function copyFrom(sourceId: string) {
       </li>
     </ul>
     <p v-if="copyPlan.isError.value" class="copy__error" role="alert">{{ t('plan.copyFailed') }}</p>
-  </BaseModal>
+  </BottomSheet>
 </template>
 
 <style scoped lang="scss">

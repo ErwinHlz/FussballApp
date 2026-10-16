@@ -2,9 +2,9 @@
 import { computed, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseModal from '@/components/BaseModal.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiInput from '@/ui/UiInput.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import type { Json } from '@/types/database'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useDrills, useSaveDrillAnimation } from '@/features/drills/composables/useDrills'
@@ -115,7 +115,7 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
         <h1>{{ board.data.value.title }}</h1>
       </header>
 
-      <BaseInput v-model="title" :label="t('boards.name')" required />
+      <UiInput v-model="title" :label="t('boards.name')" required />
 
       <BoardEditor v-model="draft" :title="title" :squad-names="squadNames" />
 
@@ -126,7 +126,7 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
       </p>
 
       <div class="tactic__savebar">
-        <BaseButton
+        <UiButton
           size="lg"
           block
           :disabled="!dirty"
@@ -134,21 +134,21 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
           @click="onSave"
         >
           {{ dirty ? t('boards.save') : `✓ ${t('groups.savedState')}` }}
-        </BaseButton>
-        <BaseButton variant="secondary" block @click="attachOpen = true">
+        </UiButton>
+        <UiButton variant="secondary" block @click="attachOpen = true">
           {{ t('boards.attach') }}
-        </BaseButton>
-        <BaseButton
+        </UiButton>
+        <UiButton
           :variant="confirmDelete ? 'danger' : 'ghost'"
           block
           :loading="remove.isPending.value"
           @click="onDelete"
         >
           {{ confirmDelete ? t('schedule.confirmDelete') : t('boards.delete') }}
-        </BaseButton>
+        </UiButton>
       </div>
 
-      <BaseModal v-model:open="attachOpen" :title="t('boards.attachTitle')">
+      <BottomSheet v-model:open="attachOpen" :title="t('boards.attachTitle')">
         <p class="tactic__muted">{{ t('boards.attachHint') }}</p>
         <p v-if="drills.isPending.value" class="tactic__muted">{{ t('common.loading') }}</p>
         <p v-else-if="!ownDrills.length" class="tactic__muted">{{ t('boards.noDrills') }}</p>
@@ -167,7 +167,7 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
             </button>
           </li>
         </ul>
-      </BaseModal>
+      </BottomSheet>
     </template>
   </section>
 </template>

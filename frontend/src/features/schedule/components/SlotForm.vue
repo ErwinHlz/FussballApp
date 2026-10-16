@@ -4,9 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { addDays } from 'date-fns'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiChipGroup from '@/ui/UiChipGroup.vue'
+import UiInput from '@/ui/UiInput.vue'
 import { formatDate } from '@/lib/date'
 import { scheduleErrorHint } from '../api'
 import { useCreateSlots } from '../composables/useSchedule'
@@ -72,7 +72,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 <template>
   <form class="slot-form" novalidate @submit="onSubmit">
-    <BaseChipGroup
+    <UiChipGroup
       v-model="weekdays"
       :label="t('events.form.weekdays')"
       :options="weekdayOptions"
@@ -81,14 +81,14 @@ const onSubmit = handleSubmit(async (values) => {
     />
     <p v-if="err('weekdays')" class="slot-form__error" role="alert">{{ err('weekdays') }}</p>
     <div class="slot-form__row">
-      <BaseInput
+      <UiInput
         v-model="startTime"
         :label="t('schedule.from')"
         type="time"
         required
         :error="err('startTime')"
       />
-      <BaseInput
+      <UiInput
         v-model="endTime"
         :label="t('schedule.until')"
         type="time"
@@ -97,14 +97,14 @@ const onSubmit = handleSubmit(async (values) => {
       />
     </div>
     <div class="slot-form__row">
-      <BaseInput
+      <UiInput
         v-model="validFrom"
         :label="t('schedule.seasonFrom')"
         type="date"
         required
         :error="err('validFrom')"
       />
-      <BaseInput
+      <UiInput
         v-model="validUntil"
         :label="t('schedule.seasonUntil')"
         type="date"
@@ -113,9 +113,9 @@ const onSubmit = handleSubmit(async (values) => {
       />
     </div>
     <p v-if="saveError" class="slot-form__error" role="alert">{{ saveError }}</p>
-    <BaseButton type="submit" block :loading="createSlots.isPending.value">
+    <UiButton type="submit" block :loading="createSlots.isPending.value">
       {{ t('schedule.addSlot') }}
-    </BaseButton>
+    </UiButton>
   </form>
 </template>
 

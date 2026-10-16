@@ -222,11 +222,18 @@ Umsetzungsnotizen U6:
 **Abnahme:** Ein neuer Spieler kommt vom Einladungslink bis zur ersten Zusage, ohne nachzudenken.
 
 ### Phase U7 – Feinschliff und Abnahme
-- [ ] Übergänge und Mikroanimationen vereinheitlichen, `prefers-reduced-motion` prüfen
-- [ ] Alte Komponenten (`src/components/Base*`, alte Tokens) entfernen
-- [ ] Lighthouse Mobile: Performance ≥ 90, Barrierefreiheit 100 auf Start, Termine, Termin-Detail
-- [ ] Usability-Test mit 3–5 Personen (Spieler und Trainer) anhand der Aufgaben aus Abschnitt 7, Erkenntnisse umsetzen
-- [ ] Vorher/Nachher-Screenshots aller Hauptseiten in `docs/ui/`
+- [x] Übergänge und Mikroanimationen vereinheitlichen, `prefers-reduced-motion` prüfen
+- [x] Alte Komponenten (`src/components/Base*`, alte Tokens) entfernen
+- [x] Lighthouse Mobile: Performance ≥ 90, Barrierefreiheit 100 auf Start, Termine, Termin-Detail
+- [ ] Usability-Test mit 3–5 Personen (vorbereitet: `docs/ui/usability-test.md`; durchführen musst du mit echten Spielern und Trainern) (Spieler und Trainer) anhand der Aufgaben aus Abschnitt 7, Erkenntnisse umsetzen
+- [x] Vorher/Nachher-Screenshots aller Hauptseiten in `docs/ui/`
+
+Umsetzungsnotizen U7:
+- Alle `src/components/Base*` und `AppIcon` sind entfernt; die letzten Bausteine sind als `UiChipGroup`, `UiTextarea`, `UiCard` ins Design-System gewandert.
+- Lighthouse Mobile (`npm run lighthouse` gegen `vite preview`, angemeldet): Start 96/100/100, Termine 98/100/100, Termin-Detail 96/100/100 (Performance/Barrierefreiheit/Best Practices), LCP 2,2–2,5 s.
+- Bewegung: Übergänge über die Tokens `--duration-*`/`--ease-out`; bei „Bewegung reduzieren“ laufen endlose Animationen nur noch einmal (vorher flackerten sie in rasendem Tempo).
+- Mitgefundener Fehler, behoben: Das Anlegen-Sheet nahm bei schnellem Tippen die Ersatzwerte statt der Vorgaben vom letzten Termin, wenn die Terminliste noch lud.
+- Vorher/Nachher: `docs/ui/before/` und `docs/ui/after/`.
 
 **Abnahme:** Alle Ziele aus Abschnitt 7 erreicht, alle Test-Suiten grün in allen Browsern.
 

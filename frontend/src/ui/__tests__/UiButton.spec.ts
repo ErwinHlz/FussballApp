@@ -1,25 +1,25 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import BaseButton from '../BaseButton.vue'
+import UiButton from '../UiButton.vue'
 
-describe('BaseButton', () => {
+describe('UiButton', () => {
   it('renders the slot and defaults to type="button"', () => {
-    const wrapper = mount(BaseButton, { slots: { default: 'Save' } })
+    const wrapper = mount(UiButton, { slots: { default: 'Save' } })
 
     expect(wrapper.text()).toBe('Save')
     expect(wrapper.attributes('type')).toBe('button')
-    expect(wrapper.classes()).toContain('base-button--primary')
+    expect(wrapper.classes()).toContain('ui-button--primary')
   })
 
   it('is disabled and busy while loading', () => {
-    const wrapper = mount(BaseButton, { props: { loading: true }, slots: { default: 'Save' } })
+    const wrapper = mount(UiButton, { props: { loading: true }, slots: { default: 'Save' } })
 
     expect(wrapper.attributes('disabled')).toBeDefined()
     expect(wrapper.attributes('aria-busy')).toBe('true')
   })
 
   it('emits native click events', async () => {
-    const wrapper = mount(BaseButton, { slots: { default: 'Go' } })
+    const wrapper = mount(UiButton, { slots: { default: 'Go' } })
 
     await wrapper.trigger('click')
 

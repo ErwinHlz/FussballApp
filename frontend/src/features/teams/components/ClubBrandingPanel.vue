@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/BaseButton.vue'
+import UiButton from '@/ui/UiButton.vue'
 import { accentTheme, extractPalette } from '@/lib/color'
 import { clubLogoUrl } from '@/lib/clubTheme'
 import { downscale, loadImage, samplePixels } from '@/lib/image'
@@ -134,12 +134,12 @@ async function onSave() {
         <span v-else class="branding__placeholder" aria-hidden="true">⚽</span>
       </div>
       <div class="branding__logo-actions">
-        <BaseButton variant="secondary" block @click="fileInput?.click()">
+        <UiButton variant="secondary" block @click="fileInput?.click()">
           {{ previewUrl ? t('branding.replace') : t('branding.upload') }}
-        </BaseButton>
-        <BaseButton v-if="previewUrl" variant="ghost" block @click="onRemove">
+        </UiButton>
+        <UiButton v-if="previewUrl" variant="ghost" block @click="onRemove">
           {{ t('branding.remove') }}
-        </BaseButton>
+        </UiButton>
       </div>
       <input
         ref="fileInput"
@@ -203,9 +203,9 @@ async function onSave() {
       {{ t('branding.errors.save') }}
     </p>
     <p v-if="saved" class="branding__saved" role="status">✓ {{ t('branding.saved') }}</p>
-    <BaseButton block :disabled="!dirty" :loading="save.isPending.value" @click="onSave">
+    <UiButton block :disabled="!dirty" :loading="save.isPending.value" @click="onSave">
       {{ t('common.save') }}
-    </BaseButton>
+    </UiButton>
   </div>
 </template>
 

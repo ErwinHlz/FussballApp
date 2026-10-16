@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/BaseButton.vue'
+import UiButton from '@/ui/UiButton.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useDrill, useSaveDrillAnimation } from '@/features/drills/composables/useDrills'
 import type { Json } from '@/types/database'
@@ -89,7 +89,7 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
       </p>
 
       <div class="editor__savebar">
-        <BaseButton
+        <UiButton
           size="lg"
           block
           :disabled="!dirty"
@@ -97,8 +97,8 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
           @click="saveDraft"
         >
           {{ dirty ? t('board.save') : `✓ ${t('groups.savedState')}` }}
-        </BaseButton>
-        <BaseButton
+        </UiButton>
+        <UiButton
           v-if="drill.data.value.animation"
           variant="ghost"
           block
@@ -106,7 +106,7 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
           @click="removeAnimation"
         >
           {{ t('board.removeAnimation') }}
-        </BaseButton>
+        </UiButton>
       </div>
     </template>
   </section>

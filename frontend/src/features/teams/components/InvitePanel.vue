@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useClipboard } from '@vueuse/core'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseButton from '@/components/BaseButton.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiButton from '@/ui/UiButton.vue'
 import { formatDate } from '@/lib/date'
 import { inviteUrl, type TeamInvite, type TeamRole } from '../api'
 import { useCreateInvite, useRevokeInvite, useTeamInvites } from '../composables/useTeams'
@@ -62,47 +62,47 @@ async function copyLink(invite: TeamInvite) {
       <ul v-if="activeInvites.length" class="invite-panel__list" role="list">
         <li v-for="invite in activeInvites" :key="invite.id" class="invite-panel__item">
           <div class="invite-panel__link">
-            <AppIcon name="link" :size="18" />
+            <UiIcon name="link" :size="18" />
             <code class="invite-panel__url">{{ inviteUrl(invite.token) }}</code>
           </div>
           <p class="invite-panel__muted">
             {{ t('invites.validUntil', { date: formatDate(invite.expires_at, locale) }) }}
           </p>
           <div class="invite-panel__actions">
-            <BaseButton v-if="canShare" size="md" @click="share(invite)">
-              <template #icon><AppIcon name="share" :size="18" /></template>
+            <UiButton v-if="canShare" size="md" @click="share(invite)">
+              <template #icon><UiIcon name="share" :size="18" /></template>
               {{ t('invites.share') }}
-            </BaseButton>
-            <BaseButton
+            </UiButton>
+            <UiButton
               v-if="canCopy"
               :variant="canShare ? 'secondary' : 'primary'"
               @click="copyLink(invite)"
             >
               <template #icon>
-                <AppIcon :name="copiedId === invite.id ? 'check' : 'copy'" :size="18" />
+                <UiIcon :name="copiedId === invite.id ? 'check' : 'copy'" :size="18" />
               </template>
               {{ copiedId === invite.id ? t('invites.copied') : t('invites.copy') }}
-            </BaseButton>
-            <BaseButton
+            </UiButton>
+            <UiButton
               variant="ghost"
               :loading="revokeInvite.isPending.value && revokeInvite.variables.value === invite.id"
               @click="revokeInvite.mutate(invite.id)"
             >
               {{ t('invites.revoke') }}
-            </BaseButton>
+            </UiButton>
           </div>
         </li>
       </ul>
 
-      <BaseButton
+      <UiButton
         v-else
         block
         :loading="createInvite.isPending.value"
         @click="createInvite.mutate({ teamId, role })"
       >
-        <template #icon><AppIcon name="plus" :size="18" /></template>
+        <template #icon><UiIcon name="plus" :size="18" /></template>
         {{ role === 'coach' ? t('invites.createCoachLink') : t('invites.createPlayerLink') }}
-      </BaseButton>
+      </UiButton>
 
       <p v-if="createInvite.isError.value" class="invite-panel__error" role="alert">
         {{ t('invites.createFailed') }}
