@@ -51,7 +51,10 @@ onUnmounted(() => document.documentElement.style.removeProperty('--snackbar-offs
 .snackbar-host {
   position: fixed;
   inset-inline: $space-4;
-  bottom: calc(var(--nav-offset, 0px) + #{$space-3} + env(safe-area-inset-bottom, 0px));
+  bottom: calc(
+    var(--nav-offset, env(safe-area-inset-bottom, 0px)) + var(--action-bar-height, 0px) +
+      #{$space-3}
+  );
   z-index: 90;
   display: flex;
   justify-content: center;

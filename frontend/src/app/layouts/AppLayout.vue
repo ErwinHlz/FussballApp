@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useWindowScroll } from '@vueuse/core'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useProfile } from '@/features/auth/composables/useProfile'
+import { useMyClubs } from '@/features/teams/composables/useTeams'
 import { applyClubTheme, clubLogoUrl } from '@/lib/clubTheme'
 import SnackbarHost from '@/ui/SnackbarHost.vue'
 import TabBar, { type Tab } from '@/ui/TabBar.vue'
@@ -31,20 +32,42 @@ const logoUrl = computed(() =>
   activeTeam.value?.club_logo_path ? clubLogoUrl(activeTeam.value.club_logo_path) : null,
 )
 
-// Tabs (UI-PLAN.md, section 4). Profile and club administration live behind the header.
+// Club admins get their club as a tab: the active team's club, otherwise the club they manage.
+const myClubs = useMyClubs()
+const adminClubId = computed(() => {
+  const admin = (myClubs.data.value ?? []).filter((c) => c.role === 'admin')
+  return (
+    admin.find((c) => c.club_id === activeTeam.value?.club_id)?.club_id ?? admin[0]?.club_id ?? null
+  )
+})
+
+// Tabs (UI-PLAN.md, section 4). The profile lives behind the avatar in the header.
 const tabs = computed<Tab[]>(() => [
   { key: 'home', to: { name: 'home' }, icon: 'home', label: t('nav.start') },
   { key: 'events', to: { name: 'events' }, icon: 'calendar', label: t('nav.events') },
   { key: 'training', to: { name: 'training' }, icon: 'cone', label: t('nav.training') },
   { key: 'team', to: { name: 'squad' }, icon: 'users', label: t('nav.team') },
+  ...(adminClubId.value
+    ? [
+        {
+          key: 'club',
+          to: { name: 'club', params: { clubId: adminClubId.value } },
+          icon: 'building' as const,
+          label: t('nav.club'),
+        },
+      ]
+    : []),
 ])
 const tabPrefixes: [string, string[]][] = [
   ['events', ['/events']],
   ['training', ['/training', '/drills', '/boards', '/templates']],
-  ['team', ['/squad', '/stats', '/teams', '/clubs']],
+  ['team', ['/squad', '/stats', '/teams']],
+  ['club', ['/clubs']],
 ]
 const activeTab = computed(() => {
   if (route.name === 'home') return 'home'
+  // The club's pitch schedule belongs to the trainings; its setup to the club administration.
+  if (route.name === 'club-schedule') return 'training'
   return (
     tabPrefixes.find(([, prefixes]) => prefixes.some((p) => route.path.startsWith(p)))?.[0] ?? null
   )
@@ -52,7 +75,7 @@ const activeTab = computed(() => {
 
 // Without any team (first start) every tab would lead back to the team setup: no tab bar.
 const hasNoTeam = computed(() => myTeams.isSuccess.value && myTeams.data.value?.length === 0)
-const showNav = computed(() => !route.meta.hideNav && !hasNoTeam.value)
+const showNav = computed(() => !hasNoTeam.value)
 // Fixed elements (snackbar, action bars, floating buttons) keep clear of the tab bar.
 watchEffect(() => {
   const root = document.documentElement.style

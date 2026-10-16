@@ -148,7 +148,7 @@ const scopes: DrillScope[] = ['all', 'team', 'library']
   // Search and chips stay in reach while browsing the tiles.
   &__filters {
     position: sticky;
-    top: var(--top-bar-height, 64px);
+    top: calc(var(--top-bar-height, 64px) + var(--area-nav-height, 0px));
     z-index: 5;
     display: flex;
     flex-direction: column;

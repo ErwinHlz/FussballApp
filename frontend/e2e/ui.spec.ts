@@ -43,6 +43,8 @@ test('bottom navigation reaches every tab and marks the active one', async ({ pa
     ['Termine', /\/events$/, 'Termine'],
     ['Training', /\/training$/, 'Training'],
     ['Team', /\/squad$/, 'Kader'],
+    // Club admins get the club administration as a tab.
+    ['Verein', /\/clubs\/[^/]+$/, 'SV Demo 09'],
   ] as const
   for (const [label, url, heading] of tabs) {
     await test.step(label, async () => {
@@ -56,7 +58,7 @@ test('bottom navigation reaches every tab and marks the active one', async ({ pa
     })
   }
 
-  // Profile and club administration sit behind the header.
+  // The profile sits behind the header; the team switcher also leads to the club.
   await page.getByRole('link', { name: 'Profil' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Profil' })).toBeVisible()
   await page.getByRole('button', { name: /Mannschaft wechseln/ }).click()
@@ -68,7 +70,7 @@ test('bottom navigation reaches every tab and marks the active one', async ({ pa
   await switcher.getByRole('button', { name: 'Verein verwalten: SV Demo 09' }).click()
   await expect(page).toHaveURL(/\/clubs\//)
   await expect(page.getByRole('heading', { level: 1, name: 'SV Demo 09' })).toBeVisible()
-  await expect(nav.getByRole('link', { name: 'Team' })).toHaveAttribute('aria-current', 'page')
+  await expect(nav.getByRole('link', { name: 'Verein' })).toHaveAttribute('aria-current', 'page')
   expect(errors).toEqual([])
 })
 
@@ -124,7 +126,11 @@ test('answer buttons toggle and the decline dialog works', async ({ page }) => {
   const yes = answers.getByRole('button', { name: /dabei/ })
   const maybe = answers.getByRole('button', { name: 'Vielleicht' })
   const no = answers.getByRole('button', { name: 'Absage' })
-  await expect(page.getByRole('navigation', { name: 'Hauptnavigation' })).toHaveCount(0)
+  // The tab bar stays on every page; the answer bar sits above it.
+  const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
+  await expect(nav).toBeVisible()
+  const [barBox, navBox] = await Promise.all([answers.boundingBox(), nav.boundingBox()])
+  expect(barBox!.y + barBox!.height).toBeLessThanOrEqual(navBox!.y)
 
   await yes.click()
   await expect(yes).toHaveAttribute('aria-pressed', 'true')

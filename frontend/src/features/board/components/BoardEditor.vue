@@ -550,9 +550,13 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
           :aria-label="t('board.props.label', { name: objectName(selected) })"
         >
           <strong class="board-editor__context-name">{{ objectName(selected) }}</strong>
-          <UiButton variant="secondary" icon="settings" @click="propsOpen = true">
-            {{ t('board.props.open') }}
-          </UiButton>
+          <UiIconButton
+            icon="settings"
+            variant="surface"
+            :label="t('board.props.open')"
+            aria-haspopup="dialog"
+            @click="propsOpen = true"
+          />
           <div class="board-editor__actions board-editor__actions--inline">
             <template v-if="ROTATABLE.includes(selected.type)">
               <button
@@ -917,18 +921,26 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
     box-shadow: 0 -8px 24px rgb(0 0 0 / 12%);
   }
 
+  // One row, so the palette stays above the tab bar while something is selected.
   &__context {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     gap: $space-2;
-    padding-bottom: $space-2;
+    margin-inline: -$space-4;
+    padding: 0 $space-4 $space-2;
     border-bottom: 1px dashed var(--color-chalk);
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    > * {
+      flex-shrink: 0;
+    }
   }
 
   &__context-name {
-    flex: 1 1 auto;
-    max-width: 140px;
+    flex: 1 0 auto;
+    max-width: 110px;
     font-family: var(--font-display);
     font-size: $font-lg;
 
@@ -937,7 +949,7 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
 
   &__actions--inline {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: $space-1;
   }
 

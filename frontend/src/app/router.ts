@@ -13,8 +13,6 @@ declare module 'vue-router' {
     title?: string
     /** Sub-page: the header shows a back button; this route is the fallback target. */
     back?: string
-    /** Focused screens (editors, detail with a fixed action bar) hide the tab bar. */
-    hideNav?: boolean
   }
 }
 
@@ -95,24 +93,22 @@ export const routes: RouteRecordRaw[] = [
         path: 'events/:eventId',
         name: 'event',
         props: true,
-        // The answer sits in a fixed bar at the bottom, so the tab bar steps aside.
-        meta: { title: 'events.detailTitle', back: 'events', hideNav: true },
+        meta: { title: 'events.detailTitle', back: 'events' },
         component: () => import('@/features/events/views/EventDetailView.vue'),
       },
       {
-        // Plan and groups switch with the event overview via EventCoachNav; their main action
-        // sits in a fixed bar, so the tab bar steps aside.
+        // Plan and groups switch with the event overview via EventCoachNav.
         path: 'events/:eventId/plan',
         name: 'event-plan',
         props: true,
-        meta: { title: 'plan.title', back: 'event', hideNav: true },
+        meta: { title: 'plan.title', back: 'event' },
         component: () => import('@/features/training-plan/views/PlanEditorView.vue'),
       },
       {
         path: 'events/:eventId/groups',
         name: 'event-groups',
         props: true,
-        meta: { title: 'groups.title', back: 'event', hideNav: true },
+        meta: { title: 'groups.title', back: 'event' },
         component: () => import('@/features/groups/views/GroupsView.vue'),
       },
       {
@@ -131,7 +127,7 @@ export const routes: RouteRecordRaw[] = [
       {
         path: 'drills/new',
         name: 'drill-new',
-        meta: { requiresTeam: true, title: 'drills.form.newTitle', back: 'drills', hideNav: true },
+        meta: { requiresTeam: true, title: 'drills.form.newTitle', back: 'drills' },
         component: () => import('@/features/drills/views/DrillFormView.vue'),
       },
       {
@@ -145,14 +141,14 @@ export const routes: RouteRecordRaw[] = [
         path: 'drills/:drillId/animation',
         name: 'drill-animation',
         props: true,
-        meta: { title: 'board.title', hideNav: true },
+        meta: { title: 'board.title' },
         component: () => import('@/features/board/views/BoardEditorView.vue'),
       },
       {
         path: 'drills/:drillId/edit',
         name: 'drill-edit',
         props: true,
-        meta: { title: 'drills.form.editTitle', back: 'drills', hideNav: true },
+        meta: { title: 'drills.form.editTitle', back: 'drills' },
         component: () => import('@/features/drills/views/DrillFormView.vue'),
       },
       {
@@ -171,7 +167,7 @@ export const routes: RouteRecordRaw[] = [
         path: 'boards/:boardId',
         name: 'tactic-board',
         props: true,
-        meta: { requiresTeam: true, title: 'boards.eyebrow', back: 'tactic-boards', hideNav: true },
+        meta: { requiresTeam: true, title: 'boards.eyebrow', back: 'tactic-boards' },
         component: () => import('@/features/board/views/TacticBoardView.vue'),
       },
       {

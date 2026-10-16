@@ -402,3 +402,4 @@ Gespeichert in `drills.animation` als JSON:
   - [ ] Opera-Lauf auf einem Rechner mit installiertem Opera bestätigen
   - [x] README: wie man die Browser installiert (`npx playwright install chromium firefox`) und die Suite startet
 - [ ] **UI-Neuaufbau:** eigener Plan in [UI-PLAN.md](UI-PLAN.md) (Phasen U0–U7). Die Oberfläche wird weniger generisch und konsequent mobil und mit einer Hand bedienbar neu gebaut; Daten- und Logikschicht bleiben. Stand: U0–U7 umgesetzt (Richtung „Taktiktafel“); offen ist nur der Usability-Test mit echten Nutzern.
+- [ ] **Wunschliste Oktober 2026:** eigener Plan in [FEATURES-PLAN.md](FEATURES-PLAN.md) (Phasen F1–F6): Navigation, Testdaten und Debug-Kontowechsel, Termine anlegen (ganze Seite, Treffpunkt, Ort mit Karten), Belegungsplan als Wochenkalender, Übungsfilter, ein Verein pro Admin, Akzentfarbe pro Konto. Stand: F1 umgesetzt.

@@ -373,7 +373,7 @@ function scrollToFirstUnanswered() {
 
   &__week-title {
     position: sticky;
-    top: var(--top-bar-height, 64px);
+    top: calc(var(--top-bar-height, 64px) + var(--area-nav-height, 0px));
     z-index: 5;
     padding: $space-2 0;
     background: var(--color-bg);
