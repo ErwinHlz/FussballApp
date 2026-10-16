@@ -4,8 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiInput from '@/ui/UiInput.vue'
 import AuthShell from '../components/AuthShell.vue'
 import { loginSchema } from '../schemas'
 import { safeRedirect } from '../redirect'
@@ -42,7 +42,7 @@ const onSubmit = handleSubmit(async (values) => {
       <p class="deleted" role="status">{{ t('account.deleted') }}</p>
     </template>
     <form class="auth-form" novalidate @submit="onSubmit">
-      <BaseInput
+      <UiInput
         v-model="email"
         :label="t('auth.email')"
         type="email"
@@ -50,7 +50,7 @@ const onSubmit = handleSubmit(async (values) => {
         required
         :error="errors.email ? t(errors.email) : undefined"
       />
-      <BaseInput
+      <UiInput
         v-model="password"
         :label="t('auth.password')"
         type="password"
@@ -62,9 +62,9 @@ const onSubmit = handleSubmit(async (values) => {
         {{ t('auth.forgotPassword') }}
       </RouterLink>
       <p v-if="errorMessage" class="auth-form__error" role="alert">{{ errorMessage }}</p>
-      <BaseButton type="submit" size="lg" block :loading="signIn.isPending.value">
+      <UiButton type="submit" size="lg" block :loading="signIn.isPending.value">
         {{ t('auth.signIn') }}
-      </BaseButton>
+      </UiButton>
     </form>
 
     <template #footer>

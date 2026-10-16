@@ -22,12 +22,12 @@ test('login redirects back, rejects wrong passwords and signs out', async ({ pag
   await expect(page).toHaveURL(/\/login\?redirect=(%2F|\/)squad$/)
 
   await page.getByLabel('E-Mail').fill(demo.player.email)
-  await page.getByLabel('Passwort').fill('wrong-password')
+  await page.getByLabel('Passwort', { exact: true }).fill('wrong-password')
   await page.getByRole('button', { name: 'Anmelden' }).click()
   await expect(page.getByRole('alert')).toContainText('E-Mail oder Passwort ist falsch')
   expect(consoleErrors).toEqual([])
 
-  await page.getByLabel('Passwort').fill(PASSWORD)
+  await page.getByLabel('Passwort', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Anmelden' }).click()
   await expect(page).toHaveURL(/\/squad$/)
   await expect(page).toHaveTitle('Kader · Rondo')

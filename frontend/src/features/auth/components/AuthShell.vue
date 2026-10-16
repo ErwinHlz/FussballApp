@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import BaseCard from '@/components/BaseCard.vue'
 import RondoLogo from '@/ui/RondoLogo.vue'
 
 defineProps<{ title: string; intro?: string }>()
@@ -17,11 +16,11 @@ const { t } = useI18n()
 
     <slot name="before" />
 
-    <BaseCard class="auth-shell__card">
+    <div class="auth-shell__card">
       <h1 class="auth-shell__title">{{ title }}</h1>
       <p v-if="intro" class="auth-shell__intro">{{ intro }}</p>
       <slot />
-    </BaseCard>
+    </div>
 
     <div v-if="$slots.footer" class="auth-shell__footer">
       <slot name="footer" />
@@ -65,8 +64,15 @@ const { t } = useI18n()
     color: var(--color-text-muted);
   }
 
+  &__card {
+    padding: $space-5 $space-4;
+    border-radius: 24px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
   &__title {
-    font-size: $font-xl;
+    font-size: $font-2xl;
     margin-bottom: $space-2;
   }
 

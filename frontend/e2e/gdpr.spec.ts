@@ -43,7 +43,7 @@ test('a new user consents, downloads the data and deletes the account', async ({
 
   // The account is really gone.
   await page.getByLabel('E-Mail').fill(email)
-  await page.getByLabel('Passwort').fill(PASSWORD)
+  await page.getByLabel('Passwort', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Anmelden' }).click()
   await expect(page.getByRole('alert')).toContainText('E-Mail oder Passwort ist falsch')
 })

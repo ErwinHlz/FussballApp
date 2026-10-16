@@ -380,7 +380,13 @@
     "gotInviteTitle": "Got an invite?",
     "gotInviteText": "Just open the invite link from your coach or club. It takes you straight to your team.",
     "nav": "Teams",
-    "navLabel": "Team areas"
+    "navLabel": "Team areas",
+    "welcomeChoose": "How do you want to start?",
+    "inviteLink": "Invite link",
+    "inviteLinkPlaceholder": "https://…/join/…",
+    "inviteLinkInvalid": "That does not look like an invite link.",
+    "openInvite": "Open invite",
+    "foundTitle": "You are setting up a club"
   },
   "clubs": {
     "club": "Club",

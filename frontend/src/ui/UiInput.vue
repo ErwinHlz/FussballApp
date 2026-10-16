@@ -42,9 +42,11 @@ const describedBy = computed(() => {
 
 <template>
   <div class="ui-input" :class="{ 'ui-input--error': !!error }">
-    <label :for="id" class="ui-input__label">
-      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
-    </label>
+    <!-- The required mark sits next to the label, so the field's name stays exactly the label. -->
+    <span class="ui-input__label-row">
+      <label :for="id" class="ui-input__label">{{ label }}</label>
+      <span v-if="required" class="ui-input__required" aria-hidden="true">*</span>
+    </span>
     <div class="ui-input__box">
       <input
         :id="id"
@@ -84,7 +86,13 @@ const describedBy = computed(() => {
   flex-direction: column;
   gap: $space-1;
 
-  &__label {
+  &__label-row {
+    display: flex;
+    gap: 4px;
+  }
+
+  &__label,
+  &__required {
     font-size: $font-sm;
     font-weight: 700;
   }

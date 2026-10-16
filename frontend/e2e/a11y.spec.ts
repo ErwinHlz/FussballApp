@@ -131,7 +131,7 @@ test.describe('keyboard', () => {
 
     // Tab order follows the form: e-mail, password, submit.
     const email = page.getByLabel('E-Mail')
-    const password = page.getByLabel('Passwort')
+    const password = page.getByLabel('Passwort', { exact: true })
     const submit = page.getByRole('button', { name: 'Anmelden' })
     await email.focus()
     await expect(email).toBeFocused()

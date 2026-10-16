@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseBadge from '@/components/BaseBadge.vue'
+import UiBadge from '@/ui/UiBadge.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiSkeleton from '@/ui/UiSkeleton.vue'
+import { applyClubTheme, clubLogoUrl } from '@/lib/clubTheme'
 import AuthShell from '@/features/auth/components/AuthShell.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useActiveTeamStore } from '@/stores/activeTeam'
@@ -24,6 +27,17 @@ const accept = useAcceptInvite()
 const returnPath = computed(() => `/join/${props.token}?accept=1`)
 const invite = computed(() => info.data.value ?? null)
 const isValid = computed(() => invite.value?.status === 'valid')
+// The invite looks like the club: its logo and its color.
+const logoUrl = computed(() =>
+  invite.value?.club_logo_path ? clubLogoUrl(invite.value.club_logo_path) : null,
+)
+watch(
+  () => invite.value?.club_accent_color ?? null,
+  (accent) => applyClubTheme(accent),
+  { immediate: true },
+)
+onUnmounted(() => applyClubTheme(null))
+
 const roleLabel = computed(() =>
   invite.value?.role === 'coach' ? t('roles.coach') : t('roles.player'),
 )
@@ -47,7 +61,9 @@ watch(isValid, maybeAutoJoin)
 
 <template>
   <AuthShell :title="t('join.title')">
-    <p v-if="info.isPending.value">{{ t('common.loading') }}</p>
+    <div v-if="info.isPending.value" aria-busy="true">
+      <UiSkeleton shape="block" height="180px" />
+    </div>
 
     <p v-else-if="info.isError.value" class="join__error" role="alert">
       {{ t('join.loadFailed') }}
@@ -61,48 +77,43 @@ watch(isValid, maybeAutoJoin)
 
     <div v-else class="join">
       <div class="join__invite">
+        <img v-if="logoUrl" :src="logoUrl" alt="" class="join__logo" />
+        <span v-else class="join__crest" aria-hidden="true">
+          <UiIcon name="building" :size="32" />
+        </span>
         <p class="join__club">{{ invite.club_name }}</p>
-        <p class="join__team">
-          {{ invite.team_name }}
-          <span v-if="invite.team_season" class="join__muted">{{ invite.team_season }}</span>
-        </p>
-        <BaseBadge :tone="invite.role === 'coach' ? 'training' : 'info'">
+        <p class="join__team">{{ invite.team_name }}</p>
+        <p v-if="invite.team_season" class="join__muted">{{ invite.team_season }}</p>
+        <UiBadge :tone="invite.role === 'coach' ? 'accent' : 'training'">
           {{ t('join.asRole', { role: roleLabel }) }}
-        </BaseBadge>
-        <p class="join__muted">
-          {{ t('invites.validUntil', { date: formatDate(invite.expires_at, locale) }) }}
-        </p>
+        </UiBadge>
       </div>
 
       <template v-if="auth.isAuthenticated">
-        <p class="join__muted">{{ t('join.signedInAs', { email: auth.user?.email }) }}</p>
         <p v-if="accept.isError.value" class="join__error" role="alert">
           {{ t('join.acceptFailed') }}
         </p>
-        <BaseButton size="lg" block :loading="accept.isPending.value" @click="join">
+        <UiButton size="lg" block icon="check" :loading="accept.isPending.value" @click="join">
           {{ t('join.accept') }}
-        </BaseButton>
+        </UiButton>
+        <p class="join__muted join__center">
+          {{ t('join.signedInAs', { email: auth.user?.email }) }}
+        </p>
       </template>
 
       <template v-else>
-        <p>{{ t('join.needAccount') }}</p>
-        <RouterLink
-          v-slot="{ navigate }"
-          custom
-          :to="{ name: 'register', query: { redirect: returnPath } }"
-        >
-          <BaseButton size="lg" block @click="navigate">{{ t('join.register') }}</BaseButton>
-        </RouterLink>
-        <RouterLink
-          v-slot="{ navigate }"
-          custom
-          :to="{ name: 'login', query: { redirect: returnPath } }"
-        >
-          <BaseButton variant="secondary" block @click="navigate">
-            {{ t('join.haveAccount') }}
-          </BaseButton>
-        </RouterLink>
+        <UiButton size="lg" block :to="{ name: 'register', query: { redirect: returnPath } }">
+          {{ t('join.register') }}
+        </UiButton>
+        <p class="join__muted join__center">{{ t('join.needAccount') }}</p>
+        <UiButton variant="ghost" block :to="{ name: 'login', query: { redirect: returnPath } }">
+          {{ t('join.haveAccount') }}
+        </UiButton>
       </template>
+
+      <p class="join__muted join__center">
+        {{ t('invites.validUntil', { date: formatDate(invite.expires_at, locale) }) }}
+      </p>
     </div>
   </AuthShell>
 </template>
@@ -116,28 +127,49 @@ watch(isValid, maybeAutoJoin)
   &__invite {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: $space-2;
-    padding: $space-4;
-    border-radius: $radius-md;
-    background: var(--color-surface-muted);
+    padding: $space-5 $space-4;
+    border: 2px dashed var(--color-chalk);
+    border-radius: 24px;
+    text-align: center;
+  }
+
+  &__logo {
+    width: 88px;
+    height: 88px;
+    object-fit: contain;
+  }
+
+  &__crest {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
   }
 
   &__club {
-    font-size: $font-sm;
-    font-weight: 700;
     color: var(--color-text-muted);
+    font-weight: 700;
   }
 
   &__team {
-    font-size: $font-xl;
+    font-family: var(--font-display);
+    font-size: $font-display;
     font-weight: 800;
+    line-height: 1;
   }
 
   &__muted {
-    font-size: $font-sm;
-    font-weight: 400;
     color: var(--color-text-muted);
+    font-size: $font-sm;
+  }
+
+  &__center {
+    text-align: center;
   }
 
   &__error {

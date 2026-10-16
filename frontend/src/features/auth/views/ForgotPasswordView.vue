@@ -3,8 +3,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiInput from '@/ui/UiInput.vue'
 import AuthShell from '../components/AuthShell.vue'
 import { forgotPasswordSchema } from '../schemas'
 import { authErrorKind } from '../api'
@@ -44,7 +44,7 @@ const onSubmit = handleSubmit(async (values) => {
     </div>
 
     <form v-else class="auth-form" novalidate @submit="onSubmit">
-      <BaseInput
+      <UiInput
         v-model="email"
         :label="t('auth.email')"
         type="email"
@@ -53,9 +53,9 @@ const onSubmit = handleSubmit(async (values) => {
         :error="errors.email ? t(errors.email) : undefined"
       />
       <p v-if="errorMessage" class="auth-form__error" role="alert">{{ errorMessage }}</p>
-      <BaseButton type="submit" size="lg" block :loading="requestReset.isPending.value">
+      <UiButton type="submit" size="lg" block :loading="requestReset.isPending.value">
         {{ t('auth.sendResetLink') }}
-      </BaseButton>
+      </UiButton>
     </form>
 
     <template #footer>

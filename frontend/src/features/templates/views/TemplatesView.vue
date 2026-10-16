@@ -8,7 +8,7 @@ import BaseBadge from '@/components/BaseBadge.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseCard from '@/components/BaseCard.vue'
 import BaseInput from '@/components/BaseInput.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import UiEmptyState from '@/ui/UiEmptyState.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useCreateTemplate, useTemplates } from '../composables/useTemplates'
 
@@ -54,7 +54,7 @@ async function onCreate() {
         {{ t('templates.loadFailed') }}
       </p>
 
-      <EmptyState
+      <UiEmptyState
         v-else-if="!templates.data.value?.length"
         icon="copy"
         :title="t('templates.emptyTitle')"

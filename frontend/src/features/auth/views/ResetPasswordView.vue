@@ -4,8 +4,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiInput from '@/ui/UiInput.vue'
 import { useAuthStore } from '@/stores/auth'
 import AuthShell from '../components/AuthShell.vue'
 import { MIN_PASSWORD_LENGTH, resetPasswordSchema } from '../schemas'
@@ -40,7 +40,7 @@ const onSubmit = handleSubmit(async (values) => {
 <template>
   <AuthShell :title="t('auth.resetPasswordTitle')">
     <form v-if="auth.isAuthenticated" class="auth-form" novalidate @submit="onSubmit">
-      <BaseInput
+      <UiInput
         v-model="password"
         :label="t('auth.newPassword')"
         type="password"
@@ -49,7 +49,7 @@ const onSubmit = handleSubmit(async (values) => {
         required
         :error="errors.password ? t(errors.password, { min: MIN_PASSWORD_LENGTH }) : undefined"
       />
-      <BaseInput
+      <UiInput
         v-model="passwordConfirm"
         :label="t('auth.passwordConfirm')"
         type="password"
@@ -58,9 +58,9 @@ const onSubmit = handleSubmit(async (values) => {
         :error="errors.passwordConfirm ? t(errors.passwordConfirm) : undefined"
       />
       <p v-if="errorMessage" class="auth-form__error" role="alert">{{ errorMessage }}</p>
-      <BaseButton type="submit" size="lg" block :loading="updatePassword.isPending.value">
+      <UiButton type="submit" size="lg" block :loading="updatePassword.isPending.value">
         {{ t('auth.savePassword') }}
-      </BaseButton>
+      </UiButton>
     </form>
 
     <p v-else role="alert">{{ t('auth.resetLinkInvalid') }}</p>

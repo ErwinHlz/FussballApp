@@ -793,7 +793,7 @@ isOneToOne: false
                            },
 "get_team_invite":
 { Args: { "p_token": string }; Returns: {
-              "club_name": string,"expires_at": string,"role": Database["public"]['Enums']["team_role"],"status": string,"team_name": string,"team_season": string
+              "club_accent_color": string,"club_logo_path": string,"club_name": string,"expires_at": string,"role": Database["public"]['Enums']["team_role"],"status": string,"team_name": string,"team_season": string
             }[]
                            },
 "is_club_admin":

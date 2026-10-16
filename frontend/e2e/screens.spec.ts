@@ -4,7 +4,7 @@
  */
 import { test, type Page } from '@playwright/test'
 import { login } from './support/app'
-import { seedDemo, seedHistory } from './support/seed'
+import { register, seedDemo, seedHistory } from './support/seed'
 
 const shot = (page: Page, name: string) =>
   page.screenshot({ path: `e2e/__screens__/${name}.png`, fullPage: true })
@@ -173,4 +173,20 @@ test('screens: design system', async ({ page }) => {
   await page.getByRole('dialog', { name: 'Absagen' }).waitFor()
   await page.waitForTimeout(400)
   await page.screenshot({ path: 'e2e/__screens__/91-design-system-sheet.png' })
+})
+
+test('screens: onboarding', async ({ page }) => {
+  const demo = await seedDemo()
+  const { data: invite } = await demo.coach.sb
+    .from('team_invites')
+    .insert({ team_id: demo.team.id, role: 'player' })
+    .select()
+    .single()
+  const newbie = await register('Neu', `${Date.now()}s`)
+  await login(page, newbie.email, '/teams')
+  await page.getByText('Wie möchtest du starten?').waitFor()
+  await shot(page, '05-first-start')
+  await page.goto(`/join/${invite!.token}`)
+  await page.getByRole('button', { name: 'Beitreten' }).waitFor()
+  await shot(page, '06-join')
 })

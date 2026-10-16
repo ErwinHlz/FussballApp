@@ -207,10 +207,17 @@ Umsetzungsnotizen U5:
 **Abnahme:** Alle Team- und Profilseiten im neuen Design, keine alten Base-Komponenten mehr in diesen Bereichen.
 
 ### Phase U6 – Einstieg und Leerzustände
-- [ ] Login, Registrierung und Passwort-Reset neu: Wortmarke, kurze Formulare, Passwort anzeigen, Fehlermeldungen direkt am Feld
-- [ ] Einladung `/join/:token`: Vereinslogo, Mannschaft und Rolle groß, ein Knopf „Beitreten“
-- [ ] Erster Start ohne Mannschaft: zwei klare Wege („Verein gründen“ / „Ich habe einen Einladungslink“)
-- [ ] Alle Leerzustände mit kleiner Illustration (Linienstil passend zum Icon-Set) und genau einer Aktion
+- [x] Login, Registrierung und Passwort-Reset neu: Wortmarke, kurze Formulare, Passwort anzeigen, Fehlermeldungen direkt am Feld
+- [x] Einladung `/join/:token`: Vereinslogo, Mannschaft und Rolle groß, ein Knopf „Beitreten“
+- [x] Erster Start ohne Mannschaft: zwei klare Wege („Verein gründen“ / „Ich habe einen Einladungslink“)
+- [x] Alle Leerzustände mit kleiner Illustration (Linienstil passend zum Icon-Set) und genau einer Aktion
+
+Umsetzungsnotizen U6:
+- Anmelden, Registrieren, Passwort vergessen/zurücksetzen mit `UiInput` (Passwort anzeigen, Fehler am Feld); das Pflicht-Sternchen steht neben dem Label, damit der Feldname genau das Label bleibt.
+- Einladung: Vereinslogo (oder Wappen-Platzhalter), Verein, Mannschaft groß, Rolle, ein Knopf „Beitreten“; die Seite erscheint in der Vereinsfarbe. Dafür liefert `get_team_invite` jetzt auch Logo-Pfad und Farbe (Migration `20261016000100_invite_club_branding.sql`, beides war schon öffentlich).
+- Erster Start: zwei Wege („Du wurdest eingeladen?“ mit Feld für den Einladungslink, „Du gründest einen Verein“); ohne Mannschaft keine Tab-Leiste.
+- Leerzustände: alle über `UiEmptyState` (Kreide-Symbol, ein Satz, höchstens eine Aktion); die alte `EmptyState`-Komponente ist entfernt.
+- Mitgefundener Fehler, behoben: Nach dem Beitreten leitete die App zurück auf „Meine Mannschaften“, weil die Mannschaftsliste nicht neu geladen war.
 
 **Abnahme:** Ein neuer Spieler kommt vom Einladungslink bis zur ersten Zusage, ohne nachzudenken.
 

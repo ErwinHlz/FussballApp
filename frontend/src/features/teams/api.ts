@@ -12,7 +12,11 @@ export type MyTeam = Omit<
   'club_logo_path' | 'club_accent_color'
 > & { club_logo_path: string | null; club_accent_color: string | null }
 export type MyClub = Functions['my_clubs']['Returns'][number]
-export type InviteInfo = Functions['get_team_invite']['Returns'][number]
+// Logo and color are optional; the generated type misses that for function results.
+export type InviteInfo = Omit<
+  Functions['get_team_invite']['Returns'][number],
+  'club_logo_path' | 'club_accent_color'
+> & { club_logo_path: string | null; club_accent_color: string | null }
 export type Club = Tables<'clubs'>
 export type Team = Tables<'teams'>
 export type TeamMember = Tables<'team_members'>

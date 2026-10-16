@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import TeamNav from '@/features/squad/components/TeamNav.vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/AppIcon.vue'
 import BaseBadge from '@/components/BaseBadge.vue'
 import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
 import BaseModal from '@/components/BaseModal.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import RondoLogo from '@/ui/RondoLogo.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiInput from '@/ui/UiInput.vue'
+import TeamNav from '@/features/squad/components/TeamNav.vue'
 import type { Club, MyTeam } from '../api'
 import CreateClubForm from '../components/CreateClubForm.vue'
 import { useActiveTeam } from '../composables/useActiveTeam'
@@ -19,6 +21,17 @@ const router = useRouter()
 const { myTeams, activeTeam, setActiveTeam } = useActiveTeam()
 const myClubs = useMyClubs()
 const createOpen = ref(false)
+
+// "I have an invite link": paste it (or just the code) and open the invite page.
+const inviteLink = ref('')
+const inviteError = ref(false)
+function openInvite() {
+  const value = inviteLink.value.trim()
+  const token =
+    value.match(/\/join\/([^/?#\s]+)/)?.[1] ?? (/^[\w-]{8,}$/.test(value) ? value : null)
+  inviteError.value = !token
+  if (token) void router.push({ name: 'join', params: { token } })
+}
 
 // Group teams by club; clubs without teams (fresh clubs) are listed too.
 const groups = computed(() => {
@@ -58,17 +71,38 @@ async function onClubCreated(club: Club) {
     <p v-if="isLoading" class="teams__muted">{{ t('common.loading') }}</p>
     <p v-else-if="isError" class="teams__error" role="alert">{{ t('teams.loadFailed') }}</p>
 
+    <!-- First start: two clear ways in. -->
     <template v-else-if="groups.length === 0">
-      <EmptyState icon="users" :title="t('teams.welcomeTitle')" :text="t('teams.welcomeText')">
-        <BaseButton @click="createOpen = true">
-          <template #icon><AppIcon name="plus" :size="18" /></template>
-          {{ t('clubs.create') }}
-        </BaseButton>
-      </EmptyState>
-      <BaseCard>
-        <h2 class="teams__subtitle">{{ t('teams.gotInviteTitle') }}</h2>
+      <div class="teams__welcome">
+        <RondoLogo :size="56" :wordmark="false" />
+        <p class="teams__welcome-title">{{ t('teams.welcomeTitle') }}</p>
+        <p class="teams__muted">{{ t('teams.welcomeChoose') }}</p>
+      </div>
+
+      <section class="teams__way" aria-labelledby="way-invite">
+        <h2 id="way-invite" class="teams__way-title">
+          <UiIcon name="link" :size="24" />{{ t('teams.gotInviteTitle') }}
+        </h2>
         <p class="teams__muted">{{ t('teams.gotInviteText') }}</p>
-      </BaseCard>
+        <form class="teams__invite" novalidate @submit.prevent="openInvite">
+          <UiInput
+            v-model="inviteLink"
+            :label="t('teams.inviteLink')"
+            type="url"
+            :placeholder="t('teams.inviteLinkPlaceholder')"
+            :error="inviteError ? t('teams.inviteLinkInvalid') : undefined"
+          />
+          <UiButton type="submit" variant="secondary">{{ t('teams.openInvite') }}</UiButton>
+        </form>
+      </section>
+
+      <section class="teams__way" aria-labelledby="way-club">
+        <h2 id="way-club" class="teams__way-title">
+          <UiIcon name="building" :size="24" />{{ t('teams.foundTitle') }}
+        </h2>
+        <p class="teams__muted">{{ t('teams.welcomeText') }}</p>
+        <UiButton icon="plus" @click="createOpen = true">{{ t('clubs.create') }}</UiButton>
+      </section>
     </template>
 
     <template v-else>
@@ -193,6 +227,44 @@ async function onClubCreated(club: Club) {
 
   &__check {
     color: var(--color-primary);
+  }
+
+  &__welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-4 0;
+    text-align: center;
+  }
+
+  &__welcome-title {
+    font-family: var(--font-display);
+    font-size: $font-3xl;
+    font-weight: 800;
+    line-height: 1.05;
+  }
+
+  &__way {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    padding: $space-4;
+    border: 2px dashed var(--color-chalk);
+    border-radius: 24px;
+  }
+
+  &__way-title {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    font-size: $font-xl;
+  }
+
+  &__invite {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
   }
 
   &__muted {

@@ -380,7 +380,13 @@
     "gotInviteTitle": "Du wurdest eingeladen?",
     "gotInviteText": "Öffne einfach den Einladungslink von deinem Trainer oder Verein. Du landest dann direkt in deiner Mannschaft.",
     "nav": "Mannschaften",
-    "navLabel": "Bereiche im Team"
+    "navLabel": "Bereiche im Team",
+    "welcomeChoose": "Wie möchtest du starten?",
+    "inviteLink": "Einladungslink",
+    "inviteLinkPlaceholder": "https://…/join/…",
+    "inviteLinkInvalid": "Das sieht nicht nach einem Einladungslink aus.",
+    "openInvite": "Einladung öffnen",
+    "foundTitle": "Du gründest einen Verein"
   },
   "clubs": {
     "club": "Verein",

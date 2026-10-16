@@ -148,10 +148,12 @@ export function useAcceptInvite() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: acceptInvite,
+    // Refetch even when no page shows the lists right now (the invite page does not): the
+    // next page must see the new team, not the cached "no team yet".
     onSuccess: () =>
       Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['my-teams'] }),
-        queryClient.invalidateQueries({ queryKey: ['my-clubs'] }),
+        queryClient.invalidateQueries({ queryKey: ['my-teams'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['my-clubs'], refetchType: 'all' }),
       ]),
   })
 }

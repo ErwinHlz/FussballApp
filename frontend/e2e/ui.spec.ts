@@ -5,7 +5,7 @@
  */
 import { login } from './support/app'
 import { expect, expectNoHorizontalScroll, ready, test, trackErrors } from './support/fixtures'
-import { PASSWORD, seedDemo } from './support/seed'
+import { PASSWORD, register, seedDemo } from './support/seed'
 
 test('login form: labels, validation, error message and links', async ({ page }) => {
   const errors = trackErrors(page)
@@ -19,7 +19,7 @@ test('login form: labels, validation, error message and links', async ({ page })
   await expect(page.getByLabel('E-Mail')).toHaveAttribute('aria-invalid', 'true')
 
   await page.getByLabel('E-Mail').fill('nobody@example.test')
-  await page.getByLabel('Passwort').fill('wrong-password')
+  await page.getByLabel('Passwort', { exact: true }).fill('wrong-password')
   await page.getByRole('button', { name: 'Anmelden' }).click()
   await expect(page.getByRole('alert')).toContainText('E-Mail oder Passwort ist falsch')
 
@@ -243,7 +243,7 @@ test('sign in and out keeps the session per browser', async ({ page }) => {
   await page.goto('/profile')
   await expect(page).toHaveURL((url) => url.pathname === '/login')
   await page.getByLabel('E-Mail').fill(demo.player.email)
-  await page.getByLabel('Passwort').fill(PASSWORD)
+  await page.getByLabel('Passwort', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Anmelden' }).click()
   // (The login URL carries "?redirect=/profile", so compare the path.)
   await expect(page).toHaveURL((url) => url.pathname === '/profile')
@@ -284,4 +284,31 @@ test('appearance and language are chosen in the profile and remembered', async (
     .getByRole('radio', { name: 'Automatisch' })
     .click()
   await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/)
+})
+
+test('a new user without a team pastes an invite link and joins', async ({ page }) => {
+  const demo = await seedDemo()
+  const { data: invite } = await demo.coach.sb
+    .from('team_invites')
+    .insert({ team_id: demo.team.id, role: 'player' })
+    .select()
+    .single()
+  const newbie = await register('Neu', `${Date.now()}x`)
+
+  await login(page, newbie.email, '/teams')
+  await expect(page.getByText('Wie möchtest du starten?')).toBeVisible()
+  await expectNoHorizontalScroll(page)
+  // Nonsense is rejected at the field, a pasted link opens the invite.
+  await page.getByLabel('Einladungslink').fill('hallo')
+  await page.getByRole('button', { name: 'Einladung öffnen' }).click()
+  await expect(page.getByText('Das sieht nicht nach einem Einladungslink aus.')).toBeVisible()
+  await page.getByLabel('Einladungslink').fill(`https://rondo.example/join/${invite!.token}`)
+  await page.getByRole('button', { name: 'Einladung öffnen' }).click()
+
+  await expect(page).toHaveURL(new RegExp(`/join/${invite!.token}$`))
+  await expect(page.getByText('SV Demo 09')).toBeVisible()
+  await expect(page.getByText('U17', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Beitreten' }).click()
+  await expect(page).toHaveURL(/\/squad$/)
+  await expect(page.getByText('Neu').first()).toBeVisible()
 })

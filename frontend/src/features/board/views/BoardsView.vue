@@ -7,7 +7,7 @@ import AppIcon from '@/components/AppIcon.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseCard from '@/components/BaseCard.vue'
 import BaseInput from '@/components/BaseInput.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import UiEmptyState from '@/ui/UiEmptyState.vue'
 import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import BoardScene from '../components/BoardScene.vue'
@@ -85,9 +85,9 @@ async function onCreate() {
       <p v-else-if="boards.isError.value" class="boards__error" role="alert">
         {{ t('boards.loadFailed') }}
       </p>
-      <EmptyState
+      <UiEmptyState
         v-else-if="!items.length"
-        icon="whistle"
+        icon="edit"
         :title="t('boards.emptyTitle')"
         :text="t('boards.emptyText')"
       />

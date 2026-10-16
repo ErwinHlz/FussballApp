@@ -50,7 +50,9 @@ const activeTab = computed(() => {
   )
 })
 
-const showNav = computed(() => !route.meta.hideNav)
+// Without any team (first start) every tab would lead back to the team setup: no tab bar.
+const hasNoTeam = computed(() => myTeams.isSuccess.value && myTeams.data.value?.length === 0)
+const showNav = computed(() => !route.meta.hideNav && !hasNoTeam.value)
 // Fixed elements (snackbar, action bars, floating buttons) keep clear of the tab bar.
 watchEffect(() => {
   const root = document.documentElement.style
@@ -97,7 +99,13 @@ watch(
 
 // Without any team, team pages make no sense: send the user to club/team setup.
 watchEffect(() => {
-  if (route.meta.requiresTeam && myTeams.isSuccess.value && myTeams.data.value?.length === 0) {
+  // Not while refetching: a stale "no team" from before joining must not send the user away.
+  if (
+    route.meta.requiresTeam &&
+    myTeams.isSuccess.value &&
+    !myTeams.isFetching.value &&
+    myTeams.data.value?.length === 0
+  ) {
     void router.replace({ name: 'teams' })
   }
 })
