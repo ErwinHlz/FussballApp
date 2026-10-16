@@ -7,8 +7,10 @@ import type { Attendance } from '../logic'
 import { useAnswer } from '../composables/useAnswer'
 
 const mutateAsync = vi.fn()
+const withdrawAsync = vi.fn()
 vi.mock('../composables/useEvents', () => ({
   useSetAttendance: () => ({ mutateAsync, isPending: ref(false) }),
+  useWithdrawAttendance: () => ({ mutateAsync: withdrawAsync }),
 }))
 
 function withAnswer() {
@@ -31,6 +33,7 @@ const event = { id: 'e1' }
 beforeEach(() => {
   i18n.global.locale.value = 'de'
   mutateAsync.mockReset().mockResolvedValue({})
+  withdrawAsync.mockReset().mockResolvedValue(undefined)
 })
 afterEach(() => useSnackbar().dismiss())
 
@@ -84,11 +87,15 @@ describe('useAnswer', () => {
     })
   })
 
-  it('has no undo for a first answer (players cannot delete answers)', async () => {
+  it('undoes a first decline back to "no answer yet"', async () => {
     const { answer, decline } = withAnswer()
     answer(event, 'm1', null, 'no', 'Training')
     await decline('work', '')
-    expect(useSnackbar().current.value?.action).toBeUndefined()
+
+    const snackbar = useSnackbar()
+    expect(snackbar.current.value?.action?.label).toBe('Rückgängig')
+    await snackbar.runAction()
+    expect(withdrawAsync).toHaveBeenCalledWith({ eventId: 'e1', memberId: 'm1' })
   })
 
   it('reports a failed save in the snackbar', async () => {

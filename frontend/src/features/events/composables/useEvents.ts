@@ -12,6 +12,7 @@ import {
   setAttendance,
   setMatchSquad,
   updateEvent,
+  withdrawAttendance,
   type AttendanceRequest,
   type EventInput,
 } from '../api'
@@ -149,6 +150,34 @@ export function useSetAttendance() {
         }
         return data.id === input.eventId ? applyAttendance(data, input) : data
       })
+      return { snapshot }
+    },
+    onError: (_error, _input, context) => {
+      for (const [key, data] of context?.snapshot ?? []) queryClient.setQueryData(key, data)
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: eventKeys.all }),
+  })
+}
+
+/** Removes an answer again (undo of a first decline); same queue as setting answers. */
+export function useWithdrawAttendance() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: withdrawAttendance,
+    scope: { id: 'attendance' },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: eventKeys.all })
+      const snapshot = queryClient.getQueriesData<TeamEvent | TeamEvent[]>({
+        queryKey: eventKeys.all,
+      })
+      const without = (e: TeamEvent): TeamEvent =>
+        e.id === input.eventId
+          ? { ...e, attendances: e.attendances.filter((a) => a.member_id !== input.memberId) }
+          : e
+      queryClient.setQueriesData<TeamEvent | TeamEvent[]>({ queryKey: eventKeys.all }, (data) =>
+        !data ? data : Array.isArray(data) ? data.map(without) : without(data),
+      )
       return { snapshot }
     },
     onError: (_error, _input, context) => {

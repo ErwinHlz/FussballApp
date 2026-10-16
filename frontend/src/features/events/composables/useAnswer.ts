@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSnackbar } from '@/ui/useSnackbar'
 import type { Attendance, AttendanceStatus, DeclineReason, EventRow } from '../logic'
-import { useSetAttendance } from './useEvents'
+import { useSetAttendance, useWithdrawAttendance } from './useEvents'
 
 export type DeclineRequest = {
   event: Pick<EventRow, 'id'>
@@ -14,14 +14,14 @@ export type DeclineRequest = {
 
 /**
  * The answer flow shared by start page, list and detail: yes/maybe save right away, "no"
- * opens the decline sheet (reason with one tap). A decline can be undone from the snackbar,
- * which restores the previous answer (players cannot delete an answer, so a first decline
- * has nothing to go back to).
+ * opens the decline sheet (reason with one tap). A decline can be undone from the snackbar:
+ * the previous answer comes back, or, after a first answer, "no answer yet".
  */
 export function useAnswer() {
   const { t } = useI18n()
   const snackbar = useSnackbar()
   const setAttendance = useSetAttendance()
+  const withdraw = useWithdrawAttendance()
   const declining = ref<DeclineRequest | null>(null)
 
   function failed() {
@@ -68,23 +68,24 @@ export function useAnswer() {
     }
     navigator.vibrate?.(10)
     const previous = request.previous
+    const undo = !previous
+      ? () => withdraw.mutateAsync({ eventId: request.event.id, memberId: request.memberId })
+      : previous.status !== 'no'
+        ? () =>
+            save(
+              request.event.id,
+              request.memberId,
+              previous.status,
+              // Stored reasons come from the same list (database check constraint).
+              previous.reason as DeclineReason | null,
+              previous.reason_note,
+            )
+        : null
     snackbar.show({
       text: t('events.declined'),
-      action:
-        previous && previous.status !== 'no'
-          ? {
-              label: t('ui.undo'),
-              run: () =>
-                save(
-                  request.event.id,
-                  request.memberId,
-                  previous.status,
-                  // Stored reasons come from the same list (database check constraint).
-                  previous.reason as DeclineReason | null,
-                  previous.reason_note,
-                ).then(() => undefined, failed),
-            }
-          : undefined,
+      action: undo
+        ? { label: t('ui.undo'), run: () => undo().then(() => undefined, failed) }
+        : undefined,
     })
   }
 

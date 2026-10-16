@@ -153,7 +153,7 @@ Umsetzungsnotizen U2:
 - Termin-Detail blendet die Tab-Leiste aus (`hideNav`), die Antwort sitzt in einer festen Leiste: großer „Ich bin dabei“-Knopf, daneben Vielleicht und Absage (ein Tipp statt ⋯-Menü).
 - Beantwortete Termine bleiben in „Wartet auf deine Antwort“ stehen, bis man die Startseite verlässt (sonst springen Zeilen unter dem Finger weg).
 - Die Übungsvorschau als Mini-Spielfeld im Termin-Detail ist verschoben nach U4 (Vorschaubilder der Bibliothek); bis dahin führt jede Übung im Ablauf zum Übungsdetail mit Animation in voller Breite.
-- **Offen:** „Rückgängig“ nach einer Absage stellt die vorherige Antwort wieder her. War es die erste Antwort, gibt es kein Zurück auf „keine Antwort“, weil Spieler ihre Antwort laut Datenbankregeln nicht löschen dürfen. Lösung bräuchte eine zusätzliche RLS-Regel (Rückfrage beim Nutzer).
+- „Rückgängig“ nach einer Absage stellt die vorherige Antwort wieder her. War die Absage die erste Antwort, wird sie wieder gelöscht („noch keine Antwort“). Dafür dürfen Spieler ihre eigene Antwort löschen, solange der Termin offen ist (Migration `20261016000200_attendance_withdraw.sql`, pgTAP-Test `attendance_withdraw.test.sql`).
 
 **Abnahme:** Ein Spieler sagt vom App-Start aus mit **einem Tipp** zu und erkennt seine Gruppe ohne Scrollen. Die Absage mit Grund braucht höchstens 2 Tipps.
 

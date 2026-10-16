@@ -117,6 +117,22 @@ export async function setAttendance(input: AttendanceRequest): Promise<Attendanc
   return data
 }
 
+/** Back to "no answer yet" (undo of a first answer). RLS allows it only while the event is open. */
+export async function withdrawAttendance(input: {
+  eventId: string
+  memberId: string
+}): Promise<void> {
+  const { data, error } = await supabase
+    .from('attendances')
+    .delete()
+    .eq('event_id', input.eventId)
+    .eq('member_id', input.memberId)
+    .select('id')
+  if (error) throw error
+  // A delete blocked by RLS removes nothing and raises no error: report it.
+  if (!data.length) throw new Error('not allowed')
+}
+
 export async function setMatchSquad(
   eventId: string,
   entries: { member_id: string; role: SquadRole }[],

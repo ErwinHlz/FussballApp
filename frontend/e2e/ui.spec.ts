@@ -312,3 +312,26 @@ test('a new user without a team pastes an invite link and joins', async ({ page 
   await expect(page).toHaveURL(/\/squad$/)
   await expect(page.getByText('Neu').first()).toBeVisible()
 })
+
+test('undo after a first decline goes back to "no answer yet"', async ({ page }) => {
+  const demo = await seedDemo()
+  await login(page, demo.player.email, `/events/${demo.match.id}`)
+  await ready(page)
+  const no = page
+    .getByRole('group', { name: 'Bist du dabei?' })
+    .getByRole('button', { name: 'Absage' })
+
+  await no.click()
+  await page.getByRole('dialog', { name: 'Absagen' }).getByRole('button', { name: 'Krank' }).click()
+  await expect(no).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Rückgängig' }).click()
+  await expect(no).toHaveAttribute('aria-pressed', 'false')
+
+  // Stored that way: after a reload the match still has no answer of Pia.
+  await page.reload()
+  await ready(page)
+  await expect(
+    page.getByRole('group', { name: 'Bist du dabei?' }).getByRole('button', { name: 'Absage' }),
+  ).toHaveAttribute('aria-pressed', 'false')
+  await expect(page.getByRole('button', { name: /Ich bin dabei/ })).toBeVisible()
+})
