@@ -158,7 +158,12 @@ test.describe('keyboard', () => {
               'a[href], button:not([disabled]), input:not([disabled]), select, textarea, summary',
             ),
           ].filter((el) => el.offsetParent !== null || getComputedStyle(el).position === 'fixed')
-          return controls.filter((el) => el.tabIndex < 0).map((el) => el.outerHTML.slice(0, 120))
+          // Tabs and radio groups use a roving tab stop on purpose (arrow keys move inside).
+          const roving = (el: HTMLElement) =>
+            ['tablist', 'radiogroup'].includes(el.parentElement?.getAttribute('role') ?? '')
+          return controls
+            .filter((el) => el.tabIndex < 0 && !roving(el))
+            .map((el) => el.outerHTML.slice(0, 120))
         })
         expect.soft(unreachable, `controls removed from the tab order on ${path}`).toEqual([])
       })

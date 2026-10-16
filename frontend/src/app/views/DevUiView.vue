@@ -94,7 +94,12 @@ function onAnswer(value: Answer) {
     <header class="dev__head">
       <RondoLogo />
       <h1 class="dev__title">{{ t('ui.dev.title') }}</h1>
-      <UiSegmented v-model="preference" :label="t('ui.theme.label')" :options="themeOptions" />
+      <UiSegmented
+        v-model="preference"
+        as="radio"
+        :label="t('ui.theme.label')"
+        :options="themeOptions"
+      />
     </header>
 
     <UiSection title="Antwort">

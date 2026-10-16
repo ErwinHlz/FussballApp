@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import TeamNav from '@/features/squad/components/TeamNav.vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/AppIcon.vue'
@@ -50,6 +51,8 @@ async function onClubCreated(club: Club) {
 
 <template>
   <section class="teams">
+    <!-- Without a team (first start) squad and statistics make no sense yet. -->
+    <TeamNav v-if="groups.length" active="teams" />
     <h1>{{ t('teams.title') }}</h1>
 
     <p v-if="isLoading" class="teams__muted">{{ t('common.loading') }}</p>

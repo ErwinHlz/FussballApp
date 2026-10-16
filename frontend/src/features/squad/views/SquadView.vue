@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseBadge from '@/components/BaseBadge.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
+import UiBadge from '@/ui/UiBadge.vue'
+import UiButton from '@/ui/UiButton.vue'
+import UiChip from '@/ui/UiChip.vue'
+import UiEmptyState from '@/ui/UiEmptyState.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiIconButton from '@/ui/UiIconButton.vue'
+import UiSkeleton from '@/ui/UiSkeleton.vue'
 import { useAuthStore } from '@/stores/auth'
 import type { TeamMember } from '@/features/teams/api'
 import InvitePanel from '@/features/teams/components/InvitePanel.vue'
@@ -16,15 +18,8 @@ import MemberFormModal from '../components/MemberFormModal.vue'
 import AbsenceList from '@/features/absences/components/AbsenceList.vue'
 import { useTeamAbsences } from '@/features/absences/composables/useAbsences'
 import StatusBadge from '../components/StatusBadge.vue'
-import {
-  filterSquad,
-  MEMBER_STATUSES,
-  POSITIONS,
-  sortSquad,
-  type MemberStatus,
-  type Position,
-  type SquadFilter,
-} from '../squad'
+import TeamNav from '../components/TeamNav.vue'
+import { filterSquad, MEMBER_STATUSES, POSITIONS, sortSquad, type SquadFilter } from '../squad'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -53,20 +48,6 @@ const positionOptions = computed(() => [
   ...POSITIONS.map((p) => ({ value: p, label: t(`squad.positionsShort.${p}`) })),
 ])
 
-// BaseChipGroup models T | T[]; filters are single-select.
-const statusFilter = computed({
-  get: () => filter.status,
-  set: (value: MemberStatus | 'all' | (MemberStatus | 'all')[]) => {
-    if (!Array.isArray(value)) filter.status = value
-  },
-})
-const positionFilter = computed({
-  get: () => filter.position,
-  set: (value: Position | 'all' | (Position | 'all')[]) => {
-    if (!Array.isArray(value)) filter.position = value
-  },
-})
-
 function openAdd() {
   editing.value = null
   formOpen.value = true
@@ -85,40 +66,30 @@ function positionsLabel(member: TeamMember) {
 
 <template>
   <section class="squad">
-    <div class="squad__header">
-      <h1>{{ t('squad.title') }}</h1>
-      <RouterLink :to="{ name: 'stats' }" class="squad__stats-link">
-        <AppIcon name="chart" :size="20" />
-        {{ t('stats.title') }}
-      </RouterLink>
-    </div>
+    <TeamNav active="squad" />
 
-    <BaseCard v-if="isCoach && activeTeam" class="squad__actions">
-      <div class="squad__action-buttons">
-        <BaseButton @click="openAdd">
-          <template #icon><AppIcon name="plus" :size="18" /></template>
-          {{ t('squad.addPlayer') }}
-        </BaseButton>
-        <BaseButton
-          variant="secondary"
-          :aria-expanded="inviteOpen"
-          @click="inviteOpen = !inviteOpen"
-        >
-          <template #icon><AppIcon :name="inviteOpen ? 'x' : 'link'" :size="18" /></template>
-          {{ inviteOpen ? t('common.close') : t('squad.invitePlayers') }}
-        </BaseButton>
-      </div>
-      <template v-if="inviteOpen">
-        <p class="squad__muted">{{ t('squad.inviteHint') }}</p>
-        <InvitePanel
-          :team-id="activeTeam.team_id"
-          :team-name="activeTeam.team_name"
-          role="player"
+    <header class="squad__head">
+      <h1>{{ t('squad.title') }}</h1>
+      <template v-if="isCoach && activeTeam">
+        <UiIconButton
+          icon="link"
+          :label="t('squad.invitePlayers')"
+          aria-haspopup="dialog"
+          @click="inviteOpen = true"
+        />
+        <UiIconButton
+          icon="plus"
+          variant="primary"
+          :label="t('squad.addPlayer')"
+          aria-haspopup="dialog"
+          @click="openAdd"
         />
       </template>
-    </BaseCard>
+    </header>
 
-    <p v-if="members.isPending.value" class="squad__muted">{{ t('common.loading') }}</p>
+    <div v-if="members.isPending.value" aria-busy="true" class="squad__list">
+      <UiSkeleton v-for="n in 5" :key="n" shape="block" height="64px" />
+    </div>
     <p v-else-if="members.isError.value" class="squad__error" role="alert">
       {{ t('squad.loadFailed') }}
     </p>
@@ -140,8 +111,8 @@ function positionsLabel(member: TeamMember) {
               :class="{ 'squad__member--clickable': isCoach }"
               @click="openEdit(member)"
             >
-              <span class="squad__number" aria-hidden="true">
-                <AppIcon name="whistle" :size="18" />
+              <span class="squad__coach-icon" aria-hidden="true">
+                <UiIcon name="cone" :size="20" />
               </span>
               <span class="squad__main">
                 <span class="squad__name">
@@ -154,7 +125,9 @@ function positionsLabel(member: TeamMember) {
                   </span>
                 </span>
               </span>
-              <BaseBadge tone="training">{{ t('roles.coach') }}</BaseBadge>
+              <UiBadge tone="training">{{ t('roles.coach') }}</UiBadge>
+              <UiIcon v-if="isCoach" name="chevronRight" :size="18" class="squad__chevron" />
+              <span v-if="isCoach" class="visually-hidden">{{ t('squad.editHint') }}</span>
             </component>
           </li>
         </ul>
@@ -162,21 +135,33 @@ function positionsLabel(member: TeamMember) {
 
       <section class="squad__group" aria-labelledby="squad-players">
         <h2 id="squad-players" class="squad__subtitle">
-          {{ t('squad.players') }} ({{ isFiltered ? `${visiblePlayers.length}/` : ''
-          }}{{ players.length }})
+          {{ t('squad.players') }}
+          <span class="squad__count">
+            {{ isFiltered ? `${visiblePlayers.length}/` : '' }}{{ players.length }}
+          </span>
         </h2>
 
         <div v-if="players.length" class="squad__filters">
-          <BaseChipGroup
-            v-model="statusFilter"
-            :label="t('squad.statusLabel')"
-            :options="statusOptions"
-          />
-          <BaseChipGroup
-            v-model="positionFilter"
-            :label="t('squad.positionsLabel')"
-            :options="positionOptions"
-          />
+          <div class="squad__chips" role="group" :aria-label="t('squad.statusLabel')">
+            <UiChip
+              v-for="option in statusOptions"
+              :key="option.value"
+              :model-value="filter.status === option.value"
+              @update:model-value="filter.status = option.value"
+            >
+              {{ option.label }}
+            </UiChip>
+          </div>
+          <div class="squad__chips" role="group" :aria-label="t('squad.positionsLabel')">
+            <UiChip
+              v-for="option in positionOptions"
+              :key="option.value"
+              :model-value="filter.position === option.value"
+              @update:model-value="filter.position = option.value"
+            >
+              {{ option.label }}
+            </UiChip>
+          </div>
         </div>
 
         <ul v-if="visiblePlayers.length" class="squad__list" role="list">
@@ -210,7 +195,7 @@ function positionsLabel(member: TeamMember) {
                 </span>
               </span>
               <StatusBadge v-if="member.status !== 'active'" :status="member.status" />
-              <AppIcon v-if="isCoach" name="chevronRight" :size="18" class="squad__chevron" />
+              <UiIcon v-if="isCoach" name="chevronRight" :size="18" class="squad__chevron" />
               <!-- Name, number and status stay in the accessible name; the action is appended. -->
               <span v-if="isCoach" class="visually-hidden">{{ t('squad.editHint') }}</span>
             </component>
@@ -219,12 +204,16 @@ function positionsLabel(member: TeamMember) {
 
         <p v-else-if="players.length" class="squad__muted">{{ t('squad.noFilterResults') }}</p>
 
-        <EmptyState
+        <UiEmptyState
           v-else
           icon="users"
           :title="t('squad.empty')"
           :text="isCoach ? t('squad.emptyHint') : undefined"
-        />
+        >
+          <UiButton v-if="isCoach" icon="link" @click="inviteOpen = true">
+            {{ t('squad.invitePlayers') }}
+          </UiButton>
+        </UiEmptyState>
       </section>
     </template>
 
@@ -235,6 +224,14 @@ function positionsLabel(member: TeamMember) {
       :member="editing"
       :members="all"
     />
+    <BottomSheet
+      v-if="isCoach && activeTeam"
+      v-model:open="inviteOpen"
+      :title="t('squad.invitePlayers')"
+      :description="t('squad.inviteHint')"
+    >
+      <InvitePanel :team-id="activeTeam.team_id" :team-name="activeTeam.team_name" role="player" />
+    </BottomSheet>
   </section>
 </template>
 
@@ -244,66 +241,59 @@ function positionsLabel(member: TeamMember) {
   flex-direction: column;
   gap: $space-4;
 
-  &__header {
+  &__head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: $space-2;
-  }
 
-  &__stats-link {
-    @include focus-visible;
-
-    display: inline-flex;
-    align-items: center;
-    gap: $space-1;
-    min-height: $touch-target;
-    padding: 0 $space-3;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-full;
-    background: var(--color-surface);
-    color: inherit;
-    font-weight: 700;
-    text-decoration: none;
-  }
-
-  &__actions {
-    display: flex;
-    flex-direction: column;
-    gap: $space-3;
-  }
-
-  &__action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: $space-2;
+    h1 {
+      flex: 1;
+    }
   }
 
   &__group {
     display: flex;
     flex-direction: column;
-    gap: $space-3;
+    gap: $space-2;
   }
 
   &__subtitle {
+    display: flex;
+    align-items: baseline;
+    gap: $space-2;
+  }
+
+  &__count {
+    color: var(--color-text-muted);
     font-size: $font-lg;
   }
 
   &__filters {
     display: flex;
     flex-direction: column;
-    gap: $space-3;
+    gap: $space-2;
+  }
+
+  &__chips {
+    display: flex;
+    gap: $space-2;
+    margin-inline: -$space-4;
+    padding-inline: $space-4;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    > * {
+      flex-shrink: 0;
+    }
   }
 
   &__list {
-    overflow: hidden;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: $radius-lg;
-
-    > li + li {
-      border-top: 1px solid var(--color-border);
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   &__member {
@@ -311,31 +301,40 @@ function positionsLabel(member: TeamMember) {
     align-items: center;
     gap: $space-3;
     width: 100%;
-    min-height: 60px;
+    min-height: 64px;
     padding: $space-2 $space-3;
     border: 0;
-    background: transparent;
+    border-radius: $radius-lg;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
     text-align: left;
 
     &--clickable {
       @include focus-visible;
 
-      &:hover {
-        background: var(--color-surface-muted);
-      }
+      cursor: pointer;
     }
   }
 
-  &__number {
+  &__number,
+  &__coach-icon {
     display: grid;
     flex-shrink: 0;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: $radius-full;
-    background: var(--color-surface-muted);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--color-pitch);
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: $font-xl;
     font-weight: 800;
-    font-variant-numeric: tabular-nums;
+  }
+
+  &__coach-icon {
+    background: var(--color-surface-muted);
+    color: var(--color-training-text);
   }
 
   &__main {
@@ -346,30 +345,29 @@ function positionsLabel(member: TeamMember) {
   }
 
   &__name {
-    font-weight: 600;
-    overflow-wrap: anywhere;
+    font-weight: 800;
   }
 
   &__meta {
     display: flex;
     flex-wrap: wrap;
     gap: $space-2;
-    font-size: $font-sm;
     color: var(--color-text-muted);
+    font-size: $font-sm;
   }
 
   &__no-account {
     font-style: italic;
   }
 
-  &__chevron {
-    flex-shrink: 0;
+  &__muted {
     color: var(--color-text-muted);
+    font-size: $font-sm;
+    font-weight: 500;
   }
 
-  &__muted {
-    font-size: $font-sm;
-    font-weight: 400;
+  &__chevron {
+    flex-shrink: 0;
     color: var(--color-text-muted);
   }
 

@@ -2,8 +2,10 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuery } from '@tanstack/vue-query'
-import BaseChipGroup from '@/components/BaseChipGroup.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import UiEmptyState from '@/ui/UiEmptyState.vue'
+import UiSegmented from '@/ui/UiSegmented.vue'
+import UiSkeleton from '@/ui/UiSkeleton.vue'
+import TeamNav from '@/features/squad/components/TeamNav.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import AttendanceChart from '../components/AttendanceChart.vue'
@@ -63,18 +65,6 @@ const sortOptions = computed(() => [
   { value: 'rate' as const, label: t('stats.sort.rate') },
   { value: 'name' as const, label: t('stats.sort.name') },
 ])
-const rangeModel = computed({
-  get: () => range.value,
-  set: (v: RangeKey | RangeKey[] | undefined) => {
-    if (typeof v === 'string') range.value = v
-  },
-})
-const sortModel = computed({
-  get: () => sort.value,
-  set: (v: PlayerSort | PlayerSort[] | undefined) => {
-    if (typeof v === 'string') sort.value = v
-  },
-})
 
 function reasonsText(reasons: unknown) {
   return reasonList(reasons)
@@ -85,20 +75,19 @@ function reasonsText(reasons: unknown) {
 
 <template>
   <section class="stats">
+    <TeamNav active="stats" />
     <h1>{{ t('stats.title') }}</h1>
 
-    <!-- Filters scope everything below. -->
-    <BaseChipGroup
-      v-model="rangeModel"
-      :label="t('stats.range')"
-      :options="rangeOptions"
-      hide-label
-    />
+    <!-- The period scopes everything below. -->
+    <UiSegmented v-model="range" as="radio" :label="t('stats.range')" :options="rangeOptions" />
 
-    <p v-if="isPending" class="stats__muted">{{ t('common.loading') }}</p>
+    <div v-if="isPending" aria-busy="true" class="stats__loading">
+      <UiSkeleton shape="block" height="120px" />
+      <UiSkeleton shape="block" height="200px" />
+    </div>
     <p v-else-if="isError" class="stats__error" role="alert">{{ t('stats.loadFailed') }}</p>
 
-    <EmptyState
+    <UiEmptyState
       v-else-if="!summary.trainings && !summary.matches"
       icon="calendar"
       :title="t('stats.empty')"
@@ -155,11 +144,11 @@ function reasonsText(reasons: unknown) {
       <section aria-labelledby="stats-players" class="stats__section">
         <div class="stats__row">
           <h2 id="stats-players" class="stats__subtitle">{{ t('stats.players') }}</h2>
-          <BaseChipGroup
-            v-model="sortModel"
+          <UiSegmented
+            v-model="sort"
+            as="radio"
             :label="t('stats.sortLabel')"
             :options="sortOptions"
-            hide-label
           />
         </div>
         <ul class="stats__players" role="list">
@@ -256,6 +245,12 @@ function reasonsText(reasons: unknown) {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: $radius-lg;
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
   }
 
   &__muted {

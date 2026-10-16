@@ -2,14 +2,18 @@
 import { nextTick, ref, useId } from 'vue'
 
 /**
- * Segmented switch between views of one page (tabs pattern: arrow keys move between options,
- * only the selected option is in the tab order). Give each option a panelId when it controls
- * a tabpanel on the page; the panel then uses tabPanelAttrs(value).
+ * Segmented control. As "tabs" it switches views of one page; as "radio" it is a choice
+ * (settings, filters). Both: arrow keys move between options, only the selected option is in
+ * the tab order. Give a tab a panelId when it controls a tabpanel on the page.
  */
-const props = defineProps<{
-  label: string
-  options: { value: T; label: string; panelId?: string }[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    label: string
+    options: { value: T; label: string; panelId?: string }[]
+    as?: 'tabs' | 'radio'
+  }>(),
+  { as: 'tabs' },
+)
 const model = defineModel<T>({ required: true })
 
 const id = useId()
@@ -52,16 +56,17 @@ defineExpose({ tabId })
 </script>
 
 <template>
-  <div class="ui-segmented" role="tablist" :aria-label="label">
+  <div class="ui-segmented" :role="as === 'radio' ? 'radiogroup' : 'tablist'" :aria-label="label">
     <button
       v-for="(option, index) in options"
       :id="tabId(option.value)"
       :key="option.value"
       ref="buttons"
       type="button"
-      role="tab"
+      :role="as === 'radio' ? 'radio' : 'tab'"
       class="ui-segmented__option"
-      :aria-selected="model === option.value"
+      :aria-selected="as === 'radio' ? undefined : model === option.value"
+      :aria-checked="as === 'radio' ? model === option.value : undefined"
       :aria-controls="option.panelId"
       :tabindex="model === option.value ? 0 : -1"
       @click="select(index)"
@@ -75,7 +80,8 @@ defineExpose({ tabId })
 <style scoped lang="scss">
 .ui-segmented {
   display: grid;
-  grid-auto-columns: minmax(0, 1fr);
+  // Options share the width, but a longer label ("Automatisch") keeps its room.
+  grid-auto-columns: minmax(max-content, 1fr);
   grid-auto-flow: column;
   gap: 4px;
   padding: 4px;
@@ -85,7 +91,7 @@ defineExpose({ tabId })
   &__option {
     @include focus-visible;
 
-    min-height: 40px;
+    min-height: $touch-target;
     padding: 0 $space-2;
     border: 0;
     border-radius: $radius-full;
@@ -96,7 +102,8 @@ defineExpose({ tabId })
     white-space: nowrap;
     transition: background-color var(--duration-fast) var(--ease-out);
 
-    &[aria-selected='true'] {
+    &[aria-selected='true'],
+    &[aria-checked='true'] {
       background: var(--color-text);
       color: var(--color-bg);
       font-weight: 800;

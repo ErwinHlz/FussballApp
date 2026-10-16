@@ -67,14 +67,14 @@ describe('SquadView', () => {
     isCoach.value = true
     const wrapper = mountView()
 
-    expect(wrapper.text()).toContain('Spieler hinzufügen')
+    expect(wrapper.find('button[aria-label="Spieler hinzufügen"]').exists()).toBe(true)
     expect(wrapper.findAll('button.squad__member').length).toBe(3)
   })
 
   it('filters by status', async () => {
     isCoach.value = false
     const wrapper = mountView()
-    const injuredChip = wrapper.findAll('.chip-group__chip').find((c) => c.text() === 'Verletzt')!
+    const injuredChip = wrapper.findAll('.ui-chip').find((c) => c.text() === 'Verletzt')!
 
     await injuredChip.trigger('click')
 

@@ -253,3 +253,35 @@ test('sign in and out keeps the session per browser', async ({ page }) => {
   await page.getByRole('button', { name: 'Abmelden' }).click()
   await expect(page).toHaveURL((url) => url.pathname === '/login')
 })
+
+test('appearance and language are chosen in the profile and remembered', async ({ page }) => {
+  const demo = await seedDemo()
+  await login(page, demo.player.email, '/profile')
+  await ready(page)
+
+  const theme = page.getByRole('radiogroup', { name: 'Hell oder dunkel' })
+  await theme.getByRole('radio', { name: 'Dunkel' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
+  await page
+    .getByRole('radiogroup', { name: 'Sprache' })
+    .getByRole('radio', { name: 'English' })
+    .click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible()
+
+  // Both stick on this device.
+  await page.reload()
+  await expect(page.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
+  await page
+    .getByRole('radiogroup', { name: 'Language' })
+    .getByRole('radio', { name: 'Automatic' })
+    .click()
+  // "Automatic" follows the browser again (German in these tests).
+  await page
+    .getByRole('radiogroup', { name: 'Hell oder dunkel' })
+    .getByRole('radio', { name: 'Automatisch' })
+    .click()
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/)
+})

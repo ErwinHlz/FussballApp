@@ -190,10 +190,19 @@ Umsetzungsnotizen U4:
 **Abnahme:** Eine Übung finden, öffnen und einem Training hinzufügen geht flüssig mit einer Hand. Die Taktiktafel ist auf 375 px ohne Zoomen bedienbar.
 
 ### Phase U5 – Team, Verein, Profil
-- [ ] Kader: Nummer, Name, Positionen, Status-Icon; Filter als Chips; Bearbeiten als Sheet
-- [ ] Statistik visuell: Beteiligungsbalken, sortierbar, eigene Zeile hervorgehoben
-- [ ] Profil und Einstellungen als gruppierte Listen (Konto, Benachrichtigungen, Abwesenheiten, Daten und Datenschutz, Sprache, Darstellung hell/dunkel/automatisch)
-- [ ] Verein, Mannschaften, Einladungen, Logo/Farbe und Belegungsplan im neuen Stil; Belegungsplan als Tagesansicht mit Wischen zwischen Tagen
+- [x] Kader: Nummer, Name, Positionen, Status-Icon; Filter als Chips; Bearbeiten als Sheet
+- [x] Statistik visuell: Beteiligungsbalken, sortierbar, eigene Zeile hervorgehoben
+- [x] Profil und Einstellungen als gruppierte Listen (Konto, Benachrichtigungen, Abwesenheiten, Daten und Datenschutz, Sprache, Darstellung hell/dunkel/automatisch)
+- [x] Verein, Mannschaften, Einladungen, Logo/Farbe und Belegungsplan im neuen Stil; Belegungsplan als Tagesansicht mit Wischen zwischen Tagen
+
+Umsetzungsnotizen U5:
+- Bereichsleisten als gemeinsamer Baustein `AreaNav` (Training: Trainings · Übungen · Taktiktafel · Vorlagen; Team: Kader · Statistik · Mannschaften).
+- Kader: Nummer im Kreis, Name, Positionen, Status; Filter als Chips; Spieler einladen und anlegen als Sheets über die Knöpfe im Kopf.
+- Profil als gruppierte Abschnitte; neu: Wahl hell/dunkel/automatisch und Sprache automatisch/Deutsch/English (pro Gerät, `stores/theme.ts`, `stores/locale.ts`); Abwesenheit eintragen als Sheet mit Snackbar.
+- Statistik: Balken, Sortierung und eigene Zeile gab es; Zeitraum und Sortierung jetzt als Segmente.
+- Belegungsplan: Wischen nach links/rechts wechselt den Tag (auch über die Woche hinaus).
+- `UiSegmented` kann jetzt auch Radio-Gruppe (`as="radio"`) für Einstellungen; Segmente sind 44 px hoch.
+- Verein, Mannschaften, Einladungen und Logo/Farbe übernehmen Farben, Schriften und Sheets aus dem Design-System; ihr Aufbau blieb, weil er auf dem Handy schon funktioniert.
 
 **Abnahme:** Alle Team- und Profilseiten im neuen Design, keine alten Base-Komponenten mehr in diesen Bereichen.
 

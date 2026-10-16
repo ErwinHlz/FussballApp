@@ -87,6 +87,30 @@ describe('UiSegmented', () => {
   })
 })
 
+describe('UiSegmented as radio group', () => {
+  it('marks the choice with aria-checked and keeps arrow-key navigation', async () => {
+    const wrapper = mount(UiSegmented, {
+      props: {
+        label: 'Darstellung',
+        as: 'radio' as const,
+        options: [
+          { value: 'auto', label: 'Automatisch' },
+          { value: 'dark', label: 'Dunkel' },
+        ],
+        modelValue: 'auto',
+        'onUpdate:modelValue': (value: string) => wrapper.setProps({ modelValue: value }),
+      },
+    })
+    expect(wrapper.get('[role="radiogroup"]').attributes('aria-label')).toBe('Darstellung')
+    const radios = wrapper.findAll('[role="radio"]')
+    expect(radios.map((r) => r.attributes('aria-checked'))).toEqual(['true', 'false'])
+    expect(radios[0]!.attributes('aria-selected')).toBeUndefined()
+
+    await radios[0]!.trigger('keydown', { key: 'ArrowRight' })
+    expect(wrapper.props('modelValue')).toBe('dark')
+  })
+})
+
 describe('UiStepper', () => {
   it('changes in steps, stays within bounds and names the value', async () => {
     i18n.global.locale.value = 'de'

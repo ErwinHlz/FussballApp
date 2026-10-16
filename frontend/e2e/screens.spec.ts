@@ -53,6 +53,7 @@ test('screens: player', async ({ page }) => {
   await page.goto('/profile')
   await page.getByText('Meine Vereine').waitFor()
   await shot(page, '15-profile')
+  await page.screenshot({ path: 'e2e/__screens__/15b-profile-viewport.png' })
   await page.getByRole('button', { name: 'Konto löschen' }).click()
   await page.getByRole('dialog').waitFor()
   await page.waitForTimeout(400)

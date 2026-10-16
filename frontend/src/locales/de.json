@@ -308,7 +308,16 @@
     "loadFailed": "Profil konnte nicht geladen werden.",
     "myClubs": "Meine Vereine",
     "manageClub": "Verwalten",
-    "noClubs": "Du bist noch in keinem Verein."
+    "noClubs": "Du bist noch in keinem Verein.",
+    "sections": {
+      "account": "Konto",
+      "appearance": "Darstellung und Sprache"
+    },
+    "language": {
+      "label": "Sprache",
+      "auto": "Automatisch"
+    },
+    "themeLabel": "Hell oder dunkel"
   },
   "common": {
     "close": "Schließen",
@@ -369,7 +378,9 @@
     "welcomeTitle": "Willkommen bei Rondo",
     "welcomeText": "Leg deinen Verein an und melde deine Mannschaften an. Danach lädst du Trainer und Spieler per Link ein.",
     "gotInviteTitle": "Du wurdest eingeladen?",
-    "gotInviteText": "Öffne einfach den Einladungslink von deinem Trainer oder Verein. Du landest dann direkt in deiner Mannschaft."
+    "gotInviteText": "Öffne einfach den Einladungslink von deinem Trainer oder Verein. Du landest dann direkt in deiner Mannschaft.",
+    "nav": "Mannschaften",
+    "navLabel": "Bereiche im Team"
   },
   "clubs": {
     "club": "Verein",
@@ -969,7 +980,8 @@
     "from": "Von",
     "until": "Bis",
     "seasonFrom": "Gültig ab",
-    "seasonUntil": "Gültig bis"
+    "seasonUntil": "Gültig bis",
+    "swipeHint": "Wische nach links oder rechts für den nächsten oder vorigen Tag."
   },
   "branding": {
     "title": "Logo & Vereinsfarbe",

@@ -3,6 +3,7 @@ import { watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 
 const { locale, t } = useI18n()
@@ -11,6 +12,7 @@ const route = useRoute()
 const router = useRouter()
 // Applies the light/dark choice of this device (also on login and public pages).
 useThemeStore()
+useLocaleStore()
 
 watchEffect(() => {
   document.documentElement.lang = locale.value

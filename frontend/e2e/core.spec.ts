@@ -163,7 +163,7 @@ test('a vacation declines events automatically and the coach sees it', async ({ 
   await player.getByLabel('Bis (einschließlich)').fill(day(4))
   await player.getByRole('button', { name: 'Urlaub' }).click()
   await player.getByRole('button', { name: 'Abwesenheit speichern' }).click()
-  await expect(player.getByRole('status')).toContainText(/Termine? abgesagt/)
+  await expect(player.getByText(/Termine? abgesagt/)).toBeVisible()
   // The training tomorrow was already answered "yes" (by the coach): explicit answers win.
 
   const coach = await (await browser.newContext()).newPage()

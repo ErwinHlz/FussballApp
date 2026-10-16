@@ -308,7 +308,16 @@
     "loadFailed": "Profile could not be loaded.",
     "myClubs": "My clubs",
     "manageClub": "Manage",
-    "noClubs": "You are not in a club yet."
+    "noClubs": "You are not in a club yet.",
+    "sections": {
+      "account": "Account",
+      "appearance": "Appearance and language"
+    },
+    "language": {
+      "label": "Language",
+      "auto": "Automatic"
+    },
+    "themeLabel": "Light or dark"
   },
   "common": {
     "close": "Close",
@@ -369,7 +378,9 @@
     "welcomeTitle": "Welcome to Rondo",
     "welcomeText": "Create your club and register your teams. Then invite coaches and players with a link.",
     "gotInviteTitle": "Got an invite?",
-    "gotInviteText": "Just open the invite link from your coach or club. It takes you straight to your team."
+    "gotInviteText": "Just open the invite link from your coach or club. It takes you straight to your team.",
+    "nav": "Teams",
+    "navLabel": "Team areas"
   },
   "clubs": {
     "club": "Club",
@@ -969,7 +980,8 @@
     "from": "From",
     "until": "Until",
     "seasonFrom": "Valid from",
-    "seasonUntil": "Valid until"
+    "seasonUntil": "Valid until",
+    "swipeHint": "Swipe left or right for the next or previous day."
   },
   "branding": {
     "title": "Logo & club color",

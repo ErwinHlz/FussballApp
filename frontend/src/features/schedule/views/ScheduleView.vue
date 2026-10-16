@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { addWeeks, getISOWeek, parseISO } from 'date-fns'
-import AppIcon from '@/components/AppIcon.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import { useSwipe } from '@vueuse/core'
+import UiEmptyState from '@/ui/UiEmptyState.vue'
+import UiIcon from '@/ui/UiIcon.vue'
+import UiIconButton from '@/ui/UiIconButton.vue'
+import UiSkeleton from '@/ui/UiSkeleton.vue'
 import { formatDate } from '@/lib/date'
 import { useClub, useMyClubs, useMyTeams } from '@/features/teams/composables/useTeams'
 import SlotSheet from '../components/SlotSheet.vue'
@@ -49,6 +51,27 @@ function moveWeek(delta: number) {
   weekOffset.value += delta
   selectedDate.value = weekOffset.value === 0 ? today : days.value[0]!
 }
+
+/** Next or previous day, crossing into the neighbouring week at the edges. */
+function moveDay(delta: 1 | -1) {
+  const next = days.value.indexOf(selected.value) + delta
+  if (next >= 0 && next < 7) {
+    selectedDate.value = days.value[next]!
+    return
+  }
+  weekOffset.value += delta
+  selectedDate.value = days.value[delta === 1 ? 0 : 6]!
+}
+
+// Swipe left/right over the day plan changes the day (like turning pages).
+const swipeArea = useTemplateRef<HTMLElement>('swipeArea')
+useSwipe(swipeArea, {
+  threshold: 60,
+  onSwipeEnd: (_event, direction) => {
+    if (direction === 'left') moveDay(1)
+    else if (direction === 'right') moveDay(-1)
+  },
+})
 
 const weekLabel = computed(() => {
   const first = parseISO(days.value[0]!)
@@ -146,19 +169,25 @@ function cellLabel(cell: SlotCell) {
         class="schedule__setup"
         :to="{ name: 'club-schedule-setup', params: { clubId } }"
       >
-        <AppIcon name="building" :size="18" />
+        <UiIcon name="building" :size="18" />
         {{ t('schedule.setup') }}
       </RouterLink>
     </header>
 
     <nav class="schedule__week" :aria-label="t('schedule.weekNav')">
-      <BaseButton variant="ghost" :aria-label="t('schedule.previousWeek')" @click="moveWeek(-1)">
-        <AppIcon name="chevronLeft" :size="20" />
-      </BaseButton>
+      <UiIconButton
+        icon="chevronLeft"
+        variant="ghost"
+        :label="t('schedule.previousWeek')"
+        @click="moveWeek(-1)"
+      />
       <p class="schedule__week-label" aria-live="polite">{{ weekLabel }}</p>
-      <BaseButton variant="ghost" :aria-label="t('schedule.nextWeek')" @click="moveWeek(1)">
-        <AppIcon name="chevronRight" :size="20" />
-      </BaseButton>
+      <UiIconButton
+        icon="chevronRight"
+        variant="ghost"
+        :label="t('schedule.nextWeek')"
+        @click="moveWeek(1)"
+      />
     </nav>
 
     <div class="schedule__days" role="group" :aria-label="t('schedule.day')">
@@ -180,68 +209,74 @@ function cellLabel(cell: SlotCell) {
       </button>
     </div>
 
-    <p v-if="notice" class="schedule__notice" role="status">✓ {{ notice }}</p>
+    <div ref="swipeArea" class="schedule__swipe">
+      <p v-if="notice" class="schedule__notice" role="status">✓ {{ notice }}</p>
 
-    <p v-if="isLoading" class="schedule__muted">{{ t('common.loading') }}</p>
-    <p v-else-if="loadFailed" class="schedule__error" role="alert">
-      {{ t('schedule.loadFailed') }}
-    </p>
+      <div v-if="isLoading" aria-busy="true" class="schedule__loading">
+        <UiSkeleton shape="block" height="140px" />
+      </div>
+      <p v-else-if="loadFailed" class="schedule__error" role="alert">
+        {{ t('schedule.loadFailed') }}
+      </p>
 
-    <EmptyState
-      v-else-if="!slots.data.value?.length"
-      icon="calendar"
-      :title="t('schedule.emptyTitle')"
-      :text="isAdmin ? t('schedule.emptyAdmin') : t('schedule.emptyText')"
-    >
-      <RouterLink
-        v-if="isAdmin"
-        class="schedule__setup"
-        :to="{ name: 'club-schedule-setup', params: { clubId } }"
+      <UiEmptyState
+        v-else-if="!slots.data.value?.length"
+        icon="calendar"
+        :title="t('schedule.emptyTitle')"
+        :text="isAdmin ? t('schedule.emptyAdmin') : t('schedule.emptyText')"
       >
-        {{ t('schedule.setup') }}
-      </RouterLink>
-    </EmptyState>
-
-    <p v-else-if="!dayPlan.length" class="schedule__muted">{{ t('schedule.noSlotsToday') }}</p>
-
-    <section
-      v-for="{ pitch, rows } in dayPlan"
-      v-else
-      :key="pitch.id"
-      class="schedule__pitch"
-      :aria-label="pitch.name"
-    >
-      <h2 class="schedule__pitch-name">{{ pitch.name }}</h2>
-      <ul class="schedule__slots" role="list">
-        <li
-          v-for="row in rows"
-          :key="row.slot.id"
-          class="schedule__slot"
-          :class="{ 'schedule__slot--past': row.started }"
+        <RouterLink
+          v-if="isAdmin"
+          class="schedule__setup"
+          :to="{ name: 'club-schedule-setup', params: { clubId } }"
         >
-          <span class="schedule__time">
-            {{ timeLabel(row.slot.start_time) }}<br />{{ timeLabel(row.slot.end_time) }}
-          </span>
-          <div class="schedule__cells" :style="{ '--cells': row.cells.length }">
-            <component
-              :is="canOpen(cell, row.started) ? 'button' : 'div'"
-              v-for="cell in row.cells"
-              :key="cell.part"
-              :type="canOpen(cell, row.started) ? 'button' : undefined"
-              class="schedule__cell"
-              :class="{
-                'schedule__cell--free': !cell.booking,
-                'schedule__cell--own': cell.booking && ownTeamIds.has(cell.booking.team_id),
-                'schedule__cell--action': canOpen(cell, row.started),
-              }"
-              @click="canOpen(cell, row.started) && openCell(pitch, row.slot, row.cells, cell)"
-            >
-              {{ cellLabel(cell) }}
-            </component>
-          </div>
-        </li>
-      </ul>
-    </section>
+          {{ t('schedule.setup') }}
+        </RouterLink>
+      </UiEmptyState>
+
+      <p v-else-if="!dayPlan.length" class="schedule__muted">{{ t('schedule.noSlotsToday') }}</p>
+
+      <section
+        v-for="{ pitch, rows } in dayPlan"
+        v-else
+        :key="pitch.id"
+        class="schedule__pitch"
+        :aria-label="pitch.name"
+      >
+        <h2 class="schedule__pitch-name">{{ pitch.name }}</h2>
+        <ul class="schedule__slots" role="list">
+          <li
+            v-for="row in rows"
+            :key="row.slot.id"
+            class="schedule__slot"
+            :class="{ 'schedule__slot--past': row.started }"
+          >
+            <span class="schedule__time">
+              {{ timeLabel(row.slot.start_time) }}<br />{{ timeLabel(row.slot.end_time) }}
+            </span>
+            <div class="schedule__cells" :style="{ '--cells': row.cells.length }">
+              <component
+                :is="canOpen(cell, row.started) ? 'button' : 'div'"
+                v-for="cell in row.cells"
+                :key="cell.part"
+                :type="canOpen(cell, row.started) ? 'button' : undefined"
+                class="schedule__cell"
+                :class="{
+                  'schedule__cell--free': !cell.booking,
+                  'schedule__cell--own': cell.booking && ownTeamIds.has(cell.booking.team_id),
+                  'schedule__cell--action': canOpen(cell, row.started),
+                }"
+                @click="canOpen(cell, row.started) && openCell(pitch, row.slot, row.cells, cell)"
+              >
+                {{ cellLabel(cell) }}
+              </component>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <p class="schedule__swipe-hint">{{ t('schedule.swipeHint') }}</p>
+    </div>
 
     <SlotSheet
       v-if="sheet"
@@ -447,6 +482,25 @@ function cellLabel(cell: SlotCell) {
         color: var(--color-primary);
       }
     }
+  }
+
+  &__swipe {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+    // Horizontal swipes change the day; vertical scrolling stays with the page.
+    touch-action: pan-y;
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__swipe-hint {
+    color: var(--color-text-muted);
+    font-size: $font-xs;
+    text-align: center;
   }
 
   &__muted {
