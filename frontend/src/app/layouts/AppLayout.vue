@@ -66,8 +66,6 @@ const tabPrefixes: [string, string[]][] = [
 ]
 const activeTab = computed(() => {
   if (route.name === 'home') return 'home'
-  // The club's pitch schedule belongs to the trainings; its setup to the club administration.
-  if (route.name === 'club-schedule') return 'training'
   return (
     tabPrefixes.find(([, prefixes]) => prefixes.some((p) => route.path.startsWith(p)))?.[0] ?? null
   )

@@ -79,7 +79,7 @@ const list = computed(() =>
       v-if="activeTeam"
       :title="t('schedule.title')"
       :subtitle="t('schedule.openHint')"
-      :to="{ name: 'club-schedule', params: { clubId: activeTeam.club_id } }"
+      :to="{ name: 'events-schedule' }"
       chevron
     >
       <template #leading><UiIcon name="calendar" :size="24" /></template>

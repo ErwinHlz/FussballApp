@@ -18,7 +18,7 @@ import {
 import DeclineSheet from './DeclineSheet.vue'
 
 /**
- * "Who is coming?" for coaches, live: big counts, then everyone by answer. Tapping a person
+ * "Who is coming?" for coaches: big counts, then everyone by answer. Tapping a person
  * lets the coach answer for them (players without account, phone calls, late changes).
  */
 const props = defineProps<{ event: TeamEvent; members: TeamMember[] }>()
@@ -67,9 +67,6 @@ function onAnswer(status: AttendanceStatus) {
   <section class="overview" aria-labelledby="overview-title">
     <h2 id="overview-title" class="overview__title">
       {{ t('events.overview.title') }}
-      <span class="overview__live"
-        ><span class="overview__pulse" aria-hidden="true" />{{ t('events.overview.live') }}</span
-      >
     </h2>
 
     <div class="overview__totals">
@@ -153,26 +150,6 @@ function onAnswer(status: AttendanceStatus) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-
-  &__live {
-    display: inline-flex;
-    align-items: center;
-    gap: $space-1;
-    color: var(--color-yes-text);
-    font-family: var(--font-sans);
-    font-size: $font-xs;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  &__pulse {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-yes);
-    animation: overview-pulse 2s ease-in-out infinite;
   }
 
   &__totals {
@@ -269,12 +246,6 @@ function onAnswer(status: AttendanceStatus) {
     color: var(--color-text-muted);
     font-size: $font-sm;
     font-weight: 500;
-  }
-}
-
-@keyframes overview-pulse {
-  50% {
-    opacity: 0.35;
   }
 }
 </style>

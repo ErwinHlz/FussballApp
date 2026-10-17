@@ -374,3 +374,27 @@ test('undo after a first decline goes back to "no answer yet"', async ({ page })
   ).toHaveAttribute('aria-pressed', 'false')
   await expect(page.getByRole('button', { name: /Ich bin dabei/ })).toBeVisible()
 })
+
+test('"Alle zusagen" is always there and says when nothing is open', async ({ page }) => {
+  const demo = await seedDemo()
+  await login(page, demo.player.email)
+  await ready(page)
+  await page.getByRole('button', { name: 'Alle zusagen' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Allen Terminen zusagen?' })
+  await sheet.getByRole('button', { name: /^Zusagen/ }).click()
+  await expect(page.getByText(/Termine zugesagt/)).toBeVisible()
+
+  // Everything answered: the button stays and explains it.
+  await page.getByRole('button', { name: 'Alle zusagen' }).click()
+  await expect(sheet).toContainText('Alles beantwortet')
+  await expect(sheet.getByRole('button', { name: /^Zusagen/ })).toHaveCount(0)
+  await sheet.getByRole('button', { name: 'Schließen' }).first().click()
+
+  // The coach's "who is coming" has no "live" label any more.
+  const coach = await (await page.context().browser()!.newContext()).newPage()
+  await login(coach, demo.coach.email, `/events/${demo.match.id}`)
+  await ready(coach)
+  await expect(coach.getByRole('heading', { name: /Wer kommt/ })).toBeVisible()
+  await expect(coach.getByText('live', { exact: true })).toHaveCount(0)
+  await coach.context().close()
+})

@@ -28,6 +28,7 @@ export function usePitches(clubId: MaybeRefOrGetter<string>) {
   return useQuery({
     queryKey: computed(() => scheduleKeys.pitches(toValue(clubId))),
     queryFn: () => fetchPitches(toValue(clubId)),
+    enabled: computed(() => !!toValue(clubId)),
   })
 }
 
@@ -35,6 +36,7 @@ export function useSlots(clubId: MaybeRefOrGetter<string>) {
   return useQuery({
     queryKey: computed(() => scheduleKeys.slots(toValue(clubId))),
     queryFn: () => fetchSlots(toValue(clubId)),
+    enabled: computed(() => !!toValue(clubId)),
   })
 }
 
@@ -46,6 +48,7 @@ export function useBookings(
   return useQuery({
     queryKey: computed(() => scheduleKeys.bookings(toValue(clubId), toValue(from), toValue(until))),
     queryFn: () => fetchBookings(toValue(clubId), toValue(from), toValue(until)),
+    enabled: computed(() => !!toValue(clubId)),
   })
 }
 
@@ -53,6 +56,7 @@ export function useClubTeamNames(clubId: MaybeRefOrGetter<string>) {
   return useQuery({
     queryKey: computed(() => scheduleKeys.teamNames(toValue(clubId))),
     queryFn: () => fetchClubTeamNames(toValue(clubId)),
+    enabled: computed(() => !!toValue(clubId)),
     staleTime: 5 * 60_000,
   })
 }

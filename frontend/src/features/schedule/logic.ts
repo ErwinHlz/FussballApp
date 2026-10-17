@@ -85,3 +85,34 @@ export function defaultSeason(today = new Date()): { from: string; until: string
 export function timeLabel(time: string): string {
   return time.slice(0, 5)
 }
+
+/** Minutes since midnight of a 'HH:mm[:ss]' time. */
+export function minutesOf(time: string): number {
+  const [h = 0, m = 0] = time.split(':').map(Number)
+  return h * 60 + m
+}
+
+/**
+ * Hours the week calendar shows: from the earliest start to the latest end of the slots on the
+ * dates (whole hours), at least the fallback range when nothing takes place.
+ */
+export function calendarHours(
+  slots: PitchSlot[],
+  dates: string[],
+  fallback: [number, number] = [16, 21],
+): { from: number; to: number } {
+  const week = dates.flatMap((date) => slotsOn(slots, date))
+  if (!week.length) return { from: fallback[0], to: fallback[1] }
+  const from = Math.floor(Math.min(...week.map((s) => minutesOf(s.start_time))) / 60)
+  const to = Math.ceil(Math.max(...week.map((s) => minutesOf(s.end_time))) / 60)
+  return { from, to: Math.max(to, from + 1) }
+}
+
+/** Top offset and height of a slot in the calendar, in hours from the first shown hour. */
+export function slotBox(slot: Pick<PitchSlot, 'start_time' | 'end_time'>, fromHour: number) {
+  const start = minutesOf(slot.start_time)
+  return {
+    top: (start - fromHour * 60) / 60,
+    height: (minutesOf(slot.end_time) - start) / 60,
+  }
+}

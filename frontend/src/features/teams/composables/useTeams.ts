@@ -62,6 +62,7 @@ export function useClub(clubId: MaybeRefOrGetter<string>) {
   return useQuery({
     queryKey: computed(() => teamKeys.club(toValue(clubId))),
     queryFn: () => fetchClub(toValue(clubId)),
+    enabled: computed(() => !!toValue(clubId)),
   })
 }
 

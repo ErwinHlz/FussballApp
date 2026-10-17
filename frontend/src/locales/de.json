@@ -83,7 +83,6 @@
     },
     "overview": {
       "title": "Wer kommt?",
-      "live": "live",
       "yes": "Zusagen",
       "maybe": "Vielleicht",
       "no": "Absagen",
@@ -165,7 +164,8 @@
       "confirm": "Zusagen ({n})",
       "done": "Für {n} Termin zugesagt. | Für {n} Termine zugesagt.",
       "doneSkipped": "Für {n} Termine zugesagt, {skipped} waren inzwischen geschlossen.",
-      "failed": "Zusagen fehlgeschlagen. Bitte versuche es erneut."
+      "failed": "Zusagen fehlgeschlagen. Bitte versuche es erneut.",
+      "nothingOpen": "Alles beantwortet – es gibt gerade keinen offenen Termin, für den du noch zusagen kannst."
     },
     "filter": {
       "label": "Filter",
@@ -233,7 +233,8 @@
       "starter": "Startelf",
       "bench": "Bank",
       "reserve": "Reserve"
-    }
+    },
+    "navLabel": "Bereiche bei Termine"
   },
   "training": {
     "title": "Training",
@@ -991,7 +992,15 @@
     "until": "Bis",
     "seasonFrom": "Gültig ab",
     "seasonUntil": "Gültig bis",
-    "swipeHint": "Wische nach links oder rechts für den nächsten oder vorigen Tag."
+    "swipeHint": "Wische nach links oder rechts für den nächsten oder vorigen Tag.",
+    "thisWeek": "Zur aktuellen Woche",
+    "legendOwn": "Eigene Mannschaft",
+    "legendTaken": "Belegt",
+    "legendFree": "Frei",
+    "calendarHint": "Seitlich wischen für weitere Tage. Tippe auf eine freie Zeit, um sie zu reservieren, oder auf eine eigene, um sie abzugeben.",
+    "allPitches": "Alle Plätze",
+    "pitchFilter": "Platz wählen",
+    "today": "Heute"
   },
   "branding": {
     "title": "Logo & Vereinsfarbe",

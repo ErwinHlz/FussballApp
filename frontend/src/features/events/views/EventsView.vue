@@ -15,6 +15,7 @@ import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import DeclineSheet from '../components/DeclineSheet.vue'
 import EventRow from '../components/EventRow.vue'
+import EventsNav from '../components/EventsNav.vue'
 import { useAnswer } from '../composables/useAnswer'
 import { useAttendAll, useMyMember, useTeamEvents } from '../composables/useEvents'
 import { useEventFormat } from '../format'
@@ -128,6 +129,8 @@ function scrollToFirstUnanswered() {
 
 <template>
   <section class="events">
+    <EventsNav active="events" />
+
     <header class="events__head">
       <h1>{{ t('events.title') }}</h1>
       <UiIconButton
@@ -153,7 +156,7 @@ function scrollToFirstUnanswered() {
       />
     </header>
 
-    <div v-if="unanswered.length || attendCandidates.length" class="events__tools">
+    <div v-if="memberId" class="events__tools">
       <button
         v-if="unanswered.length"
         type="button"
@@ -163,12 +166,8 @@ function scrollToFirstUnanswered() {
         <UiIcon name="alert" :size="18" />
         {{ t('events.reminder', unanswered.length) }}
       </button>
-      <UiButton
-        v-if="attendCandidates.length"
-        variant="secondary"
-        icon="check"
-        @click="attendOpen = true"
-      >
+      <!-- Always there; without open dates the sheet says so. -->
+      <UiButton variant="secondary" icon="check" aria-haspopup="dialog" @click="attendOpen = true">
         {{ t('events.attendAll.button') }}
       </UiButton>
     </div>
@@ -277,13 +276,20 @@ function scrollToFirstUnanswered() {
     </BottomSheet>
 
     <BottomSheet v-model:open="attendOpen" :title="t('events.attendAll.title')">
-      <p>{{ t('events.attendAll.text', attendCandidates.length) }}</p>
-      <p class="events__hint">{{ t('events.attendAll.hint') }}</p>
+      <template v-if="attendCandidates.length">
+        <p>{{ t('events.attendAll.text', attendCandidates.length) }}</p>
+        <p class="events__hint">{{ t('events.attendAll.hint') }}</p>
+      </template>
+      <p v-else>{{ t('events.attendAll.nothingOpen') }}</p>
       <template #footer>
         <UiButton variant="secondary" @click="attendOpen = false">{{
-          t('common.cancel')
+          attendCandidates.length ? t('common.cancel') : t('common.close')
         }}</UiButton>
-        <UiButton :loading="attendAll.isPending.value" @click="confirmAttendAll">
+        <UiButton
+          v-if="attendCandidates.length"
+          :loading="attendAll.isPending.value"
+          @click="confirmAttendAll"
+        >
           {{ t('events.attendAll.confirm', { n: attendCandidates.length }) }}
         </UiButton>
       </template>

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   bookingCovers,
+  calendarHours,
+  slotBox,
   defaultSeason,
   freeParts,
   slotCells,
@@ -121,5 +123,28 @@ describe('defaultSeason', () => {
   it('ends on the next 30 June', () => {
     expect(defaultSeason(new Date(2026, 9, 9))).toEqual({ from: '2026-10-09', until: '2027-06-30' })
     expect(defaultSeason(new Date(2027, 2, 1))).toEqual({ from: '2027-03-01', until: '2027-06-30' })
+  })
+})
+
+describe('week calendar', () => {
+  const week = weekDates(new Date(2026, 9, 13))
+
+  it('shows the hours from the earliest start to the latest end of the week', () => {
+    const slots = [
+      slot(),
+      slot({ id: 's2', weekday: 6, start_time: '10:00:00', end_time: '15:30:00' }),
+    ]
+    expect(calendarHours(slots, week)).toEqual({ from: 10, to: 19 })
+  })
+
+  it('falls back to the evening without slots', () => {
+    expect(calendarHours([], week)).toEqual({ from: 16, to: 21 })
+  })
+
+  it('places a slot by its times', () => {
+    expect(slotBox({ start_time: '17:30:00', end_time: '19:00:00' }, 16)).toEqual({
+      top: 1.5,
+      height: 1.5,
+    })
   })
 })

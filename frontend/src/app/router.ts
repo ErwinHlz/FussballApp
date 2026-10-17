@@ -83,6 +83,13 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/events/views/EventsView.vue'),
       },
       {
+        // The club's pitch schedule as a week calendar (club of the active team).
+        path: 'events/schedule',
+        name: 'events-schedule',
+        meta: { requiresTeam: true, title: 'schedule.title' },
+        component: () => import('@/features/schedule/views/ScheduleView.vue'),
+      },
+      {
         // "+": choose the type, then the short form (type in ?kind=).
         path: 'events/new',
         name: 'event-create',
@@ -215,11 +222,10 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/teams/views/TeamsView.vue'),
       },
       {
+        // Older links: the schedule now lives in the events tab.
         path: 'clubs/:clubId/schedule',
         name: 'club-schedule',
-        props: true,
-        meta: { title: 'schedule.title', back: 'training' },
-        component: () => import('@/features/schedule/views/ScheduleView.vue'),
+        redirect: { name: 'events-schedule' },
       },
       {
         path: 'clubs/:clubId/schedule/setup',

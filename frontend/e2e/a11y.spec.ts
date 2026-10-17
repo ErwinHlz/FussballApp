@@ -76,6 +76,8 @@ test.describe('axe: WCAG 2.1 AA', () => {
       '/events/new/training',
       '/events/new/series',
       '/events/new/match',
+      '/events/new?kind=match',
+      '/events/schedule',
       '/drills',
       '/drills/new',
       '/boards',

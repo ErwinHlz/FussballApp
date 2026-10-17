@@ -89,11 +89,7 @@ function toggleAdmin(member: ClubMember) {
         <h2 id="club-schedule" class="club__subtitle">{{ t('schedule.title') }}</h2>
         <p class="club__muted">{{ t('schedule.openHint') }}</p>
         <div class="club__links">
-          <RouterLink
-            v-slot="{ navigate }"
-            custom
-            :to="{ name: 'club-schedule', params: { clubId } }"
-          >
+          <RouterLink v-slot="{ navigate }" custom :to="{ name: 'events-schedule' }">
             <UiButton variant="secondary" block @click="navigate">
               <template #icon><UiIcon name="calendar" :size="18" /></template>
               {{ t('schedule.title') }}

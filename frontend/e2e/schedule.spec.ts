@@ -6,19 +6,25 @@ import { addDays, format } from 'date-fns'
 import { de } from 'date-fns/locale/de'
 import { expect, test, type Page } from '@playwright/test'
 import { login } from './support/app'
+import { expectAccessible } from './support/fixtures'
 import { register, seedDemo } from './support/seed'
 
 const tomorrow = addDays(new Date(), 1)
 
+/** Opens the week calendar on the week of tomorrow (old club links still lead there). */
 async function openTomorrow(page: Page, clubId: string) {
   await page.goto(`/clubs/${clubId}/schedule`)
+  await expect(page).toHaveURL(/\/events\/schedule$/)
   // Tomorrow is in next week when today is Sunday.
   if (new Date().getDay() === 0) await page.getByRole('button', { name: 'Nächste Woche' }).click()
-  await page
-    .locator('.schedule__day')
-    .nth((tomorrow.getDay() + 6) % 7)
-    .click()
 }
+
+/** A part of tomorrow's 17:00 slot on the Kunstrasen, by its full name. */
+const part = (page: Page, text: string) =>
+  page.getByLabel(
+    `${format(tomorrow, 'EEEEEE d.M.', { locale: de })}, 17:00–18:30, Kunstrasen, ${text}`,
+    { exact: true },
+  )
 
 test('admin sets up a pitch, a coach books and releases half of it', async ({ browser }) => {
   const demo = await seedDemo()
@@ -60,16 +66,18 @@ test('admin sets up a pitch, a coach books and releases half of it', async ({ br
   await login(page, carl.email)
   await openTomorrow(page, demo.club.id)
   await expect(page.getByRole('link', { name: 'Plätze & Zeiten' })).toHaveCount(0)
-  await page.getByRole('button', { name: 'A · frei' }).click()
+  await part(page, 'A frei').click()
   const sheet = page.getByRole('dialog')
   await sheet.getByRole('button', { name: /^Jede Woche bis/ }).click()
   await page.waitForTimeout(300)
   await page.screenshot({ path: 'e2e/__screens__/42-schedule-book.png' })
   await sheet.getByRole('button', { name: 'Reservieren' }).click()
   await expect(page.getByRole('status')).toContainText('Trainings sind angelegt')
-  await expect(page.locator('.schedule__cell--own')).toHaveText('A · U19')
+  await expect(part(page, 'A U19')).toHaveClass(/schedule__cell--own/)
   await page.waitForTimeout(400)
   await page.screenshot({ path: 'e2e/__screens__/40-schedule.png', fullPage: true })
+  // The week calendar with free, own and taken parts passes the WCAG check.
+  await expectAccessible(page)
 
   // The trainings are in the team's calendar.
   await page.goto('/training')
@@ -77,23 +85,19 @@ test('admin sets up a pitch, a coach books and releases half of it', async ({ br
 
   // The admin sees the booking live in the plan with the team name.
   await openTomorrow(admin, demo.club.id)
-  await expect(admin.getByText('A · U19')).toBeVisible()
+  await expect(part(admin, 'A U19')).toBeVisible()
 
   // Coach gives back tomorrow only.
   await openTomorrow(page, demo.club.id)
-  await page.getByRole('button', { name: 'A · U19' }).click()
+  await part(page, 'A U19').click()
   await page
     .getByRole('dialog')
     .getByRole('button', { name: /^Nur .* abgeben$/ })
     .click()
   await expect(page.getByRole('status')).toContainText('Abgegeben')
-  await expect(page.getByRole('button', { name: 'A · frei' })).toBeVisible()
+  await expect(part(page, 'A frei')).toBeVisible()
 
   // Next week the booking still holds.
   await page.getByRole('button', { name: 'Nächste Woche' }).click()
-  await page
-    .locator('.schedule__day')
-    .nth((tomorrow.getDay() + 6) % 7)
-    .click()
-  await expect(page.locator('.schedule__cell--own')).toHaveText('A · U19')
+  await expect(page.locator('.schedule__cell--own').first()).toContainText('U19')
 })

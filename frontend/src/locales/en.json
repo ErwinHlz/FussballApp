@@ -83,7 +83,6 @@
     },
     "overview": {
       "title": "Who is coming?",
-      "live": "live",
       "yes": "Yes",
       "maybe": "Maybe",
       "no": "No",
@@ -165,7 +164,8 @@
       "confirm": "Attend ({n})",
       "done": "Attending {n} date. | Attending {n} dates.",
       "doneSkipped": "Attending {n} dates, {skipped} had closed in the meantime.",
-      "failed": "Saving failed. Please try again."
+      "failed": "Saving failed. Please try again.",
+      "nothingOpen": "All answered – there is no open date left you could still accept."
     },
     "filter": {
       "label": "Filter",
@@ -233,7 +233,8 @@
       "starter": "Starting XI",
       "bench": "Bench",
       "reserve": "Reserve"
-    }
+    },
+    "navLabel": "Event areas"
   },
   "training": {
     "title": "Training",
@@ -991,7 +992,15 @@
     "until": "Until",
     "seasonFrom": "Valid from",
     "seasonUntil": "Valid until",
-    "swipeHint": "Swipe left or right for the next or previous day."
+    "swipeHint": "Swipe left or right for the next or previous day.",
+    "thisWeek": "Back to this week",
+    "legendOwn": "Own team",
+    "legendTaken": "Taken",
+    "legendFree": "Free",
+    "calendarHint": "Swipe sideways for more days. Tap a free time to book it, or one of yours to release it.",
+    "allPitches": "All pitches",
+    "pitchFilter": "Choose pitch",
+    "today": "Today"
   },
   "branding": {
     "title": "Logo & club color",

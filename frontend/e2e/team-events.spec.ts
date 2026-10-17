@@ -68,7 +68,8 @@ test('a player attends all open dates, filters the list and jumps back to the to
   await expect(dialog).toContainText('offene Termine')
   await dialog.getByRole('button', { name: /^Zusagen/ }).click()
   await expect(page.getByText(/Termine zugesagt/)).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Alle zusagen' })).toHaveCount(0)
+  // The button stays (it explains when nothing is open).
+  await expect(page.getByRole('button', { name: 'Alle zusagen' })).toBeVisible()
   await expect(page.getByText('noch nicht beantwortet')).toHaveCount(0)
 
   // Back to top after scrolling down (once the sheet is gone, it would take the wheel).

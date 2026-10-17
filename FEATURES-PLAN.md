@@ -47,10 +47,10 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
       und auf der Termin-Seite (Ort und Treffpunkt)
 
 ### F4 – Terminliste und Termin-Detail
-- [ ] „live“-Hinweis bei „Wer kommt?“ entfernen
-- [ ] „Alle zusagen“ immer in der Kopfzeile der Terminliste
-- [ ] Bereichsleiste in „Termine“: **Termine | Belegungsplan**; der Belegungsplan des ganzen Vereins
-      als **Wochenkalender** (Tage als Spalten, Plätze/Zeiten als Blöcke, Woche vor/zurück wischen)
+- [x] „live“-Hinweis bei „Wer kommt?“ entfernen
+- [x] „Alle zusagen“ immer in der Kopfzeile der Terminliste
+- [x] Bereichsleiste in „Termine“: **Termine | Belegungsplan**; der Belegungsplan des ganzen Vereins
+      als **Wochenkalender** (Tage als Spalten, Plätze/Zeiten als Blöcke, Woche vor/zurück)
 
 ### F5 – Übungen
 - [ ] Filter der Übungsbibliothek neu gestaltet (Suche + Kategorie-Reiter + Filter-Knopf für den Rest)
@@ -105,3 +105,15 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
 - Behoben dabei: Ein `<fieldset>` ist mindestens so breit wie sein Inhalt – der Tagesstreifen hat
   die Seite seitlich aufgeschoben (`min-width: 0`), und `scrollIntoView` hat die ganze Seite bewegt
   (jetzt scrollt nur der Streifen).
+
+### F4
+- „Alle zusagen“ steht für alle mit Kader-Eintrag immer da; ohne offene Termine sagt das Fenster
+  „Alles beantwortet“ statt eines Bestätigen-Knopfs.
+- Belegungsplan unter `/events/schedule` (Verein der aktiven Mannschaft), alte Links
+  `/clubs/:id/schedule` leiten dorthin um. Wochenkalender: Stundenspalte und Tageskopf bleiben stehen,
+  der Kalender scrollt in sich (seitlich für weitere Tage, senkrecht für Uhrzeiten) und startet
+  bei heute und der ersten Platzzeit. Jeder Platz ist eine Spur pro Tag, Hälften A/B nebeneinander;
+  Platzfilter „Alle Plätze | …“. Eigene Mannschaft in Akzentfarbe, frei gestrichelt, Antippen
+  wie bisher zum Reservieren/Abgeben (Bottom Sheet). Jede Zelle hat einen vollständigen Namen
+  („Di 20.10., 17:00–18:30, Kunstrasen, A U17“), der mit dem sichtbaren Text endet.
+- Belegungsplan-Abfragen laufen erst, wenn der Verein bekannt ist.
