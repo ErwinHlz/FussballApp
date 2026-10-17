@@ -14,7 +14,6 @@ import { useSnackbar } from '@/ui/useSnackbar'
 import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import DeclineSheet from '../components/DeclineSheet.vue'
-import QuickCreateSheet from '../components/QuickCreateSheet.vue'
 import EventRow from '../components/EventRow.vue'
 import { useAnswer } from '../composables/useAnswer'
 import { useAttendAll, useMyMember, useTeamEvents } from '../composables/useEvents'
@@ -121,8 +120,6 @@ function toTop() {
   window.scrollTo({ top: 0, behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth' })
 }
 
-const createOpen = ref(false)
-
 function scrollToFirstUnanswered() {
   const first = unanswered.value[0]
   if (first) document.getElementById(`event-${first.id}`)?.scrollIntoView({ behavior: 'smooth' })
@@ -152,8 +149,7 @@ function scrollToFirstUnanswered() {
         icon="plus"
         variant="primary"
         :label="t('events.createLabel')"
-        aria-haspopup="dialog"
-        @click="createOpen = true"
+        :to="{ name: 'event-create' }"
       />
     </header>
 
@@ -279,12 +275,6 @@ function scrollToFirstUnanswered() {
         </UiButton>
       </template>
     </BottomSheet>
-
-    <QuickCreateSheet
-      v-model:open="createOpen"
-      :team-id="teamId"
-      :events="events.data.value ?? []"
-    />
 
     <BottomSheet v-model:open="attendOpen" :title="t('events.attendAll.title')">
       <p>{{ t('events.attendAll.text', attendCandidates.length) }}</p>

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { member } from '@/features/squad/__tests__/squad.spec'
 import {
+  deadlineOffset,
+  placeSuggestions,
+  shiftTime,
   activeFilterCount,
   attendAllCandidates,
   DEFAULT_EVENT_FILTER,
@@ -347,5 +350,32 @@ describe('quick create defaults', () => {
     expect(suggestDate(5, thursday)).toBe('2026-10-16')
     expect(suggestDate(4, thursday)).toBe('2026-10-22')
     expect(suggestDate(null, thursday)).toBe('2026-10-16')
+  })
+})
+
+describe('placeSuggestions', () => {
+  it('lists event and meeting places, newest first, without duplicates', () => {
+    const events = [
+      { starts_at: '2026-10-01T18:00:00Z', location: 'Sportpark', meet_location: null },
+      { starts_at: '2026-10-10T13:00:00Z', location: 'Waldstadion', meet_location: 'Vereinsheim' },
+      { starts_at: '2026-10-05T18:00:00Z', location: ' sportpark ', meet_location: '' },
+    ]
+    expect(placeSuggestions(events)).toEqual(['Waldstadion', 'Vereinsheim', 'sportpark'])
+  })
+})
+
+describe('shiftTime', () => {
+  it('moves a time and wraps around midnight', () => {
+    expect(shiftTime('15:00', -75)).toBe('13:45')
+    expect(shiftTime('00:30', -60)).toBe('23:30')
+  })
+})
+
+describe('deadlineOffset', () => {
+  it('shows whole days as days', () => {
+    expect(deadlineOffset(48)).toEqual({ unit: 'days', n: 2 })
+    expect(deadlineOffset(24)).toEqual({ unit: 'days', n: 1 })
+    expect(deadlineOffset(6)).toEqual({ unit: 'hours', n: 6 })
+    expect(deadlineOffset(30)).toEqual({ unit: 'hours', n: 30 })
   })
 })

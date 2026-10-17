@@ -13,10 +13,13 @@ import UiTextarea from '@/ui/UiTextarea.vue'
 import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import type { EventInput } from '../api'
+import LocationField from '../components/LocationField.vue'
 import {
   COMPETITIONS,
   DEADLINE_HOURS,
   deadlineFromHours,
+  deadlineOffset,
+  placeSuggestions,
   generateMultiWeekdayOccurrences,
   type Competition,
 } from '../logic'
@@ -28,7 +31,13 @@ import {
   seriesSchema,
   trainingSchema,
 } from '../schemas'
-import { useCreateEvent, useCreateSeries, useEvent, useUpdateEvent } from '../composables/useEvents'
+import {
+  useCreateEvent,
+  useCreateSeries,
+  useEvent,
+  useTeamEvents,
+  useUpdateEvent,
+} from '../composables/useEvents'
 
 type Kind = 'training' | 'series' | 'match' | 'event'
 
@@ -46,6 +55,8 @@ const kind = computed<Kind>(() =>
   isEdit.value ? (existing?.data.value?.type ?? 'training') : (props.kind ?? 'training'),
 )
 
+const teamEvents = useTeamEvents(teamId)
+const places = computed(() => placeSuggestions(teamEvents.data.value ?? []))
 const createEvent = useCreateEvent(teamId)
 const createSeries = useCreateSeries()
 const updateEvent = useUpdateEvent()
@@ -77,6 +88,7 @@ const { defineField, errors, handleSubmit, resetForm, values } = useForm({
     location: fromQuick('location') ?? '',
     title: fromQuick('title') ?? '',
     opponent: fromQuick('opponent') ?? '',
+    meetTime: fromQuick('meetTime') ?? '',
     meetLocation: fromQuick('meetLocation') ?? '',
     weekdays: [] as string[],
     validFrom: today,
@@ -149,7 +161,14 @@ const deadlineOptions = computed(() => {
     { value: 'none', label: t('events.form.noDeadline') },
     ...[...hours]
       .sort((a, b) => a - b)
-      .map((h) => ({ value: String(h), label: t('events.form.hoursBefore', h) })),
+      .map((h) => {
+        const { unit, n } = deadlineOffset(h)
+        return {
+          value: String(h),
+          label:
+            unit === 'days' ? t('events.form.offsetDays', n) : t('events.form.offsetHours', { n }),
+        }
+      }),
   ]
 })
 const weekdayOptions = computed(() =>
@@ -368,20 +387,22 @@ const onSubmit = handleSubmit(async (raw) => {
         />
       </div>
 
-      <UiInput
+      <LocationField
         v-if="kind === 'match'"
         v-model="meetLocation"
         :label="t('events.form.meetLocation')"
+        :suggestions="places"
         :error="err('meetLocation')"
       />
-      <UiInput
+      <LocationField
         v-model="location"
         :label="kind === 'match' ? t('events.form.venueLocation') : t('events.form.location')"
+        :suggestions="places"
         :error="err('location')"
       />
       <UiChipGroup
         v-model="deadline"
-        :label="t('events.form.deadline')"
+        :label="t('events.form.deadlineBefore')"
         :options="deadlineOptions"
       />
       <UiTextarea

@@ -83,6 +83,13 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/events/views/EventsView.vue'),
       },
       {
+        // "+": choose the type, then the short form (type in ?kind=).
+        path: 'events/new',
+        name: 'event-create',
+        meta: { requiresTeam: true, title: 'events.createLabel', back: 'events' },
+        component: () => import('@/features/events/views/EventCreateView.vue'),
+      },
+      {
         path: 'events/new/:kind(training|series|match|event)',
         name: 'event-new',
         props: true,

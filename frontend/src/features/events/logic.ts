@@ -327,3 +327,32 @@ export function suggestDate(weekday: number | null, now: Date = new Date()): str
   const offset = (weekday - tomorrow.getDay() + 7) % 7
   return format(addDays(tomorrow, offset), 'yyyy-MM-dd')
 }
+
+/** Places used before (event and meeting places), most recent first, without duplicates. */
+export function placeSuggestions(
+  events: Pick<EventRow, 'starts_at' | 'location' | 'meet_location'>[],
+  limit = 8,
+): string[] {
+  const seen = new Map<string, string>()
+  for (const event of [...events].sort((a, b) => b.starts_at.localeCompare(a.starts_at))) {
+    for (const place of [event.location, event.meet_location]) {
+      const value = place?.trim()
+      if (value && !seen.has(value.toLowerCase())) seen.set(value.toLowerCase(), value)
+    }
+  }
+  return [...seen.values()].slice(0, limit)
+}
+
+/** "HH:mm" moved by some minutes within the day (meeting time before kick-off). */
+export function shiftTime(time: string, minutes: number): string {
+  const [h = 0, m = 0] = time.split(':').map(Number)
+  const total = (((h * 60 + m + minutes) % 1440) + 1440) % 1440
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}
+
+/** Short label of a deadline offset: whole days as days, everything else in hours. */
+export function deadlineOffset(hours: number): { unit: 'days' | 'hours'; n: number } {
+  return hours >= 24 && hours % 24 === 0
+    ? { unit: 'days', n: hours / 24 }
+    : { unit: 'hours', n: hours }
+}

@@ -86,14 +86,10 @@ test('screens: coach', async ({ page }) => {
   await shot(page, '24-coach-match-detail')
 
   await page.goto('/events')
-  await page.getByRole('button', { name: 'Termin anlegen' }).click()
-  await page
-    .getByRole('dialog')
-    .getByRole('button', { name: /^Training\s/ })
-    .click()
+  await page.getByRole('link', { name: 'Termin anlegen' }).click()
+  await page.getByRole('button', { name: /^Training\s/ }).click()
   await page.waitForTimeout(400)
   await page.screenshot({ path: 'e2e/__screens__/25b-quick-create.png' })
-  await page.keyboard.press('Escape')
 
   await page.goto('/events/new/series')
   await shot(page, '25-new-series')

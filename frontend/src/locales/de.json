@@ -127,7 +127,6 @@
       "notes": "Notizen",
       "deadline": "Anmeldeschluss",
       "noDeadline": "Keiner",
-      "hoursBefore": "{n} Std. vorher | {n} Std. vorher",
       "weekdays": "Wochentage",
       "validFrom": "Von",
       "validUntil": "Bis",
@@ -143,7 +142,11 @@
       "venueLocation": "Spielort",
       "saveFailed": "Speichern fehlgeschlagen. Bitte prüfe die Eingaben.",
       "eventTitle": "Titel",
-      "eventTitlePlaceholder": "z. B. Teamabend, Hallenturnier, Elternabend"
+      "eventTitlePlaceholder": "z. B. Teamabend, Hallenturnier, Elternabend",
+      "deadlineBefore": "Anmeldeschluss (vorher)",
+      "offsetHours": "{n} Std.",
+      "offsetDays": "1 Tag | {n} Tage",
+      "locationPlaceholder": "Adresse oder Platz"
     },
     "matchVs": "vs. {opponent}",
     "detailTitle": "Termin",
@@ -184,7 +187,7 @@
     "declineHint": "Tipp auf den Grund – damit ist die Absage gespeichert.",
     "declineWithoutReason": "Ohne Grund absagen",
     "ofPlayers": "{n} von {total}",
-    "openMap": "Karte öffnen",
+    "openMap": "In Karten öffnen",
     "state": {
       "none": "Noch keine Antwort",
       "yes": "Du bist dabei",
@@ -215,7 +218,8 @@
         "training": "Training angelegt",
         "match": "Spiel angelegt",
         "event": "Event angelegt"
-      }
+      },
+      "meetHint": "Rückt mit dem Anstoß mit, bis du sie änderst."
     },
     "deleteFailed": "Löschen fehlgeschlagen – der Termin ist wieder da.",
     "deleted": "„{title}“ gelöscht",

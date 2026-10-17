@@ -39,11 +39,11 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
 - [x] README-Abschnitt
 
 ### F3 – Termine anlegen
-- [ ] „+“ öffnet eine **ganze Seite** statt eines Popups (Art wählen → Formular)
-- [ ] Neues Spiel: **Treffpunkt** (Zeit und Ort) und **Anstoß** direkt im Schnell-Anlegen
-- [ ] Anmeldeschluss: Überschrift „Anmeldeschluss (vorher)“, Auswahl nur noch „Keiner, 2 Std.,
-      6 Std., 1 Tag, 2 Tage …“ statt „… Std. vorher“ bei jeder Option
-- [ ] **Ort** beim Anlegen eingeben (auch im Schnell-Anlegen), mit „In Karten öffnen“ im Formular
+- [x] „+“ öffnet eine **ganze Seite** statt eines Popups (Art wählen → Formular)
+- [x] Neues Spiel: **Treffpunkt** (Zeit und Ort) und **Anstoß** direkt im Schnell-Anlegen
+- [x] Anmeldeschluss: Überschrift „Anmeldeschluss (vorher)“, Auswahl nur noch „Keiner, 2 Std.,
+      6 Std., 12 Std., 1 Tag, 2 Tage“ statt „… Std. vorher“ bei jeder Option
+- [x] **Ort** beim Anlegen eingeben (auch im Schnell-Anlegen), mit „In Karten öffnen“ im Formular
       und auf der Termin-Seite (Ort und Treffpunkt)
 
 ### F4 – Terminliste und Termin-Detail
@@ -91,3 +91,17 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
   geladen (im Build entfernt, geprüft). In Browser-Tests (`navigator.webdriver`) ausgeblendet,
   außer `localStorage['rondo.devTools'] = 'on'`; Test `e2e/dev-tools.spec.ts` (übersprungen ohne
   Testdaten).
+
+### F3
+- Neue Seite `EventCreateView` unter `/events/new`; die Art steht in `?kind=`, damit „Zurück“ zur
+  Auswahl führt. Trainingsserie geht direkt ins ausführliche Formular. `QuickCreateSheet` entfällt.
+  „Anlegen“ sitzt in der Aktionsleiste über der Tab-Leiste.
+- Spiel: Treffzeit folgt dem Anstoß (Abstand vom letzten Spiel, sonst 60 Min.), bis sie von Hand
+  geändert wird; Treffpunkt und Spielort mit Vorschlägen. „Alles anpassen“ übergibt auch
+  Treffzeit und Treffpunkt.
+- Ortsfelder (`LocationField`): Vorschläge aus früheren Orten und Treffpunkten der Mannschaft
+  (`placeSuggestions`, per `<datalist>`), Link „In Karten öffnen“. `lib/maps.ts`: Apple Karten auf
+  iPhone/iPad, sonst Google Maps; kein API-Schlüssel.
+- Behoben dabei: Ein `<fieldset>` ist mindestens so breit wie sein Inhalt – der Tagesstreifen hat
+  die Seite seitlich aufgeschoben (`min-width: 0`), und `scrollIntoView` hat die ganze Seite bewegt
+  (jetzt scrollt nur der Streifen).

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { mapsUrl } from '@/lib/maps'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -86,11 +87,6 @@ const yesCount = computed(() => {
   return (e.value?.attendances ?? []).filter((a) => a.status === 'yes' && ids.has(a.member_id))
     .length
 })
-const mapsUrl = computed(() =>
-  e.value?.location
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.value.location)}`
-    : null,
-)
 const canAnswer = computed(() => !!e.value && canRespond(e.value, isCoach.value))
 const lockedHint = computed(() => {
   if (!e.value || canAnswer.value) return null
@@ -228,7 +224,7 @@ async function remove() {
             {{ e.type === 'match' ? t('events.form.venueLocation') : t('events.form.location') }}
           </dt>
           <dd>
-            <a v-if="mapsUrl" :href="mapsUrl" target="_blank" rel="noopener" class="detail__map">
+            <a :href="mapsUrl(e.location)" target="_blank" rel="noopener" class="detail__map">
               {{ e.location }}
               <span class="visually-hidden">({{ t('events.openMap') }})</span>
             </a>
@@ -237,8 +233,18 @@ async function remove() {
         <div v-if="e.meet_at || e.meet_location" class="detail__fact">
           <dt>{{ t('events.meet') }}</dt>
           <dd>
-            {{ e.meet_at ? fmt.time(e.meet_at) : '' }}{{ e.meet_at && e.meet_location ? ' · ' : ''
-            }}{{ e.meet_location ?? '' }}
+            {{ e.meet_at ? fmt.time(e.meet_at) : ''
+            }}{{ e.meet_at && e.meet_location ? ' · ' : '' }}
+            <a
+              v-if="e.meet_location"
+              :href="mapsUrl(e.meet_location)"
+              target="_blank"
+              rel="noopener"
+              class="detail__map"
+            >
+              {{ e.meet_location }}
+              <span class="visually-hidden">({{ t('events.openMap') }})</span>
+            </a>
           </dd>
         </div>
         <div v-if="e.response_deadline" class="detail__fact">

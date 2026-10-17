@@ -16,9 +16,12 @@ const props = withDefaults(
     inputmode?: 'text' | 'numeric' | 'email' | 'tel' | 'search' | 'url'
     /** Label only for screen readers (when the context already says what the field is). */
     hideLabel?: boolean
+    /** Suggestions the browser offers while typing (free text stays possible). */
+    suggestions?: string[]
   }>(),
   {
     type: 'text',
+    suggestions: undefined,
     placeholder: undefined,
     hint: undefined,
     error: undefined,
@@ -63,7 +66,11 @@ const describedBy = computed(() => {
         :inputmode="inputmode"
         :aria-invalid="!!error || undefined"
         :aria-describedby="describedBy"
+        :list="suggestions?.length ? `${id}-suggestions` : undefined"
       />
+      <datalist v-if="suggestions?.length" :id="`${id}-suggestions`">
+        <option v-for="item in suggestions" :key="item" :value="item" />
+      </datalist>
       <button
         v-if="type === 'password'"
         type="button"

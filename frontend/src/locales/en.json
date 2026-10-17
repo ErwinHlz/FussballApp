@@ -127,7 +127,6 @@
       "notes": "Notes",
       "deadline": "Response deadline",
       "noDeadline": "None",
-      "hoursBefore": "{n} hour before | {n} hours before",
       "weekdays": "Weekdays",
       "validFrom": "From",
       "validUntil": "Until",
@@ -143,7 +142,11 @@
       "venueLocation": "Venue",
       "saveFailed": "Saving failed. Please check your input.",
       "eventTitle": "Title",
-      "eventTitlePlaceholder": "e.g. Team evening, indoor tournament, parents meeting"
+      "eventTitlePlaceholder": "e.g. Team evening, indoor tournament, parents meeting",
+      "deadlineBefore": "Response deadline (before)",
+      "offsetHours": "{n} h",
+      "offsetDays": "1 day | {n} days",
+      "locationPlaceholder": "Address or pitch"
     },
     "matchVs": "vs. {opponent}",
     "detailTitle": "Event",
@@ -184,7 +187,7 @@
     "declineHint": "Tap the reason – that saves your decline.",
     "declineWithoutReason": "Decline without reason",
     "ofPlayers": "{n} of {total}",
-    "openMap": "open map",
+    "openMap": "Open in maps",
     "state": {
       "none": "No answer yet",
       "yes": "You're in",
@@ -215,7 +218,8 @@
         "training": "Training created",
         "match": "Match created",
         "event": "Event created"
-      }
+      },
+      "meetHint": "Moves with the kick-off until you change it."
     },
     "deleteFailed": "Deleting failed – the event is back.",
     "deleted": "“{title}” deleted",

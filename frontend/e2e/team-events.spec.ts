@@ -12,8 +12,8 @@ test('coach adds a team event with the + button, the player answers it', async (
   const coach = await (await browser.newContext()).newPage()
   await login(coach, demo.coach.email)
   await coach.screenshot({ path: 'e2e/__screens__/79-events-head.png' })
-  await coach.getByRole('button', { name: 'Termin anlegen' }).click()
-  const sheet = coach.getByRole('dialog')
+  await coach.getByRole('link', { name: 'Termin anlegen' }).click()
+  const sheet = coach.getByRole('main')
   for (const option of ['Training', 'Trainingsserie', 'Spiel', 'Event']) {
     await expect(sheet.getByRole('button', { name: new RegExp(`^${option} `) })).toBeVisible()
   }
@@ -22,7 +22,7 @@ test('coach adds a team event with the + button, the player answers it', async (
   await sheet.getByRole('button', { name: /^Event / }).click()
 
   // Quick create: the title is required, the date comes as a suggestion.
-  await expect(sheet).toHaveAccessibleName('Neues Event')
+  await expect(coach.getByRole('heading', { level: 1, name: 'Neues Event' })).toBeVisible()
   await coach.getByRole('button', { name: 'Anlegen', exact: true }).click()
   await expect(sheet.getByText('Pflichtfeld', { exact: true })).toBeVisible()
 

@@ -1,42 +1,61 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { addDays, format } from 'date-fns'
-import BottomSheet from '@/ui/BottomSheet.vue'
+import ActionBar from '@/ui/ActionBar.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiChip from '@/ui/UiChip.vue'
 import UiIcon, { type UiIconName } from '@/ui/UiIcon.vue'
 import UiInput from '@/ui/UiInput.vue'
 import { useSnackbar } from '@/ui/useSnackbar'
 import { formatDate } from '@/lib/date'
+import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import type { EventInput } from '../api'
-import { useCreateEvent } from '../composables/useEvents'
+import LocationField from '../components/LocationField.vue'
+import { useCreateEvent, useTeamEvents } from '../composables/useEvents'
 import { combineDateTime } from '../schemas'
-import { deadlineFromHours, suggestDate, suggestDefaults, type EventRow } from '../logic'
+import {
+  deadlineFromHours,
+  deadlineOffset,
+  placeSuggestions,
+  shiftTime,
+  suggestDate,
+  suggestDefaults,
+} from '../logic'
 
 type Kind = 'training' | 'series' | 'match' | 'event'
 type QuickKind = Exclude<Kind, 'series'>
 
 /**
- * "+" flow: pick the type, check the suggested date, done. Place, time, length and deadline
- * come from the last event of the same type; "Alles anpassen" opens the full form with them.
+ * "+" page: pick the type, check date, time and place, done. Length and deadline come from the
+ * last event of the same type; "Alles anpassen" opens the full form with everything chosen.
+ * The type sits in the address (?kind=), so the back button returns to the choice.
  * Series go to the full form right away.
  */
-const props = defineProps<{ teamId: string | null; events: EventRow[] }>()
-const open = defineModel<boolean>('open', { default: false })
-
 const { t, locale } = useI18n()
+const route = useRoute()
 const router = useRouter()
 const snackbar = useSnackbar()
-const createEvent = useCreateEvent(() => props.teamId)
+const { activeTeam } = useActiveTeam()
+const teamId = computed(() => activeTeam.value?.team_id ?? null)
+const events = useTeamEvents(teamId)
+const allEvents = computed(() => events.data.value ?? [])
+const createEvent = useCreateEvent(teamId)
 
-const kind = ref<QuickKind | null>(null)
+const kind = computed<QuickKind | null>(() => {
+  const value = route.query.kind
+  return value === 'training' || value === 'match' || value === 'event' ? value : null
+})
+
 const date = ref('')
 const time = ref('')
 const title = ref('')
 const opponent = ref('')
 const isHome = ref(true)
+const location = ref('')
+const meetTime = ref('')
+const meetLocation = ref('')
 const tried = ref(false)
 
 const options: { kind: Kind; icon: UiIconName; labelKey: string; hintKey: string }[] = [
@@ -56,55 +75,80 @@ const options: { kind: Kind; icon: UiIconName; labelKey: string; hintKey: string
   { kind: 'event', icon: 'star', labelKey: 'events.newEvent', hintKey: 'events.newEventHint' },
 ]
 
-const defaults = computed(() => (kind.value ? suggestDefaults(props.events, kind.value) : null))
+const defaults = computed(() => (kind.value ? suggestDefaults(allEvents.value, kind.value) : null))
+const places = computed(() => placeSuggestions(allEvents.value))
+const meetOffset = computed(() => defaults.value?.meetOffsetMin ?? 60)
 
-// Fresh start every time the sheet opens.
-watch(open, (isOpen) => {
-  if (!isOpen) return
-  kind.value = null
-  tried.value = false
-})
-
-// Suggested date and time; set again when the events arrive late, unless already edited.
-let suggested = { date: '', time: '' }
+// Suggestions from the last event of the type; set again when the events arrive late, unless
+// the coach already changed them.
+let suggested = { date: '', time: '', location: '', meetLocation: '' }
 function applySuggestion() {
   if (!kind.value) return
-  const d = suggestDefaults(props.events, kind.value)
-  suggested = { date: suggestDate(d.weekday), time: d.time }
+  const d = suggestDefaults(allEvents.value, kind.value)
+  suggested = {
+    date: suggestDate(d.weekday),
+    time: d.time,
+    location: d.location ?? '',
+    meetLocation: d.meetLocation ?? '',
+  }
   date.value = suggested.date
   time.value = suggested.time
+  location.value = suggested.location
+  meetLocation.value = suggested.meetLocation
+  meetTime.value = kind.value === 'match' ? shiftTime(d.time, -meetOffset.value) : ''
+}
+function untouched() {
+  return (
+    date.value === suggested.date &&
+    time.value === suggested.time &&
+    location.value === suggested.location &&
+    meetLocation.value === suggested.meetLocation
+  )
 }
 watch(
-  () => props.events,
-  () => {
-    if (kind.value && date.value === suggested.date && time.value === suggested.time) {
-      applySuggestion()
-    }
+  kind,
+  (next) => {
+    tried.value = false
+    title.value = ''
+    opponent.value = ''
+    isHome.value = true
+    if (next) applySuggestion()
   },
+  { immediate: true },
 )
+watch(allEvents, () => {
+  if (kind.value && untouched()) applySuggestion()
+})
+
+// Meeting time follows the kick-off until it is changed by hand.
+let meetEdited = false
+watch(kind, () => (meetEdited = false))
+watch(time, (next, previous) => {
+  if (kind.value !== 'match' || meetEdited || !next) return
+  if (!previous || meetTime.value === shiftTime(previous, -meetOffset.value) || !meetTime.value)
+    meetTime.value = shiftTime(next, -meetOffset.value)
+})
+function onMeetTime(value: string) {
+  meetEdited = true
+  meetTime.value = value
+}
 
 function choose(next: Kind) {
   if (next === 'series') {
-    open.value = false
     void router.push({ name: 'event-new', params: { kind: 'series' } })
     return
   }
-  kind.value = next
-  applySuggestion()
-  title.value = ''
-  opponent.value = ''
-  isHome.value = true
-  tried.value = false
-  void showSelectedDay()
+  void router.push({ name: 'event-create', query: { kind: next } })
 }
 
 // The suggested day may be further right in the strip: bring it into view.
 const daysEl = ref<HTMLElement | null>(null)
 async function showSelectedDay() {
   await nextTick()
-  daysEl.value
-    ?.querySelector<HTMLElement>('[aria-pressed="true"]')
-    ?.scrollIntoView({ block: 'nearest', inline: 'center' })
+  const strip = daysEl.value
+  const day = strip?.querySelector<HTMLElement>('[aria-pressed="true"]')
+  // Only the strip scrolls (scrollIntoView would also move the page).
+  if (strip && day) strip.scrollLeft = day.offsetLeft - (strip.clientWidth - day.offsetWidth) / 2
 }
 watch(date, () => void showSelectedDay())
 
@@ -120,28 +164,25 @@ const days = computed(() =>
   }),
 )
 
+function offsetLabel(hours: number) {
+  const { unit, n } = deadlineOffset(hours)
+  return unit === 'days' ? t('events.form.offsetDays', n) : t('events.form.offsetHours', { n })
+}
+
+/** What is taken over without asking (length and deadline). */
 const summary = computed(() => {
   const d = defaults.value
   if (!d || !kind.value) return []
   const rows: { label: string; value: string }[] = []
-  if (d.location) rows.push({ label: t('events.form.location'), value: d.location })
   if (kind.value !== 'match')
     rows.push({
       label: t('events.quick.duration'),
       value: t('plan.minutesShort', { n: d.durationMin }),
     })
-  if (d.deadlineHours !== null)
-    rows.push({
-      label: t('events.form.deadline'),
-      value: t('events.form.hoursBefore', d.deadlineHours),
-    })
-  if (kind.value === 'match' && (d.meetOffsetMin !== null || d.meetLocation)) {
-    const parts = [
-      d.meetOffsetMin !== null ? t('events.quick.minutesBefore', { n: d.meetOffsetMin }) : null,
-      d.meetLocation,
-    ].filter(Boolean)
-    rows.push({ label: t('events.meet'), value: parts.join(' · ') })
-  }
+  rows.push({
+    label: t('events.form.deadlineBefore'),
+    value: d.deadlineHours === null ? t('events.form.noDeadline') : offsetLabel(d.deadlineHours),
+  })
   return rows
 })
 
@@ -152,21 +193,26 @@ const missing = computed(() => {
   return false
 })
 
+const text = (value: string) => value.trim() || null
+
 function input(): EventInput {
   const d = defaults.value!
   const startsAt = combineDateTime(date.value, time.value)
   const deadline = deadlineFromHours(startsAt, d.deadlineHours)?.toISOString() ?? null
   if (kind.value === 'match') {
+    let meetAt: Date | null = null
+    if (meetTime.value) {
+      meetAt = combineDateTime(date.value, meetTime.value)
+      // Meeting before midnight for an early kick-off: the day before.
+      if (meetAt > startsAt) meetAt = new Date(meetAt.getTime() - 86_400_000)
+    }
     return {
       type: 'match',
       starts_at: startsAt.toISOString(),
       ends_at: null,
-      meet_at:
-        d.meetOffsetMin !== null
-          ? new Date(startsAt.getTime() - d.meetOffsetMin * 60000).toISOString()
-          : null,
-      meet_location: d.meetLocation,
-      location: d.location,
+      meet_at: meetAt?.toISOString() ?? null,
+      meet_location: text(meetLocation.value),
+      location: text(location.value),
       notes: null,
       response_deadline: deadline,
       opponent: opponent.value.trim(),
@@ -179,7 +225,7 @@ function input(): EventInput {
     ...(kind.value === 'event' ? { title: title.value.trim() } : {}),
     starts_at: startsAt.toISOString(),
     ends_at: new Date(startsAt.getTime() + d.durationMin * 60000).toISOString(),
-    location: d.location,
+    location: text(location.value),
     notes: null,
     response_deadline: deadline,
   }
@@ -190,8 +236,7 @@ async function create() {
   if (missing.value || !kind.value) return
   const created = await createEvent.mutateAsync(input())
   const label = t(`events.quick.created.${kind.value}`)
-  open.value = false
-  await router.push({ name: 'event', params: { eventId: created.id } })
+  await router.replace({ name: 'event', params: { eventId: created.id } })
   snackbar.show({ text: label })
 }
 
@@ -200,46 +245,49 @@ function customize() {
   if (!kind.value) return
   const d = defaults.value!
   const query: Record<string, string> = { date: date.value, time: time.value }
-  if (d.location) query.location = d.location
+  if (location.value.trim()) query.location = location.value.trim()
   if (kind.value !== 'match') query.duration = String(d.durationMin)
   if (d.deadlineHours !== null) query.deadline = String(d.deadlineHours)
   if (kind.value === 'event' && title.value) query.title = title.value
   if (kind.value === 'match') {
     if (opponent.value) query.opponent = opponent.value
     query.venue = isHome.value ? 'home' : 'away'
-    if (d.meetLocation) query.meetLocation = d.meetLocation
+    if (meetTime.value) query.meetTime = meetTime.value
+    if (meetLocation.value.trim()) query.meetLocation = meetLocation.value.trim()
   }
-  open.value = false
   void router.push({ name: 'event-new', params: { kind: kind.value }, query })
 }
 
-const sheetTitle = computed(() =>
+const heading = computed(() =>
   kind.value ? t(`events.form.newTitle.${kind.value}`) : t('events.createLabel'),
 )
 </script>
 
 <template>
-  <BottomSheet v-model:open="open" :title="sheetTitle">
-    <ul v-if="!kind" class="quick__options" role="list">
+  <section class="create">
+    <h1>{{ heading }}</h1>
+
+    <ul v-if="!kind" class="create__options" role="list">
       <li v-for="option in options" :key="option.kind">
         <button
           type="button"
-          class="quick__option"
-          :class="`quick__option--${option.kind}`"
+          class="create__option"
+          :class="`create__option--${option.kind}`"
           @click="choose(option.kind)"
         >
-          <span class="quick__option-icon" aria-hidden="true">
+          <span class="create__option-icon" aria-hidden="true">
             <UiIcon :name="option.icon" :size="24" />
           </span>
-          <span class="quick__option-text">
-            <span class="quick__option-label">{{ t(option.labelKey) }}</span>
-            <span class="quick__option-hint">{{ t(option.hintKey) }}</span>
+          <span class="create__option-text">
+            <span class="create__option-label">{{ t(option.labelKey) }}</span>
+            <span class="create__option-hint">{{ t(option.hintKey) }}</span>
           </span>
+          <UiIcon name="chevronRight" :size="20" class="create__option-chevron" />
         </button>
       </li>
     </ul>
 
-    <form v-else class="quick" novalidate @submit.prevent="create">
+    <form v-else class="create__form" novalidate @submit.prevent="create">
       <UiInput
         v-if="kind === 'event'"
         v-model="title"
@@ -255,7 +303,7 @@ const sheetTitle = computed(() =>
           required
           :error="tried && !opponent.trim() ? t('validation.required') : undefined"
         />
-        <div class="quick__row" role="group" :aria-label="t('events.form.venue')">
+        <div class="create__row" role="group" :aria-label="t('events.form.venue')">
           <UiChip :model-value="isHome" @update:model-value="isHome = true">
             {{ t('events.home') }}
           </UiChip>
@@ -265,14 +313,14 @@ const sheetTitle = computed(() =>
         </div>
       </template>
 
-      <fieldset class="quick__fieldset">
-        <legend class="quick__legend">{{ t('events.form.date') }}</legend>
-        <div ref="daysEl" class="quick__days">
+      <fieldset class="create__fieldset">
+        <legend class="create__legend">{{ t('events.form.date') }}</legend>
+        <div ref="daysEl" class="create__days">
           <button
             v-for="day in days"
             :key="day.value"
             type="button"
-            class="quick__day"
+            class="create__day"
             :aria-pressed="date === day.value"
             @click="date = day.value"
           >
@@ -281,7 +329,7 @@ const sheetTitle = computed(() =>
           </button>
         </div>
       </fieldset>
-      <div class="quick__row quick__row--fields">
+      <div class="create__row create__row--fields">
         <UiInput v-model="date" :label="t('events.quick.otherDate')" type="date" />
         <UiInput
           v-model="time"
@@ -290,35 +338,65 @@ const sheetTitle = computed(() =>
         />
       </div>
 
-      <dl v-if="summary.length" class="quick__summary">
-        <p class="quick__summary-title">{{ t('events.quick.fromLast') }}</p>
-        <div v-for="row in summary" :key="row.label" class="quick__summary-row">
-          <dt>{{ row.label }}</dt>
-          <dd>{{ row.value }}</dd>
-        </div>
-      </dl>
-      <p v-if="createEvent.isError.value" class="quick__error" role="alert">
+      <!-- Match: meeting point (time and place) before the venue -->
+      <fieldset v-if="kind === 'match'" class="create__fieldset create__meet">
+        <legend class="create__legend">{{ t('events.meet') }}</legend>
+        <UiInput
+          :model-value="meetTime"
+          :label="t('events.form.meetTime')"
+          type="time"
+          :hint="t('events.quick.meetHint')"
+          @update:model-value="onMeetTime"
+        />
+        <LocationField
+          v-model="meetLocation"
+          :label="t('events.form.meetLocation')"
+          :suggestions="places"
+        />
+      </fieldset>
+
+      <LocationField
+        v-model="location"
+        :label="kind === 'match' ? t('events.form.venueLocation') : t('events.form.location')"
+        :suggestions="places"
+      />
+
+      <div v-if="summary.length" class="create__summary">
+        <p class="create__summary-title">{{ t('events.quick.fromLast') }}</p>
+        <dl class="create__summary-list">
+          <div v-for="row in summary" :key="row.label" class="create__summary-row">
+            <dt>{{ row.label }}</dt>
+            <dd>{{ row.value }}</dd>
+          </div>
+        </dl>
+      </div>
+      <p v-if="createEvent.isError.value" class="create__error" role="alert">
         {{ t('events.form.saveFailed') }}
       </p>
-      <button type="button" class="quick__more" @click="customize">
+      <button type="button" class="create__more" @click="customize">
         {{ t('events.quick.customize') }}
       </button>
     </form>
 
-    <template v-if="kind" #footer>
-      <UiButton variant="secondary" @click="kind = null">{{ t('common.back') }}</UiButton>
-      <UiButton :loading="createEvent.isPending.value" @click="create">
+    <ActionBar v-if="kind" :label="heading">
+      <UiButton block :loading="createEvent.isPending.value" @click="create">
         {{ t('events.quick.create') }}
       </UiButton>
-    </template>
-  </BottomSheet>
+    </ActionBar>
+  </section>
 </template>
 
 <style scoped lang="scss">
-.quick {
+.create {
   display: flex;
   flex-direction: column;
   gap: $space-4;
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+  }
 
   &__options {
     display: flex;
@@ -336,8 +414,8 @@ const sheetTitle = computed(() =>
     align-items: center;
     gap: $space-3;
     width: 100%;
-    min-height: 68px;
-    padding: $space-3;
+    min-height: 76px;
+    padding: $space-3 $space-4;
     border: 0;
     border-radius: $radius-lg;
     background: var(--color-surface);
@@ -357,8 +435,8 @@ const sheetTitle = computed(() =>
     display: grid;
     flex-shrink: 0;
     place-items: center;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border: 2px dashed var(--color-chalk);
     border-radius: 50%;
     color: var(--option-color);
@@ -366,16 +444,23 @@ const sheetTitle = computed(() =>
 
   &__option-text {
     display: flex;
+    flex: 1;
     flex-direction: column;
   }
 
   &__option-label {
+    font-family: var(--font-display);
+    font-size: $font-xl;
     font-weight: 800;
   }
 
   &__option-hint {
     color: var(--color-text-muted);
     font-size: $font-sm;
+  }
+
+  &__option-chevron {
+    color: var(--color-text-muted);
   }
 
   &__row {
@@ -389,9 +474,20 @@ const sheetTitle = computed(() =>
   }
 
   &__fieldset {
+    // Fieldsets are at least as wide as their content; the day strip has to scroll instead.
+    min-width: 0;
     margin: 0;
     padding: 0;
     border: 0;
+  }
+
+  &__meet {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    padding: $space-3 $space-4 $space-2;
+    border: 2px dashed var(--color-chalk);
+    border-radius: $radius-lg;
   }
 
   &__legend {
@@ -400,7 +496,12 @@ const sheetTitle = computed(() =>
     font-weight: 700;
   }
 
+  &__meet &__legend {
+    padding: 0 $space-1;
+  }
+
   &__days {
+    position: relative;
     display: flex;
     gap: $space-2;
     margin: 0 (-$space-4);
@@ -438,6 +539,13 @@ const sheetTitle = computed(() =>
     padding: $space-3 $space-4;
     border: 2px dashed var(--color-chalk);
     border-radius: $radius-lg;
+  }
+
+  &__summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+    margin: 0;
   }
 
   &__summary-title {
