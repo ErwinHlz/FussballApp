@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  activeDrillFilters,
   filterDrills,
   parseEquipment,
   parseYouTubeId,
@@ -109,5 +110,26 @@ describe('helpers', () => {
     expect(playersLabel({ min_players: 6, max_players: 12 })).toBe('6–12')
     expect(playersLabel({ min_players: 4, max_players: null })).toBe('4+')
     expect(playersLabel({ min_players: null, max_players: null })).toBeNull()
+  })
+})
+
+describe('drill filter extras', () => {
+  const all = { query: '', category: 'all', scope: 'all' } as const
+
+  it('keeps only drills with an animation or a video', () => {
+    const drills = [
+      drill({ title: 'Ohne' }),
+      drill({ title: 'Video', video_url: 'https://youtu.be/abcdefghijk' }),
+      drill({ title: 'Animiert', animation: { keyframes: [] } }),
+    ]
+    expect(filterDrills(drills, { ...all, media: true }).map((d) => d.title)).toEqual([
+      'Animiert',
+      'Video',
+    ])
+  })
+
+  it('counts the filters of the sheet', () => {
+    expect(activeDrillFilters({ scope: 'all', media: false })).toBe(0)
+    expect(activeDrillFilters({ scope: 'team', media: true })).toBe(2)
   })
 })

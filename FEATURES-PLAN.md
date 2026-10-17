@@ -53,8 +53,9 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
       als **Wochenkalender** (Tage als Spalten, Plätze/Zeiten als Blöcke, Woche vor/zurück)
 
 ### F5 – Übungen
-- [ ] Filter der Übungsbibliothek neu gestaltet (Suche + Kategorie-Reiter + Filter-Knopf für den Rest)
-- [ ] Überschrift „Das Wichtigste“ im Übungsformular entfernt
+- [x] Filter der Übungsbibliothek neu gestaltet (Suche + Filter-Knopf in einer Zeile, Kategorien als
+      Reiter, Herkunft und „mit Animation/Video“ im Filterfenster, aktive Filter als Marken)
+- [x] Überschrift „Das Wichtigste“ im Übungsformular entfernt
 
 ### F6 – Verein und Konto
 - [ ] Ein Nutzer darf **nur einen Verein verwalten** (Datenbankregel + Hinweis beim Anlegen/Ernennen)
@@ -117,3 +118,15 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
   wie bisher zum Reservieren/Abgeben (Bottom Sheet). Jede Zelle hat einen vollständigen Namen
   („Di 20.10., 17:00–18:30, Kunstrasen, A U17“), der mit dem sichtbaren Text endet.
 - Belegungsplan-Abfragen laufen erst, wenn der Verein bekannt ist.
+
+### F5
+- Übungen: Suchfeld und Filter-Knopf (mit Zähler) in einer Zeile, darunter die Kategorien als
+  wischbare Reiter mit Unterstrich – beides bleibt beim Scrollen oben. Im Filterfenster Herkunft
+  (Alle/Meine Mannschaft/Bibliothek, als Radiogruppe) und „Nur mit Animation oder Video“; aktive
+  Filter erscheinen als Marken mit ×. Kategorie und Filter werden pro Gerät gemerkt
+  (`rondo.drillFilter`), die Suche nicht. Leere Liste bietet „Alle Filter zurücksetzen“.
+- Übungsformular: Grunddaten ohne Überschrift (der Seitentitel sagt schon „Neue Übung“).
+- Behoben dabei: Treffzeit beim neuen Spiel folgt auch dann dem Abstand des letzten Spiels, wenn
+  die alten Termine erst nach dem Eintippen des Anstoßes geladen sind. Browser-Test
+  „Absage zurücknehmen“ wartet auf die Server-Antwort, bevor er neu lädt (Firefox hat die
+  Anfrage sonst abgebrochen).

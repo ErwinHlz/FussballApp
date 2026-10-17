@@ -477,7 +477,7 @@
     "title": "Drills",
     "new": "New drill",
     "search": "Search",
-    "searchPlaceholder": "Search drill, content or equipment …",
+    "searchPlaceholder": "Drill or equipment …",
     "category": "Category",
     "allCategories": "All",
     "count": "{n} drill | {n} drills",
@@ -533,7 +533,6 @@
       "videoHint": "youtube.com/watch?v=…, youtu.be/… or Shorts",
       "saveFailed": "Saving failed. Please check your input.",
       "sections": {
-        "basics": "The essentials",
         "squad": "Players and equipment",
         "media": "Video",
         "check": "check",
@@ -561,7 +560,17 @@
       }
     },
     "duration": "Duration",
-    "detailTitle": "Drill"
+    "detailTitle": "Drill",
+    "filter": {
+      "label": "Filter",
+      "labelActive": "Filter ({n} active)",
+      "media": "Only with animation or video",
+      "mediaShort": "With animation/video",
+      "remove": "Remove filter “{name}”",
+      "reset": "Reset",
+      "resetAll": "Reset all filters",
+      "show": "Show {n}"
+    }
   },
   "plan": {
     "title": "Training plan",

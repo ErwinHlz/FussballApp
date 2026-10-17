@@ -128,6 +128,11 @@ watch(time, (next, previous) => {
   if (!previous || meetTime.value === shiftTime(previous, -meetOffset.value) || !meetTime.value)
     meetTime.value = shiftTime(next, -meetOffset.value)
 })
+// The distance from the last match may arrive after the kick-off was typed: follow it too.
+watch(meetOffset, (offset) => {
+  if (kind.value === 'match' && !meetEdited && time.value)
+    meetTime.value = shiftTime(time.value, -offset)
+})
 function onMeetTime(value: string) {
   meetEdited = true
   meetTime.value = value

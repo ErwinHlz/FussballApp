@@ -1,46 +1,113 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { refDebounced } from '@vueuse/core'
-import UiChip from '@/ui/UiChip.vue'
+import { refDebounced, useLocalStorage } from '@vueuse/core'
+import BottomSheet from '@/ui/BottomSheet.vue'
+import UiButton from '@/ui/UiButton.vue'
 import UiEmptyState from '@/ui/UiEmptyState.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import UiIconButton from '@/ui/UiIconButton.vue'
+import UiSegmented from '@/ui/UiSegmented.vue'
 import UiSkeleton from '@/ui/UiSkeleton.vue'
+import UiSwitch from '@/ui/UiSwitch.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import TrainingNav from '@/features/training-plan/components/TrainingNav.vue'
 import DrillThumb from '../components/DrillThumb.vue'
 import {
+  activeDrillFilters,
+  DEFAULT_DRILL_FILTER,
   DRILL_CATEGORIES,
   filterDrills,
   playersLabel,
   type DrillCategory,
+  type DrillFilter,
   type DrillScope,
 } from '../logic'
 import { useDrills } from '../composables/useDrills'
 
-/** Drill library as tiles with a preview; search and category chips stay on top. */
+/**
+ * Drill library as tiles with a preview. On top (sticky): search with the filter button, the
+ * categories as tabs; origin and "with animation or video" sit in the filter sheet and show up
+ * as removable pills. Category and filters are remembered per device.
+ */
 const { t } = useI18n()
 const { activeTeam, isCoach } = useActiveTeam()
 const teamId = computed(() => activeTeam.value?.team_id ?? null)
 const drills = useDrills(teamId)
 
-const filter = reactive<{ query: string; category: DrillCategory | 'all'; scope: DrillScope }>({
-  query: '',
-  category: 'all',
-  scope: 'all',
-})
-const query = computed({
-  get: () => filter.query,
-  set: (value: string) => (filter.query = value),
-})
+const saved = useLocalStorage<Omit<DrillFilter, 'query'>>(
+  'rondo.drillFilter',
+  { ...DEFAULT_DRILL_FILTER },
+  { mergeDefaults: true },
+)
+const query = ref('')
 const debouncedQuery = refDebounced(query, 150)
+const filterCount = computed(() => activeDrillFilters(saved.value))
 
 const visible = computed(() =>
-  filterDrills(drills.data.value ?? [], { ...filter, query: debouncedQuery.value }),
+  filterDrills(drills.data.value ?? [], { ...saved.value, query: debouncedQuery.value }),
 )
 
-const scopes: DrillScope[] = ['all', 'team', 'library']
+function setCategory(category: DrillCategory | 'all') {
+  saved.value = { ...saved.value, category }
+}
+const scope = computed({
+  get: () => saved.value.scope,
+  set: (value: DrillScope) => (saved.value = { ...saved.value, scope: value }),
+})
+const media = computed({
+  get: () => !!saved.value.media,
+  set: (value: boolean) => (saved.value = { ...saved.value, media: value }),
+})
+function resetFilters() {
+  saved.value = { ...saved.value, scope: 'all', media: false }
+}
+function resetAll() {
+  saved.value = { ...DEFAULT_DRILL_FILTER }
+  query.value = ''
+}
+
+const scopeOptions = computed(() =>
+  (['all', 'team', 'library'] as DrillScope[]).map((value) => ({
+    value,
+    label: t(`drills.scope.${value}`),
+  })),
+)
+const categories = computed(() => [
+  { value: 'all' as const, label: t('drills.allCategories') },
+  ...DRILL_CATEGORIES.map((value) => ({ value, label: t(`drills.categories.${value}`) })),
+])
+
+/** Active sheet filters as pills; tapping one removes it. */
+const pills = computed(() => [
+  ...(saved.value.scope !== 'all'
+    ? [
+        {
+          key: 'scope',
+          label: t(`drills.scope.${saved.value.scope}`),
+          clear: () => (scope.value = 'all'),
+        },
+      ]
+    : []),
+  ...(saved.value.media
+    ? [{ key: 'media', label: t('drills.filter.mediaShort'), clear: () => (media.value = false) }]
+    : []),
+])
+
+// Keep the chosen category in view in the tab row (only the row scrolls, not the page).
+const tabsEl = ref<HTMLElement | null>(null)
+watch(
+  () => saved.value.category,
+  async () => {
+    await nextTick()
+    const strip = tabsEl.value
+    const tab = strip?.querySelector<HTMLElement>('[aria-pressed="true"]')
+    if (strip && tab) strip.scrollLeft = tab.offsetLeft - (strip.clientWidth - tab.offsetWidth) / 2
+  },
+  { immediate: true },
+)
+
+const filterOpen = ref(false)
 </script>
 
 <template>
@@ -59,37 +126,53 @@ const scopes: DrillScope[] = ['all', 'team', 'library']
     </header>
 
     <div class="drills__filters">
-      <label class="drills__search">
-        <span class="visually-hidden">{{ t('drills.search') }}</span>
-        <UiIcon name="search" :size="20" />
-        <input v-model="query" type="search" :placeholder="t('drills.searchPlaceholder')" />
-      </label>
-      <div class="drills__chips" role="group" :aria-label="t('drills.category')">
-        <UiChip
-          :model-value="filter.category === 'all'"
-          @update:model-value="filter.category = 'all'"
+      <div class="drills__search-row">
+        <label class="drills__search">
+          <span class="visually-hidden">{{ t('drills.search') }}</span>
+          <UiIcon name="search" :size="20" />
+          <input v-model="query" type="search" :placeholder="t('drills.searchPlaceholder')" />
+        </label>
+        <UiIconButton
+          icon="filter"
+          :label="
+            filterCount
+              ? t('drills.filter.labelActive', { n: filterCount })
+              : t('drills.filter.label')
+          "
+          :class="{ 'drills__filter--on': filterCount > 0 }"
+          aria-haspopup="dialog"
+          @click="filterOpen = true"
         >
-          {{ t('drills.allCategories') }}
-        </UiChip>
-        <UiChip
-          v-for="category in DRILL_CATEGORIES"
-          :key="category"
-          :model-value="filter.category === category"
-          @update:model-value="filter.category = filter.category === category ? 'all' : category"
-        >
-          {{ t(`drills.categories.${category}`) }}
-        </UiChip>
+          <UiIcon name="filter" :size="22" />
+          <span v-if="filterCount" class="drills__badge" aria-hidden="true">{{ filterCount }}</span>
+        </UiIconButton>
       </div>
-      <div class="drills__chips" role="group" :aria-label="t('drills.scope.label')">
-        <UiChip
-          v-for="scope in scopes"
-          :key="scope"
-          :model-value="filter.scope === scope"
-          @update:model-value="filter.scope = scope"
+      <div ref="tabsEl" class="drills__tabs" role="group" :aria-label="t('drills.category')">
+        <button
+          v-for="category in categories"
+          :key="category.value"
+          type="button"
+          class="drills__tab"
+          :aria-pressed="saved.category === category.value"
+          @click="setCategory(category.value)"
         >
-          {{ t(`drills.scope.${scope}`) }}
-        </UiChip>
+          {{ category.label }}
+        </button>
       </div>
+    </div>
+
+    <div v-if="pills.length" class="drills__pills">
+      <button
+        v-for="pill in pills"
+        :key="pill.key"
+        type="button"
+        class="drills__pill"
+        :aria-label="t('drills.filter.remove', { name: pill.label })"
+        @click="pill.clear"
+      >
+        {{ pill.label }}
+        <UiIcon name="x" :size="16" />
+      </button>
     </div>
 
     <div v-if="drills.isPending.value" class="drills__grid" aria-busy="true">
@@ -127,8 +210,30 @@ const scopes: DrillScope[] = ['all', 'team', 'library']
           </RouterLink>
         </li>
       </ul>
-      <UiEmptyState v-else icon="cone" :title="t('drills.empty')" :text="t('drills.emptyHint')" />
+      <UiEmptyState v-else icon="cone" :title="t('drills.empty')" :text="t('drills.emptyHint')">
+        <UiButton variant="secondary" @click="resetAll">{{ t('drills.filter.resetAll') }}</UiButton>
+      </UiEmptyState>
     </template>
+
+    <BottomSheet v-model:open="filterOpen" :title="t('drills.filter.label')">
+      <div class="drills__sheet">
+        <UiSegmented
+          v-model="scope"
+          as="radio"
+          :label="t('drills.scope.label')"
+          :options="scopeOptions"
+        />
+        <UiSwitch v-model="media" :label="t('drills.filter.media')" />
+      </div>
+      <template #footer>
+        <UiButton variant="secondary" :disabled="!filterCount" @click="resetFilters">
+          {{ t('drills.filter.reset') }}
+        </UiButton>
+        <UiButton @click="filterOpen = false">
+          {{ t('drills.filter.show', { n: visible.length }) }}
+        </UiButton>
+      </template>
+    </BottomSheet>
   </section>
 </template>
 
@@ -152,13 +257,40 @@ const scopes: DrillScope[] = ['all', 'team', 'library']
     z-index: 5;
     display: flex;
     flex-direction: column;
-    gap: $space-2;
+    gap: $space-1;
     margin-inline: -$space-4;
-    padding: $space-2 $space-4;
+    padding: $space-2 $space-4 0;
     background: var(--color-bg);
   }
 
+  &__search-row {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+  }
+
+  &__filter--on {
+    position: relative;
+    outline: 2px solid var(--color-primary);
+  }
+
+  &__badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: $radius-full;
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    font-size: $font-xs;
+    font-weight: 800;
+  }
+
   &__search {
+    flex: 1;
     display: flex;
     align-items: center;
     gap: $space-2;
@@ -184,17 +316,86 @@ const scopes: DrillScope[] = ['all', 'team', 'library']
     }
   }
 
-  &__chips {
+  // Categories as tabs with an underline, like the area navigation.
+  &__tabs {
     display: flex;
-    gap: $space-2;
+    gap: $space-1;
     margin-inline: -$space-4;
-    padding-inline: $space-4;
+    padding-inline: $space-2;
+    border-bottom: 1px solid var(--color-border);
     overflow-x: auto;
     scrollbar-width: none;
 
-    > * {
-      flex-shrink: 0;
+    &::-webkit-scrollbar {
+      display: none;
     }
+  }
+
+  &__tab {
+    position: relative;
+    flex-shrink: 0;
+    min-height: $touch-target;
+    padding: 0 $space-3;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-weight: 700;
+    white-space: nowrap;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset-inline: $space-2;
+      bottom: 0;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: var(--color-primary);
+      transform: scaleX(0);
+      transition: transform var(--duration-medium) var(--ease-out);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--color-focus);
+      outline-offset: -3px;
+      border-radius: $radius-md;
+    }
+
+    &[aria-pressed='true'] {
+      color: var(--color-text);
+      font-weight: 800;
+
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  &__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+  }
+
+  &__pill {
+    @include focus-visible;
+
+    display: inline-flex;
+    align-items: center;
+    gap: $space-1;
+    min-height: 36px;
+    padding: 0 $space-2 0 $space-3;
+    border: 0;
+    border-radius: $radius-full;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-size: $font-sm;
+    font-weight: 800;
+  }
+
+  &__sheet {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
   }
 
   &__count {

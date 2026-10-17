@@ -363,8 +363,13 @@ test('undo after a first decline goes back to "no answer yet"', async ({ page })
   await no.click()
   await page.getByRole('dialog', { name: 'Absagen' }).getByRole('button', { name: 'Krank' }).click()
   await expect(no).toHaveAttribute('aria-pressed', 'true')
+  // Wait for the server: a reload right away would cancel the request.
+  const withdrawn = page.waitForResponse(
+    (r) => r.url().includes('/rest/v1/attendances') && r.request().method() === 'DELETE',
+  )
   await page.getByRole('button', { name: 'Rückgängig' }).click()
   await expect(no).toHaveAttribute('aria-pressed', 'false')
+  expect((await withdrawn).ok()).toBe(true)
 
   // Stored that way: after a reload the match still has no answer of Pia.
   await page.reload()
@@ -397,4 +402,42 @@ test('"Alle zusagen" is always there and says when nothing is open', async ({ pa
   await expect(coach.getByRole('heading', { name: /Wer kommt/ })).toBeVisible()
   await expect(coach.getByText('live', { exact: true })).toHaveCount(0)
   await coach.context().close()
+})
+
+test('drill filter: category tabs, filter sheet with removable pills, remembered', async ({
+  page,
+}) => {
+  const demo = await seedDemo()
+  await demo.coach.sb
+    .from('drills')
+    .insert({ team_id: demo.team.id, title: 'Unser Rondo', category: 'possession' })
+  await login(page, demo.coach.email, '/drills')
+  await ready(page)
+
+  const tabs = page.getByRole('group', { name: 'Kategorie' })
+  await tabs.getByRole('button', { name: 'Ballbesitz' }).click()
+  await expect(tabs.getByRole('button', { name: 'Ballbesitz' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.getByRole('link', { name: /Unser Rondo/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Torschuss/ })).toHaveCount(0)
+
+  // Origin in the sheet; it shows up as a pill that removes it.
+  await page.getByRole('button', { name: 'Filter', exact: true }).click()
+  const sheet = page.getByRole('dialog', { name: 'Filter' })
+  await sheet.getByRole('radio', { name: 'Bibliothek' }).click()
+  await sheet.getByRole('button', { name: /anzeigen$/ }).click()
+  await expect(sheet).toBeHidden()
+  await expect(page.getByRole('button', { name: 'Filter (1 aktiv)' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Unser Rondo/ })).toHaveCount(0)
+
+  // Remembered on this device.
+  await page.reload()
+  await ready(page)
+  await expect(page.getByRole('button', { name: 'Filter (1 aktiv)' })).toBeVisible()
+  await page.getByRole('button', { name: 'Filter \u201eBibliothek\u201c entfernen' }).click()
+  await expect(page.getByRole('link', { name: /Unser Rondo/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Filter', exact: true })).toBeVisible()
+  await expectNoHorizontalScroll(page)
 })

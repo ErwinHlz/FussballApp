@@ -112,8 +112,8 @@ const onSubmit = handleSubmit(
     <p v-if="existing?.isPending.value">{{ t('common.loading') }}</p>
 
     <form v-else class="drill-form__form" novalidate @submit="onSubmit">
-      <fieldset class="drill-form__section">
-        <legend class="drill-form__legend">{{ t('drills.form.sections.basics') }}</legend>
+      <!-- Basics without a heading: the page title already says what this is. -->
+      <div class="drill-form__section">
         <UiInput
           v-model="title"
           :label="t('drills.form.title')"
@@ -137,7 +137,7 @@ const onSubmit = handleSubmit(
           :rows="6"
           :error="err(errors.description)"
         />
-      </fieldset>
+      </div>
 
       <details
         class="drill-form__more"
@@ -233,16 +233,6 @@ const onSubmit = handleSubmit(
     display: flex;
     flex-direction: column;
     gap: $space-4;
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-
-  &__legend {
-    margin-bottom: $space-3;
-    font-family: var(--font-display);
-    font-size: $font-xl;
-    font-weight: 800;
   }
 
   &__more {

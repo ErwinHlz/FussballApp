@@ -17,7 +17,24 @@ export const DRILL_CATEGORIES = [
 export type DrillCategory = (typeof DRILL_CATEGORIES)[number]
 
 export type DrillScope = 'all' | 'team' | 'library'
-export type DrillFilter = { query: string; category: DrillCategory | 'all'; scope: DrillScope }
+export type DrillFilter = {
+  query: string
+  category: DrillCategory | 'all'
+  scope: DrillScope
+  /** Only drills with an animation or a video. */
+  media?: boolean
+}
+
+export const DEFAULT_DRILL_FILTER: Omit<DrillFilter, 'query'> = {
+  category: 'all',
+  scope: 'all',
+  media: false,
+}
+
+/** Filters set in the filter sheet (origin, media); category and search are always visible. */
+export function activeDrillFilters(filter: Pick<DrillFilter, 'scope' | 'media'>): number {
+  return (filter.scope !== 'all' ? 1 : 0) + (filter.media ? 1 : 0)
+}
 
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/
 
@@ -61,6 +78,7 @@ export function filterDrills(drills: Drill[], filter: DrillFilter): Drill[] {
   const query = normalize(filter.query.trim())
   return drills
     .filter((d) => filter.category === 'all' || d.category === filter.category)
+    .filter((d) => !filter.media || !!(d.animation || d.video_url || d.video_path))
     .filter((d) => {
       if (filter.scope === 'team') return d.team_id !== null
       if (filter.scope === 'library') return d.team_id === null
