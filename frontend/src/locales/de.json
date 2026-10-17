@@ -322,7 +322,19 @@
       "label": "Sprache",
       "auto": "Automatisch"
     },
-    "themeLabel": "Hell oder dunkel"
+    "themeLabel": "Hell oder dunkel",
+    "accent": {
+      "label": "Akzentfarbe",
+      "club": "Vereinsfarbe",
+      "clubHint": "Standard – die Farbe deines Vereins",
+      "clubNone": "Standard – dein Verein hat noch keine Farbe, daher Rondo-Grün",
+      "rondo": "Rondo-Grün",
+      "logoColor": "Farbe aus dem Vereinslogo {color}",
+      "color": "Farbe {color}",
+      "custom": "Eigene Farbe wählen",
+      "hint": "Gilt nur für dein Konto. Die Farbe wird für gute Lesbarkeit leicht angepasst.",
+      "saved": "Akzentfarbe gespeichert"
+    }
   },
   "common": {
     "close": "Schließen",
@@ -418,7 +430,10 @@
     "adminsHint": "Admins melden Mannschaften an und laden Trainer ein. Ein Verein braucht mindestens einen Admin.",
     "makeAdmin": "Zum Admin machen",
     "removeAdmin": "Admin entfernen",
-    "roleChangeFailed": "Rolle konnte nicht geändert werden."
+    "roleChangeFailed": "Rolle konnte nicht geändert werden.",
+    "oneClubHint": "Du verwaltest bereits einen Verein. Pro Konto kann man einen Verein verwalten – Mannschaften anderer Vereine kannst du per Einladung beitreten.",
+    "alreadyAdmin": "Du verwaltest bereits einen Verein. Pro Konto ist nur ein Verein möglich.",
+    "otherClubAdmin": "Diese Person verwaltet schon einen anderen Verein und kann hier nicht Admin werden."
   },
   "invites": {
     "createCoachLink": "Trainer-Link erstellen",
@@ -913,23 +928,22 @@
   },
   "account": {
     "title": "Daten & Konto",
-    "exportText": "Lade alle Daten, die Rondo über dich gespeichert hat, als Datei herunter. Du kannst dein Konto auch jederzeit löschen.",
-    "export": "Meine Daten herunterladen",
-    "exportFailed": "Download fehlgeschlagen. Bitte versuche es erneut.",
     "delete": "Konto löschen",
     "deleteTitle": "Konto endgültig löschen?",
     "deleteText": "Das kann nicht rückgängig gemacht werden. Gelöscht werden:",
     "deleteItems": {
       "memberships": "dein Konto, Profil und deine Einträge in allen Kadern",
       "answers": "alle Zu- und Absagen, Nominierungen, Abwesenheiten und Geräte",
-      "clubs": "Vereine, die nur du nutzt, mit allen Inhalten"
+      "clubs": "Vereine, die nur du nutzt, mit allen Inhalten",
+      "rest": "deine Einstellungen wie Akzentfarbe und Benachrichtigungen"
     },
     "confirmLabel": "Tippe {word} zur Bestätigung",
     "confirmWord": "LÖSCHEN",
     "soleAdmin": "Du bist der einzige Admin eines Vereins, den noch andere nutzen. Mach zuerst jemand anderen zum Admin.",
     "deleteFailed": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
     "deleteFinal": "Endgültig löschen",
-    "deleted": "Dein Konto wurde gelöscht."
+    "deleted": "Dein Konto wurde gelöscht.",
+    "intro": "Deine Daten sind in deinem Rondo-Konto gespeichert. Wenn du dein Konto löschst, werden alle deine persönlichen Daten gelöscht."
   },
   "legal": {
     "privacy": "Datenschutz",
@@ -1012,28 +1026,23 @@
     "today": "Heute"
   },
   "branding": {
-    "title": "Logo & Vereinsfarbe",
-    "intro": "Lade das Vereinslogo hoch. Rondo erkennt die Farben und färbt die App für alle Mitglieder in der Vereinsfarbe.",
+    "title": "Vereinslogo",
+    "intro": "Lade das Vereinslogo hoch. Rondo übernimmt die kräftigste Farbe des Logos als Vereinsfarbe – sie ist für alle Mitglieder voreingestellt.",
     "upload": "Logo hochladen",
     "replace": "Logo ersetzen",
     "remove": "Logo entfernen",
     "logoAlt": "Vereinslogo",
     "hint": "PNG, JPG oder WebP, am besten mit transparentem Hintergrund.",
-    "color": "Akzentfarbe",
-    "logoColor": "Farbe aus dem Logo {color}",
-    "custom": "Eigene Farbe wählen",
-    "default": "Standard (Rondo-Grün)",
-    "noColors": "Im Logo wurde keine kräftige Farbe gefunden. Wähle eine eigene Farbe oder bleib beim Standard.",
-    "previewButton": "Zusagen",
-    "previewLink": "Mehr anzeigen",
-    "adjusted": "Die Farbe wird für gute Lesbarkeit leicht angepasst.",
-    "saved": "Gespeichert – die App erscheint jetzt in der Vereinsfarbe.",
+    "saved": "Gespeichert.",
     "errors": {
       "type": "Bitte ein Bild im Format PNG, JPG oder WebP wählen.",
       "size": "Das Bild ist zu groß (höchstens 10 MB).",
       "read": "Das Bild konnte nicht gelesen werden.",
       "save": "Speichern fehlgeschlagen. Bitte versuche es erneut."
-    }
+    },
+    "clubColor": "Vereinsfarbe aus dem Logo: {color}",
+    "clubColorNone": "Ohne Logo gilt das Rondo-Grün.",
+    "colorHint": "Jedes Mitglied kann im Profil unter „Erscheinungsbild“ eine eigene Akzentfarbe wählen."
   },
   "templates": {
     "title": "Trainingsvorlagen",

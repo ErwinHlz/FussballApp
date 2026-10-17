@@ -206,7 +206,11 @@ function toggleAdmin(member: ClubMember) {
           </li>
         </ul>
         <p v-if="setRole.isError.value" class="club__error" role="alert">
-          {{ t('clubs.roleChangeFailed') }}
+          {{
+            (setRole.error.value as { hint?: string } | null)?.hint === 'already_admin'
+              ? t('clubs.otherClubAdmin')
+              : t('clubs.roleChangeFailed')
+          }}
         </p>
       </section>
     </template>

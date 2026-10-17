@@ -383,14 +383,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "avatar_url": string | null,"created_at": string,"display_name": string,"id": string
+                    "accent_color": string | null,"avatar_url": string | null,"created_at": string,"display_name": string,"id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"created_at"?: string,"display_name"?: string,"id": string
+                    "accent_color"?: string | null,"avatar_url"?: string | null,"created_at"?: string,"display_name"?: string,"id": string
                   }
                   Update: {
-                    "avatar_url"?: string | null,"created_at"?: string,"display_name"?: string,"id"?: string
+                    "accent_color"?: string | null,"avatar_url"?: string | null,"created_at"?: string,"display_name"?: string,"id"?: string
                   }
                   Relationships: [
                     

@@ -41,6 +41,8 @@ const groups = computed(() => {
   }))
 })
 const isLoading = computed(() => myTeams.isPending.value || myClubs.isPending.value)
+// One club per account to manage (database rule); joining other clubs stays possible.
+const managesClub = computed(() => groups.value.some((club) => club.role === 'admin'))
 const isError = computed(() => myTeams.isError.value || myClubs.isError.value)
 
 function roleLabel(team: MyTeam) {
@@ -145,10 +147,11 @@ async function onClubCreated(club: Club) {
         <p v-else class="teams__muted">{{ t('clubs.noTeamsYet') }}</p>
       </article>
 
-      <UiButton variant="secondary" block @click="createOpen = true">
+      <UiButton v-if="!managesClub" variant="secondary" block @click="createOpen = true">
         <template #icon><UiIcon name="plus" :size="18" /></template>
         {{ t('clubs.createAnother') }}
       </UiButton>
+      <p v-else class="teams__muted">{{ t('clubs.oneClubHint') }}</p>
     </template>
 
     <BottomSheet v-model:open="createOpen" :title="t('clubs.create')">

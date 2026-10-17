@@ -21,9 +21,14 @@ const router = useRouter()
 const { myTeams, activeTeam } = useActiveTeam()
 const profile = useProfile()
 
-// The app takes on the colors of the active team's club.
+// The app takes on the account's accent color; by default the color of the active team's club
+// ('default' = always the app's green).
 watch(
-  () => activeTeam.value?.club_accent_color ?? null,
+  () => {
+    const own = profile.data.value?.accent_color ?? null
+    if (own === 'default') return null
+    return own ?? activeTeam.value?.club_accent_color ?? null
+  },
   (accent) => applyClubTheme(accent),
   { immediate: true },
 )

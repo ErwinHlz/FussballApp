@@ -10,7 +10,6 @@ const deleteMyAccount = vi.fn()
 
 vi.mock('../api', () => ({
   deleteMyAccount: () => deleteMyAccount(),
-  exportMyData: vi.fn(),
   isSoleAdminError: (error: { hint?: string } | null) => error?.hint === 'sole_admin',
 }))
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import UiButton from '@/ui/UiButton.vue'
-import { accentTheme, extractPalette } from '@/lib/color'
+import { extractPalette } from '@/lib/color'
 import { clubLogoUrl } from '@/lib/clubTheme'
 import { downscale, loadImage, samplePixels } from '@/lib/image'
 import type { Club } from '../api'
@@ -21,7 +21,6 @@ const newLogo = ref<Blob | null>(null)
 const newLogoUrl = ref<string | null>(null)
 const removeLogo = ref(false)
 const palette = ref<string[]>([])
-const color = ref<string | null>(props.club.accent_color)
 const fileError = ref<string | null>(null)
 const saved = ref(false)
 
@@ -31,35 +30,16 @@ const currentLogoUrl = computed(() =>
 const previewUrl = computed(
   () => newLogoUrl.value ?? (removeLogo.value ? null : currentLogoUrl.value),
 )
-const dirty = computed(
-  () => !!newLogo.value || removeLogo.value || color.value !== props.club.accent_color,
-)
-/** Shows how buttons and links will look (adjusted for readability). */
-const theme = computed(() => (color.value ? accentTheme(color.value) : null))
-const previewStyle = computed(() =>
-  theme.value
-    ? {
-        '--preview-bg': theme.value.light.primary,
-        '--preview-text': theme.value.light.contrast,
-        '--preview-bg-dark': theme.value.dark.primary,
-        '--preview-text-dark': theme.value.dark.contrast,
-      }
-    : undefined,
-)
-
-// Palette of the saved logo, so the color can be changed without uploading again.
-watch(
-  currentLogoUrl,
-  async (url) => {
-    if (!url || newLogo.value) return
-    try {
-      palette.value = extractPalette(samplePixels(await loadImage(url)))
-    } catch {
-      palette.value = []
-    }
-  },
-  { immediate: true },
-)
+const dirty = computed(() => !!newLogo.value || removeLogo.value)
+/**
+ * The club's color is the strongest color of the logo. It is the default accent for all
+ * members; everyone can pick an own one in the profile.
+ */
+const color = computed(() => {
+  if (newLogo.value) return palette.value[0] ?? null
+  if (removeLogo.value) return null
+  return props.club.accent_color
+})
 
 function setNewLogoUrl(url: string | null) {
   if (newLogoUrl.value) URL.revokeObjectURL(newLogoUrl.value)
@@ -89,7 +69,6 @@ async function onFile(event: Event) {
     removeLogo.value = false
     setNewLogoUrl(URL.createObjectURL(blob))
     palette.value = extractPalette(samplePixels(img))
-    color.value = palette.value[0] ?? null
   } catch {
     fileError.value = t('branding.errors.read')
   } finally {
@@ -102,11 +81,6 @@ function onRemove() {
   setNewLogoUrl(null)
   removeLogo.value = true
   palette.value = []
-  saved.value = false
-}
-
-function pick(value: string | null) {
-  color.value = value
   saved.value = false
 }
 
@@ -153,51 +127,11 @@ async function onSave() {
     <p class="branding__hint">{{ t('branding.hint') }}</p>
     <p v-if="fileError" class="branding__error" role="alert">{{ fileError }}</p>
 
-    <fieldset class="branding__colors">
-      <legend class="branding__legend">{{ t('branding.color') }}</legend>
-      <p v-if="previewUrl && !palette.length" class="branding__hint">
-        {{ t('branding.noColors') }}
-      </p>
-      <div class="branding__swatches">
-        <button
-          v-for="value in palette"
-          :key="value"
-          type="button"
-          class="branding__swatch"
-          :style="{ background: value }"
-          :aria-pressed="color === value"
-          :aria-label="t('branding.logoColor', { color: value })"
-          @click="pick(value)"
-        />
-        <label class="branding__swatch branding__swatch--custom" :title="t('branding.custom')">
-          <input
-            type="color"
-            :value="color ?? '#3f6212'"
-            :aria-label="t('branding.custom')"
-            @input="pick(($event.target as HTMLInputElement).value)"
-          />
-        </label>
-        <button
-          type="button"
-          class="branding__default"
-          :aria-pressed="color === null"
-          @click="pick(null)"
-        >
-          {{ t('branding.default') }}
-        </button>
-      </div>
-    </fieldset>
-
-    <div class="branding__preview" :style="previewStyle" aria-hidden="true">
-      <span class="branding__preview-button">{{ t('branding.previewButton') }}</span>
-      <span class="branding__preview-link">{{ t('branding.previewLink') }}</span>
-    </div>
-    <p
-      v-if="color && theme && (theme.light.primary !== color || theme.dark.primary !== color)"
-      class="branding__hint"
-    >
-      {{ t('branding.adjusted') }}
+    <p class="branding__club-color">
+      <span class="branding__dot" :style="{ background: color ?? '#3f6212' }" aria-hidden="true" />
+      {{ color ? t('branding.clubColor', { color }) : t('branding.clubColorNone') }}
     </p>
+    <p class="branding__hint">{{ t('branding.colorHint') }}</p>
 
     <p v-if="save.isError.value" class="branding__error" role="alert">
       {{ t('branding.errors.save') }}
@@ -250,118 +184,26 @@ async function onSave() {
     gap: $space-1;
   }
 
+  &__club-color {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    font-weight: 700;
+  }
+
+  &__dot {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+  }
+
   &__file {
     position: absolute;
     width: 1px;
     height: 1px;
     opacity: 0;
     pointer-events: none;
-  }
-
-  &__colors {
-    display: flex;
-    flex-direction: column;
-    gap: $space-2;
-    border: 0;
-    padding: 0;
-    margin: 0;
-  }
-
-  &__legend {
-    font-weight: 600;
-    margin-bottom: $space-2;
-  }
-
-  &__swatches {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: $space-2;
-  }
-
-  &__swatch {
-    @include focus-visible;
-
-    position: relative;
-    width: $touch-target;
-    height: $touch-target;
-    border: 2px solid var(--color-border);
-    border-radius: 50%;
-    cursor: pointer;
-
-    &[aria-pressed='true'] {
-      outline: 3px solid var(--color-text);
-      outline-offset: 2px;
-    }
-
-    &--custom {
-      overflow: hidden;
-      background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
-
-      input {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        cursor: pointer;
-      }
-
-      &:focus-within {
-        outline: 3px solid var(--color-focus);
-        outline-offset: 2px;
-      }
-    }
-  }
-
-  &__default {
-    @include focus-visible;
-
-    min-height: $touch-target;
-    padding-inline: $space-3;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-full;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-weight: 600;
-
-    &[aria-pressed='true'] {
-      border-color: var(--color-text);
-      border-width: 2px;
-    }
-  }
-
-  &__preview {
-    // Inline style provides --preview-*; defaults are the app's own accent (olive / lime).
-    --bg: var(--preview-bg, #3f6212);
-    --text: var(--preview-text, #fff);
-
-    @media (prefers-color-scheme: dark) {
-      --bg: var(--preview-bg-dark, #c6f25b);
-      --text: var(--preview-text-dark, #16210a);
-    }
-
-    display: flex;
-    align-items: center;
-    gap: $space-4;
-    padding: $space-3;
-    border-radius: $radius-md;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-  }
-
-  &__preview-button {
-    padding: $space-2 $space-4;
-    border-radius: $radius-md;
-    background: var(--bg);
-    color: var(--text);
-    font-weight: 700;
-  }
-
-  &__preview-link {
-    color: var(--bg);
-    font-weight: 700;
-    text-decoration: underline;
   }
 
   &__hint {

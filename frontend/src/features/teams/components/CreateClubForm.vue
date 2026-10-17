@@ -34,7 +34,11 @@ const onSubmit = handleSubmit(async (values) => {
       :error="errors.name ? t(errors.name) : undefined"
     />
     <p v-if="createClub.isError.value" class="create-club__error" role="alert">
-      {{ t('clubs.createFailed') }}
+      {{
+        (createClub.error.value as { hint?: string } | null)?.hint === 'already_admin'
+          ? t('clubs.alreadyAdmin')
+          : t('clubs.createFailed')
+      }}
     </p>
     <UiButton type="submit" block :loading="createClub.isPending.value">
       {{ t('clubs.create') }}

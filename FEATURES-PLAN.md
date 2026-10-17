@@ -58,13 +58,13 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
 - [x] Überschrift „Das Wichtigste“ im Übungsformular entfernt
 
 ### F6 – Verein und Konto
-- [ ] Ein Nutzer darf **nur einen Verein verwalten** (Datenbankregel + Hinweis beim Anlegen/Ernennen)
-- [ ] Akzentfarbe wandert in die Konto-Einstellungen (Spalte `profiles.accent_color`, Standard =
-      Vereinsfarbe); im Verein bleibt nur das Logo (und die Standardfarbe des Vereins)
-- [ ] „Meine Daten herunterladen“ entfernt; „Konto löschen“ löscht alle persönlichen Daten
+- [x] Ein Nutzer darf **nur einen Verein verwalten** (Datenbankregel + Hinweis beim Anlegen/Ernennen)
+- [x] Akzentfarbe wandert in die Konto-Einstellungen (Spalte `profiles.accent_color`, Standard =
+      Vereinsfarbe); im Verein bleibt nur das Logo, die Vereinsfarbe kommt automatisch aus dem Logo
+- [x] „Meine Daten herunterladen“ entfernt; „Konto löschen“ löscht alle persönlichen Daten
       (Profil, Kader-Einträge mit Antworten, Geräte, Abwesenheiten, Vereine ohne andere Mitglieder) –
       Text im Profil macht das klar
-- [ ] Migrationen + pgTAP-Tests
+- [x] Migrationen + pgTAP-Tests
 
 ## Umsetzungsnotizen
 
@@ -130,3 +130,20 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
   die alten Termine erst nach dem Eintippen des Anstoßes geladen sind. Browser-Test
   „Absage zurücknehmen“ wartet auf die Server-Antwort, bevor er neu lädt (Firefox hat die
   Anfrage sonst abgebrochen).
+
+### F6
+- Migration `20261017000100_one_club_per_admin_accent.sql`: eindeutiger Index „ein Admin-Verein pro
+  Nutzer“ (ältere Doppelungen werden zu „Mitglied“, solange im Verein ein anderer Admin bleibt),
+  `create_club` und `set_club_member_role` melden das mit Hinweis `already_admin`; Spalte
+  `profiles.accent_color` (NULL = Vereinsfarbe, `'default'` = Rondo-Grün, sonst Hex). pgTAP-Test
+  `one_club_accent.test.sql`.
+- Teams-Seite: „Weiteren Verein anlegen“ nur ohne eigenen Admin-Verein, sonst Hinweis. Fehlertexte
+  beim Anlegen und beim Ernennen eines Admins, der schon einen anderen Verein verwaltet.
+- Vereinslogo: keine Farbwahl mehr; die kräftigste Logofarbe wird beim Speichern die Vereinsfarbe.
+- Profil → Darstellung: „Akzentfarbe“ mit Vereinsfarbe (Standard), weiteren Farben aus dem
+  Vereinslogo, Vorschlägen, Rondo-Grün und eigener Farbe; wird sofort gespeichert und gilt nur für
+  das eigene Konto.
+- Datenexport-Knopf entfernt; die Funktion `export_my_data` bleibt in der Datenbank, um
+  Auskunftsanfragen (Art. 15 DSGVO) beantworten zu können. Datenschutzerklärung angepasst.
+- **Vor dem Go-live:** Migrationen `20261016000100`, `20261016000200` und `20261017000100` auch im
+  Supabase-Cloud-Projekt anwenden.

@@ -322,7 +322,19 @@
       "label": "Language",
       "auto": "Automatic"
     },
-    "themeLabel": "Light or dark"
+    "themeLabel": "Light or dark",
+    "accent": {
+      "label": "Accent color",
+      "club": "Club color",
+      "clubHint": "Default – your club's color",
+      "clubNone": "Default – your club has no color yet, so Rondo green",
+      "rondo": "Rondo green",
+      "logoColor": "Club logo color {color}",
+      "color": "Color {color}",
+      "custom": "Choose your own color",
+      "hint": "Only for your account. The color is adjusted slightly for readability.",
+      "saved": "Accent color saved"
+    }
   },
   "common": {
     "close": "Close",
@@ -418,7 +430,10 @@
     "adminsHint": "Admins register teams and invite coaches. A club needs at least one admin.",
     "makeAdmin": "Make admin",
     "removeAdmin": "Remove admin",
-    "roleChangeFailed": "Role could not be changed."
+    "roleChangeFailed": "Role could not be changed.",
+    "oneClubHint": "You already manage a club. Each account can manage one club – you can still join teams of other clubs by invitation.",
+    "alreadyAdmin": "You already manage a club. Each account can manage only one.",
+    "otherClubAdmin": "This person already manages another club and cannot become an admin here."
   },
   "invites": {
     "createCoachLink": "Create coach link",
@@ -913,23 +928,22 @@
   },
   "account": {
     "title": "Data & account",
-    "exportText": "Download everything Rondo has stored about you as a file. You can also delete your account at any time.",
-    "export": "Download my data",
-    "exportFailed": "Download failed. Please try again.",
     "delete": "Delete account",
     "deleteTitle": "Delete account permanently?",
     "deleteText": "This cannot be undone. The following will be deleted:",
     "deleteItems": {
       "memberships": "your account, profile and your entries in all squads",
       "answers": "all answers, nominations, absences and devices",
-      "clubs": "clubs only you use, with all their content"
+      "clubs": "clubs only you use, with all their content",
+      "rest": "your settings such as accent color and notifications"
     },
     "confirmLabel": "Type {word} to confirm",
     "confirmWord": "DELETE",
     "soleAdmin": "You are the only admin of a club others still use. Make someone else admin first.",
     "deleteFailed": "Deleting failed. Please try again.",
     "deleteFinal": "Delete permanently",
-    "deleted": "Your account has been deleted."
+    "deleted": "Your account has been deleted.",
+    "intro": "Your data is stored in your Rondo account. Deleting your account deletes all your personal data."
   },
   "legal": {
     "privacy": "Privacy policy",
@@ -1012,28 +1026,23 @@
     "today": "Today"
   },
   "branding": {
-    "title": "Logo & club color",
-    "intro": "Upload the club logo. Rondo detects its colors and themes the app in the club color for all members.",
+    "title": "Club logo",
+    "intro": "Upload the club logo. Rondo takes its strongest color as the club color – it is the default for all members.",
     "upload": "Upload logo",
     "replace": "Replace logo",
     "remove": "Remove logo",
     "logoAlt": "Club logo",
     "hint": "PNG, JPG or WebP, ideally with a transparent background.",
-    "color": "Accent color",
-    "logoColor": "Logo color {color}",
-    "custom": "Choose your own color",
-    "default": "Default (Rondo green)",
-    "noColors": "No strong color was found in the logo. Choose your own color or keep the default.",
-    "previewButton": "Attend",
-    "previewLink": "Show more",
-    "adjusted": "The color is adjusted slightly so text stays readable.",
-    "saved": "Saved – the app now appears in the club color.",
+    "saved": "Saved.",
     "errors": {
       "type": "Please choose a PNG, JPG or WebP image.",
       "size": "The image is too large (10 MB max).",
       "read": "The image could not be read.",
       "save": "Saving failed. Please try again."
-    }
+    },
+    "clubColor": "Club color from the logo: {color}",
+    "clubColorNone": "Without a logo, Rondo green is used.",
+    "colorHint": "Every member can pick their own accent color in the profile under “Appearance”."
   },
   "templates": {
     "title": "Training templates",

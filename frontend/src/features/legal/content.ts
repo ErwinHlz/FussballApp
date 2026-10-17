@@ -60,7 +60,7 @@ export const privacyPolicy: LegalDocument = {
       heading: '7. Deine Rechte',
       paragraphs: [
         'Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15–21 DSGVO) sowie auf Widerruf erteilter Einwilligungen.',
-        'Im Profil kannst du unter „Daten & Konto“ deine Daten jederzeit herunterladen und dein Konto selbst löschen.',
+        'Im Profil kannst du unter „Daten & Konto“ dein Konto jederzeit selbst löschen; dabei werden alle deine persönlichen Daten gelöscht. Eine Auskunft über deine gespeicherten Daten erhältst du auf Anfrage an die im Impressum genannte Adresse.',
         'Du kannst dich bei einer Datenschutz-Aufsichtsbehörde beschweren, z. B. [zuständige Landesbehörde].',
       ],
     },

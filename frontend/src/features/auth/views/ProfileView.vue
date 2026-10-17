@@ -25,6 +25,7 @@ import AbsenceList from '@/features/absences/components/AbsenceList.vue'
 import { fetchMyMemberIds } from '@/features/absences/api'
 import { useMyAbsences } from '@/features/absences/composables/useAbsences'
 import NotificationSettings from '../components/NotificationSettings.vue'
+import AccentColorPicker from '../components/AccentColorPicker.vue'
 import AccountSection from '../components/AccountSection.vue'
 import { profileSchema } from '../schemas'
 import { useProfile, useUpdateProfile } from '../composables/useProfile'
@@ -143,6 +144,8 @@ const onSubmit = handleSubmit(async (values) => {
           :label="t('profile.language.label')"
           :options="languageOptions"
         />
+        <p class="profile__label">{{ t('profile.accent.label') }}</p>
+        <AccentColorPicker />
       </div>
     </UiSection>
 

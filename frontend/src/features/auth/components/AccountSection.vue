@@ -3,18 +3,15 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { format } from 'date-fns'
 import UiButton from '@/ui/UiButton.vue'
 import UiInput from '@/ui/UiInput.vue'
 import BottomSheet from '@/ui/BottomSheet.vue'
-import { deleteMyAccount, exportMyData, isSoleAdminError } from '../api'
+import { deleteMyAccount, isSoleAdminError } from '../api'
 
 const { t } = useI18n()
 const router = useRouter()
 const queryClient = useQueryClient()
 
-const exporting = ref(false)
-const exportFailed = ref(false)
 const deleteOpen = ref(false)
 const confirmation = ref('')
 const confirmWord = computed(() => t('account.confirmWord'))
@@ -27,25 +24,6 @@ const remove = useMutation({
   },
 })
 
-async function download() {
-  exporting.value = true
-  exportFailed.value = false
-  try {
-    const data = await exportMyData()
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `rondo-daten-${format(new Date(), 'yyyy-MM-dd')}.json`
-    link.click()
-    URL.revokeObjectURL(url)
-  } catch {
-    exportFailed.value = true
-  } finally {
-    exporting.value = false
-  }
-}
-
 function openDelete() {
   confirmation.value = ''
   remove.reset()
@@ -55,11 +33,7 @@ function openDelete() {
 
 <template>
   <div class="account">
-    <p class="account__text">{{ t('account.exportText') }}</p>
-    <UiButton variant="secondary" block :loading="exporting" @click="download">
-      {{ t('account.export') }}
-    </UiButton>
-    <p v-if="exportFailed" class="account__error" role="alert">{{ t('account.exportFailed') }}</p>
+    <p class="account__text">{{ t('account.intro') }}</p>
 
     <UiButton variant="ghost" block @click="openDelete">{{ t('account.delete') }}</UiButton>
 
@@ -70,6 +44,7 @@ function openDelete() {
           <li>{{ t('account.deleteItems.memberships') }}</li>
           <li>{{ t('account.deleteItems.answers') }}</li>
           <li>{{ t('account.deleteItems.clubs') }}</li>
+          <li>{{ t('account.deleteItems.rest') }}</li>
         </ul>
         <UiInput
           v-model="confirmation"

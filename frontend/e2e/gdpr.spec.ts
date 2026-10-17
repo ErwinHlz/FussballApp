@@ -1,11 +1,10 @@
 /**
- * GDPR flows against the real backend: consent on sign-up, data export and account deletion.
+ * GDPR flows against the real backend: consent on sign-up and account deletion (no download).
  */
-import { readFile } from 'node:fs/promises'
 import { expect, test } from '@playwright/test'
 import { PASSWORD } from './support/seed'
 
-test('a new user consents, downloads the data and deletes the account', async ({ page }) => {
+test('a new user consents and deletes the account with all data', async ({ page }) => {
   const email = `gdpr-${Date.now()}@example.test`
 
   await page.goto('/register')
@@ -22,14 +21,8 @@ test('a new user consents, downloads the data and deletes the account', async ({
   await expect(page).not.toHaveURL(/register/)
 
   await page.goto('/profile')
-  const [download] = await Promise.all([
-    page.waitForEvent('download'),
-    page.getByRole('button', { name: 'Meine Daten herunterladen' }).click(),
-  ])
-  expect(download.suggestedFilename()).toMatch(/^rondo-daten-\d{4}-\d{2}-\d{2}\.json$/)
-  const data = JSON.parse(await readFile((await download.path())!, 'utf8'))
-  expect(data.account.email).toBe(email)
-  expect(data.profile.display_name).toBe('Dana Daten')
+  await expect(page.getByText('alle deine persönlichen Daten gelöscht')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Meine Daten herunterladen' })).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Konto löschen' }).click()
   const dialog = page.getByRole('dialog')
