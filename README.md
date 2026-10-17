@@ -50,6 +50,20 @@ Die App läuft unter http://localhost:5173. Konto mit E-Mail und Passwort anlege
 „Verein anlegen“ → Mannschaft anmelden → Trainer-Link verschicken. Mails (z. B. „Passwort
 vergessen“) landen lokal im Postfach unter http://127.0.0.1:54324.
 
+### Testdaten und Kontowechsel
+
+`npm run seed:dev` (im Ordner `frontend`, lokales Supabase muss laufen) legt den Verein
+„SV Rondo 1920“ an: Vereins-Admin, zwei Mannschaften (U17, Damen) mit Trainern und 21 Spielern,
+Belegungsplan mit gebuchten Trainingszeiten, Spiele mit Treffpunkt, einen Teamabend, Antworten,
+eine Abwesenheit, einen veröffentlichten Trainingsplan mit Gruppen und eine Trainingshistorie
+für die Statistik. Erneut ausgeführt, löscht das Skript die alten Testkonten und baut alles neu
+auf. Es läuft nur gegen ein lokales Supabase.
+
+Alle Konten stehen in `frontend/src/dev/accounts.ts`, Passwort `rondo-dev-1234`. Im
+Entwicklungsmodus (`npm run dev`) gibt es am linken Rand einen pinken Knopf: Er listet die
+Testkonten, ein Tipp meldet sich als dieses Konto an. Im Produktions-Build ist das Werkzeug nicht
+enthalten.
+
 ## Skripte (frontend)
 
 | Skript              | Zweck                               |
@@ -65,6 +79,7 @@ vergessen“) landen lokal im Postfach unter http://127.0.0.1:54324.
 | `npm run test:screens` | Screenshots aller Hauptseiten nach `e2e/__screens__/` |
 | `npm run test:browsers` | UI- und Barrierefreiheitstests in Chromium, Firefox und Opera |
 | `npm run lighthouse` | Lighthouse (mobil) für Start, Termine und Termin-Detail |
+| `npm run seed:dev` | Lokale Testdaten mit Testkonten neu anlegen |
 
 ## Tests
 

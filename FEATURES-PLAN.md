@@ -30,13 +30,13 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
 - [x] Browser-Tests angepasst
 
 ### F2 – Testdaten und Debug-Kontowechsel
-- [ ] `npm run seed:dev` (backend) füllt die lokale Datenbank: ein Verein mit Logo-Farbe, zwei
-      Mannschaften, Admin, Trainer, ~20 Spieler mit Konten, Termine der nächsten Wochen mit Antworten,
+- [x] `npm run seed:dev` (frontend) füllt die lokale Datenbank: ein Verein mit Vereinsfarbe, zwei
+      Mannschaften, Admin, Trainer, 21 Spieler mit Konten, Termine der nächsten Wochen mit Antworten,
       Übungen, ein veröffentlichter Trainingsplan mit Gruppen, Belegungsplan
-- [ ] Alle Testkonten mit bekanntem Passwort; Liste in einer gemeinsamen Datei
-- [ ] Debug-Werkzeug (nur im Entwicklungsmodus, nicht im Produktions-Build): schwebender Knopf,
+- [x] Alle Testkonten mit bekanntem Passwort; Liste in einer gemeinsamen Datei
+- [x] Debug-Werkzeug (nur im Entwicklungsmodus, nicht im Produktions-Build): schwebender Knopf,
       Liste der Testkonten mit Rolle, ein Tipp meldet sich als dieses Konto an
-- [ ] README-Abschnitt
+- [x] README-Abschnitt
 
 ### F3 – Termine anlegen
 - [ ] „+“ öffnet eine **ganze Seite** statt eines Popups (Art wählen → Formular)
@@ -79,3 +79,15 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
   `EventCoachNav` (Übersicht/Plan/Gruppen) nutzt dieselbe Leiste (`fill`, `replace`).
 - Taktiktafel: Weil die Tab-Leiste bleibt, ist die Auswahlzeile einzeilig (Eigenschaften als
   Zahnrad-Knopf), damit das Material auch mit Auswahl über der Tab-Leiste liegt.
+
+### F2
+- Skript `frontend/scripts/seed-dev.mjs` (statt im Backend, weil es `@supabase/supabase-js` braucht);
+  läuft nur gegen `localhost`/`127.0.0.1`. Aufräumen über `delete_my_account` der Testkonten
+  (Spieler zuerst, Admin zuletzt → Verein wird mit gelöscht), daher beliebig oft ausführbar.
+- Trainings entstehen über Buchungen im Belegungsplan (U17 Di/Do Kunstrasen ganz, Damen Mo/Mi
+  Hälfte A), wie in der echten App. Historie per `docker exec` (fehlt Docker, wird sie übersprungen).
+- Luca Brandt (U17) und Mia Hartmann (Damen) haben noch keine Antworten – zum Ausprobieren.
+- Kontowechsler `src/dev/DevAccountSwitcher.vue`, in `App.vue` nur bei `import.meta.env.DEV`
+  geladen (im Build entfernt, geprüft). In Browser-Tests (`navigator.webdriver`) ausgeblendet,
+  außer `localStorage['rondo.devTools'] = 'on'`; Test `e2e/dev-tools.spec.ts` (übersprungen ohne
+  Testdaten).

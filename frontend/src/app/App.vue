@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, watchEffect } from 'vue'
+import { defineAsyncComponent, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -17,6 +17,20 @@ useLocaleStore()
 watchEffect(() => {
   document.documentElement.lang = locale.value
 })
+
+// Debug account switcher: development builds only (removed from production builds). Hidden in
+// browser tests unless a test turns it on.
+const DevAccountSwitcher =
+  import.meta.env.DEV && (!navigator.webdriver || readDevFlag())
+    ? defineAsyncComponent(() => import('@/dev/DevAccountSwitcher.vue'))
+    : null
+function readDevFlag() {
+  try {
+    return localStorage.getItem('rondo.devTools') === 'on'
+  } catch {
+    return false
+  }
+}
 
 // Page title per route, e.g. "Kader · Rondo" (screen readers announce it, tabs show it).
 watchEffect(() => {
@@ -37,4 +51,5 @@ watch(
 
 <template>
   <RouterView />
+  <component :is="DevAccountSwitcher" v-if="DevAccountSwitcher" />
 </template>

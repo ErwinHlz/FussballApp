@@ -1118,5 +1118,19 @@
     "dev": {
       "title": "Design system"
     }
+  },
+  "dev": {
+    "switcher": {
+      "open": "Debug: switch account",
+      "title": "Switch account (debug)",
+      "hint": "Test accounts from “npm run seed:dev”, password {password}. Only visible in development.",
+      "failed": "Sign-in failed. Did you create the test data? (npm run seed:dev in the frontend folder)",
+      "club": "Club",
+      "roles": {
+        "admin": "Club admin",
+        "coach": "Coach",
+        "player": "Player"
+      }
+    }
   }
 }

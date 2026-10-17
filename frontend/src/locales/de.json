@@ -1118,5 +1118,19 @@
     "dev": {
       "title": "Design-System"
     }
+  },
+  "dev": {
+    "switcher": {
+      "open": "Debug: Konto wechseln",
+      "title": "Konto wechseln (Debug)",
+      "hint": "Testkonten aus „npm run seed:dev“, Passwort {password}. Nur im Entwicklungsmodus sichtbar.",
+      "failed": "Anmeldung fehlgeschlagen. Sind die Testdaten angelegt? (npm run seed:dev im Ordner frontend)",
+      "club": "Verein",
+      "roles": {
+        "admin": "Vereins-Admin",
+        "coach": "Trainer",
+        "player": "Spieler"
+      }
+    }
   }
 }
