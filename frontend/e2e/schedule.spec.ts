@@ -1,33 +1,37 @@
 /**
- * Shared club schedule: the admin sets up pitch times, a coach books and releases them,
- * and the bookings show up as trainings of the team.
+ * Shared club schedule: the admin adds a pitch, a coach books a time range in half hours
+ * (Monday to Friday, 15:00–20:30) and releases it again; bookings become the team's trainings.
  */
-import { addDays, format } from 'date-fns'
+import { addDays, format, startOfWeek } from 'date-fns'
 import { de } from 'date-fns/locale/de'
 import { expect, test, type Page } from '@playwright/test'
 import { login } from './support/app'
 import { expectAccessible } from './support/fixtures'
 import { register, seedDemo } from './support/seed'
 
-const tomorrow = addDays(new Date(), 1)
+/** The next weekday (Monday to Friday) from tomorrow on: it can be booked from 17:00. */
+const target = (() => {
+  let day = addDays(new Date(), 1)
+  while (day.getDay() === 0 || day.getDay() === 6) day = addDays(day, 1)
+  return day
+})()
+const dayLabel = format(target, 'EEEEEE d.M.', { locale: de })
 
-/** Opens the week calendar on the week of tomorrow (old club links still lead there). */
-async function openTomorrow(page: Page, clubId: string) {
+/** Opens the calendar on the week of the target day (old club links still lead there). */
+async function openTargetWeek(page: Page, clubId: string) {
   await page.goto(`/clubs/${clubId}/schedule`)
   await expect(page).toHaveURL(/\/events\/schedule$/)
-  // Tomorrow is in next week when today is Sunday.
-  if (new Date().getDay() === 0) await page.getByRole('button', { name: 'Nächste Woche' }).click()
+  const thisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }).getTime()
+  if (startOfWeek(target, { weekStartsOn: 1 }).getTime() !== thisWeek)
+    await page.getByRole('button', { name: 'Nächste Woche' }).click()
 }
 
-/** Tomorrow's 17:00 slot on the Kunstrasen (one block with halves A and B). */
-const slotBlock = (page: Page) =>
-  page.getByRole('button', {
-    name: new RegExp(
-      `^${format(tomorrow, 'EEEEEE d.M.', { locale: de })}, 17:00–18:30, Kunstrasen: `,
-    ),
-  })
+const freeHalf = (page: Page, time: string, half: 'A' | 'B') =>
+  page.getByRole('button', { name: `${dayLabel}, ${time}, Hälfte ${half} frei – reservieren` })
+const booking = (page: Page, text: string) =>
+  page.getByRole('button', { name: `${dayLabel}, ${text}` })
 
-test('admin sets up a pitch, a coach books and releases half of it', async ({ browser }) => {
+test('admin adds a pitch, a coach books half an evening and releases it', async ({ browser }) => {
   const demo = await seedDemo()
 
   // Second team with its own coach (not a club admin).
@@ -48,61 +52,88 @@ test('admin sets up a pitch, a coach books and releases half of it', async ({ br
   const carl = await register('Carl', demo.stamp)
   await carl.sb.rpc('accept_team_invite', { p_token: invite.token })
 
-  // Admin: pitch and a weekly time on tomorrow's weekday.
+  // Admin: only the pitch, no fixed times any more.
   const admin = await (await browser.newContext()).newPage()
   await login(admin, demo.coach.email, `/clubs/${demo.club.id}/schedule/setup`)
+  await expect(admin.getByText('zwischen 15:00 und 20:30 Uhr')).toBeVisible()
   await admin.getByLabel('Name').fill('Kunstrasen')
   await admin.getByRole('button', { name: 'Platz hinzufügen' }).click()
   await expect(admin.getByRole('heading', { name: 'Kunstrasen' })).toBeVisible()
-  await admin.getByRole('button', { name: 'Platzzeit hinzufügen' }).click()
-  await admin
-    .getByRole('button', { name: format(tomorrow, 'EEEEEE', { locale: de }), exact: true })
-    .click()
-  await admin.locator('.slot-form').getByRole('button', { name: 'Platzzeit hinzufügen' }).click()
-  await expect(admin.getByText('17:00–18:30')).toBeVisible()
+  await expect(admin.getByRole('button', { name: 'Platzzeit hinzufügen' })).toHaveCount(0)
   await admin.screenshot({ path: 'e2e/__screens__/41-schedule-setup.png', fullPage: true })
 
-  // Coach: books half A every week.
+  // Coach: tap the free half hour 17:00 on half A, keep 90 minutes, every week.
   const page = await (await browser.newContext()).newPage()
   await login(page, carl.email)
-  await openTomorrow(page, demo.club.id)
+  await openTargetWeek(page, demo.club.id)
   await expect(page.getByRole('link', { name: 'Plätze & Zeiten' })).toHaveCount(0)
-  // Both halves free: a tap books half A (the sheet offers the other parts, too).
-  await expect(slotBlock(page)).toHaveAccessibleName(/A frei, B frei$/)
-  await slotBlock(page).click()
-  const sheet = page.getByRole('dialog')
-  await sheet.getByRole('button', { name: /^Jede Woche bis/ }).click()
+  await freeHalf(page, '17:00', 'A').click()
+  const sheet = page.getByRole('dialog', { name: 'Platz reservieren' })
+  await expect(sheet.getByRole('button', { name: '90 Min.' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  // Nothing after 20:30: from 17:00 at most three and a half hours.
+  await expect(sheet.getByRole('button', { name: '210 Min.' })).toBeVisible()
+  await expect(sheet.getByRole('button', { name: '240 Min.' })).toHaveCount(0)
   await page.waitForTimeout(300)
   await page.screenshot({ path: 'e2e/__screens__/42-schedule-book.png' })
-  await sheet.getByRole('button', { name: 'Reservieren' }).click()
+  await sheet.getByRole('button', { name: 'Bis 18:30 reservieren' }).click()
   await expect(page.getByRole('status')).toContainText('Trainings sind angelegt')
-  await expect(slotBlock(page)).toHaveAccessibleName(/A U19, B frei$/)
-  await expect(slotBlock(page).locator('.schedule__cell--own')).toContainText('U19')
+  const own = booking(page, '17:00–18:30, Hälfte A: U19')
+  await expect(own).toHaveClass(/schedule__block--own/)
+  // Right after the booking and on the other half, it is still free.
+  await expect(freeHalf(page, '18:30', 'A')).toBeVisible()
+  await expect(freeHalf(page, '17:00', 'B')).toBeVisible()
   await page.waitForTimeout(400)
   await page.screenshot({ path: 'e2e/__screens__/40-schedule.png', fullPage: true })
-  // The week calendar with free, own and taken parts passes the WCAG check.
+  // The calendar with free, own and taken times passes the WCAG check.
   await expectAccessible(page)
 
   // The trainings are in the team's calendar.
   await page.goto('/training')
   await expect(page.getByText('Kunstrasen · A').first()).toBeVisible()
 
-  // The admin sees the booking live in the plan with the team name.
-  await openTomorrow(admin, demo.club.id)
-  await expect(slotBlock(admin)).toHaveAccessibleName(/A U19, B frei$/)
+  // The admin sees the booking with the team name.
+  await openTargetWeek(admin, demo.club.id)
+  await expect(booking(admin, '17:00–18:30, Hälfte A: U19')).toBeVisible()
 
-  // Coach gives back tomorrow only.
-  await openTomorrow(page, demo.club.id)
-  // The own booking comes first: a tap opens it to give it back.
-  await slotBlock(page).click()
+  // Coach gives back that date only.
+  await openTargetWeek(page, demo.club.id)
+  await booking(page, '17:00–18:30, Hälfte A: U19').click()
   await page
     .getByRole('dialog')
     .getByRole('button', { name: /^Nur .* abgeben$/ })
     .click()
   await expect(page.getByRole('status')).toContainText('Abgegeben')
-  await expect(slotBlock(page)).toHaveAccessibleName(/A frei, B frei$/)
+  await expect(freeHalf(page, '17:00', 'A')).toBeVisible()
 
-  // Next week the booking still holds.
+  // The weeks after stay booked.
   await page.getByRole('button', { name: 'Nächste Woche' }).click()
-  await expect(page.locator('.schedule__cell--own').first()).toContainText('U19')
+  await expect(page.locator('.schedule__block--own').first()).toContainText('U19')
+})
+
+test('the database only takes Monday to Friday, 15:00–20:30, in half hours', async () => {
+  const demo = await seedDemo()
+  const pitch = (
+    await demo.coach.sb
+      .from('pitches')
+      .insert({ club_id: demo.club.id, name: 'Rasen' })
+      .select()
+      .single()
+  ).data!
+  const book = (start: string, end: string) =>
+    demo.coach.sb.rpc('book_pitch', {
+      p_pitch_id: pitch.id,
+      p_team_id: demo.team.id,
+      p_part: 'full',
+      p_start: start,
+      p_end: end,
+      p_from: format(target, 'yyyy-MM-dd'),
+      p_until: format(target, 'yyyy-MM-dd'),
+    })
+  expect((await book('14:30', '16:00')).error?.hint).toBe('not_bookable')
+  expect((await book('19:30', '21:00')).error?.hint).toBe('not_bookable')
+  expect((await book('17:15', '18:00')).error?.hint).toBe('not_bookable')
+  expect((await book('19:00', '20:30')).error).toBeNull()
 })

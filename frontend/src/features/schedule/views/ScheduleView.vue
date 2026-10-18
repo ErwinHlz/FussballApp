@@ -11,52 +11,51 @@ import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useMyClubs } from '@/features/teams/composables/useTeams'
 import EventsNav from '@/features/events/components/EventsNav.vue'
-import SlotSheet from '../components/SlotSheet.vue'
+import BookingSheet from '../components/BookingSheet.vue'
 import type { BookResult } from '../api'
-import { useBookings, useClubTeamNames, usePitches, useSlots } from '../composables/useSchedule'
+import { useBookings, useClubTeamNames, usePitches } from '../composables/useSchedule'
 import {
-  blockTarget,
+  bookingsOn,
+  halfHours,
   isoDate,
-  relevantHours,
-  rowOf,
-  slotCells,
-  slotStarted,
-  slotsOn,
+  minutesOf,
+  OPEN_FROM,
+  occupant,
+  openDates,
+  STEP_MIN,
   teamShortName,
   timeLabel,
-  weekDates,
+  timeStarted,
+  type Lane,
   type Pitch,
-  type PitchSlot,
   type SlotBooking,
-  type SlotCell,
 } from '../logic'
 
 /**
- * The club's pitch schedule as a week calendar that fits the screen: seven day columns, one
- * pitch at a time (switch above), halves A and B side by side. Teams are colored blocks with a
- * short name and a legend; the own team in the accent color, free times dashed. Tapping a
- * block books a free part or releases an own one. Club of the active team.
+ * The club's pitch schedule as a calendar: Monday to Friday, 15:00–20:30 in half hours, one
+ * pitch at a time with halves A and B as lanes. Booked times are blocks (own team in the accent
+ * color); every free half hour can be tapped to book from there. Club of the active team.
  */
 const { t, locale } = useI18n()
 const { myTeams, activeTeam } = useActiveTeam()
 const clubId = computed(() => activeTeam.value?.club_id ?? '')
 const pitches = usePitches(clubId)
-const slots = useSlots(clubId)
 const teamNames = useClubTeamNames(clubId)
 const myClubs = useMyClubs()
 
+const rows = halfHours()
 const today = isoDate(new Date())
 const weekOffset = ref(0)
-const days = computed(() => weekDates(addWeeks(new Date(), weekOffset.value)))
+const days = computed(() => openDates(addWeeks(new Date(), weekOffset.value)))
 const bookings = useBookings(
   clubId,
   () => days.value[0]!,
-  () => days.value[6]!,
+  () => days.value[4]!,
 )
 
 const weekLabel = computed(() => {
   const first = parseISO(days.value[0]!)
-  const last = parseISO(days.value[6]!)
+  const last = parseISO(days.value[4]!)
   const pattern = t('events.dayMonthPattern')
   return t('schedule.weekLabel', {
     week: getISOWeek(first),
@@ -97,80 +96,57 @@ function teamStyle(teamId: string) {
   return { '--team': TEAM_HUES[index % TEAM_HUES.length] }
 }
 
-// One pitch at a time; the one with the most times this week comes first.
+// One pitch at a time.
 const allPitches = computed(() =>
   [...(pitches.data.value ?? [])].sort((a, b) => a.sort_order - b.sort_order),
 )
 const chosenPitch = ref<string | null>(null)
-const busiestPitch = computed(() => {
-  const count = (pitch: Pitch) =>
-    days.value.reduce(
-      (n, date) =>
-        n + slotsOn(slots.data.value ?? [], date).filter((s) => s.pitch_id === pitch.id).length,
-      0,
-    )
-  return [...allPitches.value].sort((a, b) => count(b) - count(a))[0] ?? null
-})
-const pitch = computed(
-  () => allPitches.value.find((p) => p.id === chosenPitch.value) ?? busiestPitch.value,
+const pitch = computed<Pitch | null>(
+  () => allPitches.value.find((p) => p.id === chosenPitch.value) ?? allPitches.value[0] ?? null,
 )
 const pitchId = computed({
   get: () => pitch.value?.id ?? '',
   set: (value: string) => (chosenPitch.value = value),
 })
 const pitchOptions = computed(() => allPitches.value.map((p) => ({ value: p.id, label: p.name })))
+const lanes = computed<Lane[]>(() => (pitch.value?.splittable ? ['a', 'b'] : ['full']))
 
-const pitchSlots = computed(() =>
-  (slots.data.value ?? []).filter((s) => s.pitch_id === pitch.value?.id),
-)
-// Only the hours with pitch times this week; a gap (skipped hours) gets a marked line.
-const hours = computed(() => relevantHours(pitchSlots.value, days.value))
-const rows = computed(() =>
-  hours.value.map((hour, i) => ({
-    hour,
-    gap: i > 0 && hours.value[i - 1] !== hour - 1,
-  })),
-)
+/** Grid row (1-based) of a time; the end of the day is one past the last row. */
+const rowOf = (time: string) => (minutesOf(time) - minutesOf(OPEN_FROM)) / STEP_MIN + 1
 
-type Block = {
-  slot: PitchSlot
-  top: number
-  height: number
-  started: boolean
-  cells: SlotCell[]
-  target: SlotCell | null
-}
+type Cell = { lane: Lane; time: string; row: number; bookable: boolean }
+type Block = { booking: SlotBooking; rowStart: number; rowEnd: number; lanes: string }
 const columns = computed(() =>
   days.value.map((date) => {
-    const blocks: Block[] = []
-    const current = pitch.value
-    if (current) {
-      for (const slot of slotsOn(pitchSlots.value, date)) {
-        const top = rowOf(hours.value, slot.start_time)
-        const bottom = rowOf(hours.value, slot.end_time)
-        const started = slotStarted(slot, date)
-        const cells = slotCells(slot, current, bookings.data.value ?? [], date)
-        blocks.push({
-          slot,
-          // In percent of the day column, so the calendar can grow with the screen.
-          top: (top / hours.value.length) * 100,
-          height: ((bottom - top) / hours.value.length) * 100,
-          started,
-          cells,
-          target: started || !bookableTeams.value.length ? null : blockTarget(cells, canManage),
+    const day = pitch.value ? bookingsOn(bookings.data.value ?? [], pitch.value.id, date) : []
+    const cells: Cell[] = []
+    for (const lane of lanes.value) {
+      for (const time of rows) {
+        if (occupant(day, lane, time)) continue
+        cells.push({
+          lane,
+          time,
+          row: rowOf(time),
+          bookable: bookableTeams.value.length > 0 && !timeStarted(time, date),
         })
       }
     }
-    return { date, blocks }
+    const blocks: Block[] = day.map((booking) => ({
+      booking,
+      rowStart: rowOf(booking.start_time),
+      rowEnd: rowOf(booking.end_time),
+      lanes:
+        booking.part === 'full' || lanes.value.length === 1
+          ? '1 / -1'
+          : String(lanes.value.indexOf(booking.part) + 1),
+    }))
+    return { date, day, cells, blocks }
   }),
 )
 
 /** Teams that appear this week (for the legend). */
 const legendTeams = computed(() => {
-  const ids = new Set<string>()
-  for (const column of columns.value)
-    for (const block of column.blocks)
-      for (const cell of block.cells) if (cell.booking) ids.add(cell.booking.team_id)
+  const ids = new Set(columns.value.flatMap((c) => c.blocks.map((b) => b.booking.team_id)))
   return [...ids].map((id) => ({
     id,
     name: teamName(id),
@@ -179,25 +155,39 @@ const legendTeams = computed(() => {
   }))
 })
 
-const isLoading = computed(
-  () => pitches.isPending.value || slots.isPending.value || bookings.isPending.value,
-)
-const loadFailed = computed(
-  () => pitches.isError.value || slots.isError.value || bookings.isError.value,
-)
+const isLoading = computed(() => pitches.isPending.value || bookings.isPending.value)
+const loadFailed = computed(() => pitches.isError.value || bookings.isError.value)
 
 // Sheet
-const sheet = ref<{ slot: PitchSlot; cells: SlotCell[]; cell: SlotCell; date: string } | null>(null)
+const sheet = ref<{
+  date: string
+  start: string
+  lane: Lane
+  day: SlotBooking[]
+  booking: SlotBooking | null
+} | null>(null)
 const sheetOpen = ref(false)
 const notice = ref<string | null>(null)
 watch(weekOffset, () => (notice.value = null))
 
-function openBlock(block: Block, date: string) {
-  if (!block.target) return
+function openCell(date: string, day: SlotBooking[], cell: Cell) {
   notice.value = null
-  sheet.value = { slot: block.slot, cells: block.cells, cell: block.target, date }
+  sheet.value = { date, start: cell.time, lane: cell.lane, day, booking: null }
   sheetOpen.value = true
 }
+function openBooking(date: string, day: SlotBooking[], booking: SlotBooking) {
+  notice.value = null
+  sheet.value = {
+    date,
+    start: timeLabel(booking.start_time),
+    lane: booking.part,
+    day,
+    booking,
+  }
+  sheetOpen.value = true
+}
+const blockActive = (date: string, block: Block) =>
+  canManage(block.booking) && !timeStarted(block.booking.start_time, date)
 
 function onBooked(result: BookResult) {
   notice.value =
@@ -206,18 +196,18 @@ function onBooked(result: BookResult) {
       : t('schedule.booked', result.booked)
 }
 
-function cellText(cell: SlotCell) {
-  return cell.booking ? teamName(cell.booking.team_id) : t('schedule.free')
+const dayShort = (date: string) => formatDate(parseISO(date), locale.value, 'EEEEEE d.M.')
+const partLabel = (lane: Lane) => t(`schedule.parts.${lane}`)
+function cellLabel(date: string, cell: Cell) {
+  return t('schedule.freeCell', {
+    day: dayShort(date),
+    time: cell.time,
+    part: lanes.value.length > 1 ? partLabel(cell.lane) : (pitch.value?.name ?? ''),
+  })
 }
-/** Full description for screen readers: day, time, pitch and every part. */
-function blockLabel(block: Block, date: string) {
-  const time = `${timeLabel(block.slot.start_time)}–${timeLabel(block.slot.end_time)}`
-  const parts = block.cells
-    .map((cell) =>
-      cell.part === 'full' ? cellText(cell) : `${cell.part.toUpperCase()} ${cellText(cell)}`,
-    )
-    .join(', ')
-  return `${formatDate(parseISO(date), locale.value, 'EEEEEE d.M.')}, ${time}, ${pitch.value?.name}: ${parts}`
+function blockLabel(date: string, block: Block) {
+  const b = block.booking
+  return `${dayShort(date)}, ${timeLabel(b.start_time)}–${timeLabel(b.end_time)}, ${partLabel(b.part)}: ${teamName(b.team_id)}`
 }
 const dayName = (date: string) => formatDate(parseISO(date), locale.value, 'EEEEEE')
 const dayNumber = (date: string) => formatDate(parseISO(date), locale.value, 'd')
@@ -268,14 +258,14 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
     <p v-if="notice" class="schedule__notice" role="status">✓ {{ notice }}</p>
 
     <div v-if="isLoading" aria-busy="true">
-      <UiSkeleton shape="block" height="360px" />
+      <UiSkeleton shape="block" height="420px" />
     </div>
     <p v-else-if="loadFailed" class="schedule__error" role="alert">
       {{ t('schedule.loadFailed') }}
     </p>
 
     <UiEmptyState
-      v-else-if="!slots.data.value?.length"
+      v-else-if="!allPitches.length"
       icon="calendar"
       :title="t('schedule.emptyTitle')"
       :text="isAdmin ? t('schedule.emptyAdmin') : t('schedule.emptyText')"
@@ -298,7 +288,7 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
         :options="pitchOptions"
       />
 
-      <div class="schedule__calendar" :style="{ '--rows': hours.length }">
+      <div class="schedule__calendar" :style="{ '--rows': rows.length, '--lanes': lanes.length }">
         <!-- Day header: stays below the top bar while scrolling -->
         <div class="schedule__days" aria-hidden="true">
           <span class="schedule__corner" />
@@ -310,66 +300,86 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
           >
             <span class="schedule__day-name">{{ dayName(column.date) }}</span>
             <span class="schedule__day-number">{{ dayNumber(column.date) }}</span>
+            <span v-if="lanes.length > 1" class="schedule__lanes">
+              <span v-for="lane in lanes" :key="lane">{{ lane.toUpperCase() }}</span>
+            </span>
           </span>
         </div>
 
         <div class="schedule__body">
-          <!-- Grid: one row per relevant hour, label in the left column -->
+          <!-- Grid lines and times, one row per half hour -->
           <div
-            v-for="(row, i) in rows"
-            :key="row.hour"
+            v-for="(time, i) in rows"
+            :key="time"
             class="schedule__row"
-            :class="{ 'schedule__row--gap': row.gap }"
+            :class="{ 'schedule__row--hour': time.endsWith(':00') }"
             :style="{ gridRow: i + 1 }"
             aria-hidden="true"
           >
-            <span class="schedule__hour">{{ String(row.hour).padStart(2, '0') }}</span>
+            <span v-if="time.endsWith(':00')" class="schedule__hour">{{ time }}</span>
           </div>
 
           <section
-            v-for="column in columns"
+            v-for="(column, c) in columns"
             :key="column.date"
             class="schedule__day"
             :class="{ 'schedule__day--today': column.date === today }"
-            :style="{ gridColumn: columns.indexOf(column) + 2 }"
+            :style="{ gridColumn: c + 2 }"
             :aria-label="dayLong(column.date)"
           >
+            <!-- Free half hours -->
             <component
-              :is="block.target ? 'button' : 'div'"
+              :is="cell.bookable ? 'button' : 'span'"
+              v-for="cell in column.cells"
+              :key="`${cell.lane}-${cell.time}`"
+              :type="cell.bookable ? 'button' : undefined"
+              class="schedule__free"
+              :class="{ 'schedule__free--past': !cell.bookable }"
+              :style="{ gridRow: cell.row, gridColumn: lanes.indexOf(cell.lane) + 1 }"
+              :aria-label="cell.bookable ? cellLabel(column.date, cell) : undefined"
+              :aria-hidden="cell.bookable ? undefined : 'true'"
+              @click="cell.bookable && openCell(column.date, column.day, cell)"
+            >
+              <UiIcon v-if="cell.bookable" name="plus" :size="14" class="schedule__plus" />
+            </component>
+
+            <!-- Bookings -->
+            <component
+              :is="blockActive(column.date, block) ? 'button' : 'div'"
               v-for="block in column.blocks"
-              :key="block.slot.id"
-              :type="block.target ? 'button' : undefined"
-              :role="block.target ? undefined : 'img'"
+              :key="block.booking.id"
+              :type="blockActive(column.date, block) ? 'button' : undefined"
+              :role="blockActive(column.date, block) ? undefined : 'img'"
               class="schedule__block"
               :class="{
-                'schedule__block--past': block.started,
-                'schedule__block--action': !!block.target,
+                'schedule__block--own': ownTeamIds.has(block.booking.team_id),
+                'schedule__block--past': timeStarted(block.booking.start_time, column.date),
               }"
-              :style="{ top: `${block.top}%`, height: `${block.height}%` }"
-              :aria-label="block.target ? undefined : blockLabel(block, column.date)"
-              @click="openBlock(block, column.date)"
+              :style="{
+                gridRow: `${block.rowStart} / ${block.rowEnd}`,
+                gridColumn: block.lanes,
+                ...teamStyle(block.booking.team_id),
+              }"
+              :aria-label="
+                blockActive(column.date, block) ? undefined : blockLabel(column.date, block)
+              "
+              @click="
+                blockActive(column.date, block) &&
+                openBooking(column.date, column.day, block.booking)
+              "
             >
-              <!-- Buttons are named by their (hidden) text, so the name contains what is seen. -->
-              <span v-if="block.target" class="visually-hidden">{{
-                blockLabel(block, column.date)
+              <span v-if="blockActive(column.date, block)" class="visually-hidden">{{
+                blockLabel(column.date, block)
               }}</span>
+              <span class="schedule__team" aria-hidden="true">
+                {{ teamShortName(teamName(block.booking.team_id)) }}
+              </span>
               <span
-                v-for="cell in block.cells"
-                :key="cell.part"
-                class="schedule__cell"
-                :class="{
-                  'schedule__cell--free': !cell.booking,
-                  'schedule__cell--own': cell.booking && ownTeamIds.has(cell.booking.team_id),
-                }"
-                :style="cell.booking ? teamStyle(cell.booking.team_id) : undefined"
+                v-if="block.rowEnd - block.rowStart >= 2"
+                class="schedule__time"
                 aria-hidden="true"
               >
-                <span v-if="cell.part !== 'full'" class="schedule__part">
-                  {{ cell.part.toUpperCase() }}
-                </span>
-                <span v-if="cell.booking" class="schedule__team">
-                  {{ teamShortName(teamName(cell.booking.team_id)) }}
-                </span>
+                {{ timeLabel(block.booking.start_time) }}
               </span>
             </component>
           </section>
@@ -388,22 +398,23 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
           {{ team.name }}
         </li>
         <li>
-          <span class="schedule__swatch schedule__swatch--free" aria-hidden="true" />
+          <span class="schedule__swatch schedule__swatch--free" aria-hidden="true">+</span>
           {{ t('schedule.legendFree') }}
         </li>
       </ul>
       <p class="schedule__hint">{{ t('schedule.calendarHint') }}</p>
     </template>
 
-    <SlotSheet
+    <BookingSheet
       v-if="sheet && pitch"
       v-model:open="sheetOpen"
       :club-id="clubId"
-      :pitch-slot="sheet.slot"
       :pitch="pitch"
       :date="sheet.date"
-      :cells="sheet.cells"
-      :cell="sheet.cell"
+      :start="sheet.start"
+      :lane="sheet.lane"
+      :day="sheet.day"
+      :booking="sheet.booking"
       :teams="bookableTeams"
       :team-name="teamName"
       @booked="onBooked"
@@ -413,7 +424,7 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
 </template>
 
 <style scoped lang="scss">
-$gutter: 26px;
+$gutter: 40px;
 
 .schedule {
   display: flex;
@@ -480,7 +491,7 @@ $gutter: 26px;
     color: var(--color-danger);
   }
 
-  // The whole week on one screen: full width, seven equal columns.
+  // A calendar over the whole width: time column and five day columns.
   &__calendar {
     margin-inline: -$space-2;
     border-radius: $radius-xl;
@@ -491,7 +502,7 @@ $gutter: 26px;
   &__days,
   &__body {
     display: grid;
-    grid-template-columns: $gutter repeat(7, minmax(0, 1fr));
+    grid-template-columns: $gutter repeat(5, minmax(0, 1fr));
   }
 
   &__days {
@@ -540,18 +551,29 @@ $gutter: 26px;
     color: var(--color-primary-contrast);
   }
 
-  // Fills the screen below the head; at least 44 px per hour.
+  &__lanes {
+    display: grid;
+    grid-template-columns: repeat(var(--lanes), minmax(0, 1fr));
+    width: 100%;
+    margin-top: 2px;
+    color: var(--color-text-muted);
+    font-size: 10px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  // Fills the screen below the head; at least 34 px per half hour.
   &__body {
     position: relative;
-    grid-template-rows: repeat(var(--rows), minmax(44px, 1fr));
+    grid-template-rows: repeat(var(--rows), minmax(34px, 1fr));
     height: max(
-      calc(var(--rows) * 44px),
+      calc(var(--rows) * 34px),
       calc(
         100dvh - var(--top-bar-height, 64px) - var(--area-nav-height, 0px) - var(
             --nav-offset,
             0px
           ) -
-          250px
+          270px
       )
     );
     margin-bottom: $space-2;
@@ -560,29 +582,19 @@ $gutter: 26px;
   &__row {
     position: relative;
     grid-column: 1 / -1;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px dashed color-mix(in srgb, var(--color-border) 80%, transparent);
 
-    // Half hour.
-    &::after {
-      content: '';
-      position: absolute;
-      inset-inline: $gutter 0;
-      top: 50%;
-      border-top: 1px dashed color-mix(in srgb, var(--color-border) 70%, transparent);
-    }
-
-    // Skipped hours in between: a stronger line.
-    &--gap {
-      border-top: 3px double var(--color-text-muted);
+    &--hour {
+      border-top: 1px solid var(--color-border);
     }
   }
 
   &__hour {
     position: absolute;
-    top: 3px;
+    top: 2px;
     left: 0;
     width: $gutter;
-    padding-right: 4px;
+    padding-right: 6px;
     color: var(--color-text-muted);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
@@ -593,7 +605,12 @@ $gutter: 26px;
   &__day {
     position: relative;
     z-index: 1;
+    display: grid;
     grid-row: 1 / -1;
+    grid-template-columns: repeat(var(--lanes), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+    gap: 0 2px;
+    padding: 0 2px;
     border-left: 1px solid var(--color-border);
 
     &--today {
@@ -601,48 +618,68 @@ $gutter: 26px;
     }
   }
 
-  &__block {
-    position: absolute;
-    inset-inline: 2px;
-    display: flex;
-    gap: 2px;
-    // A hair of space between blocks that follow each other.
-    padding: 1px 0;
+  &__free {
+    @include focus-visible;
+
+    display: grid;
+    place-items: center;
+    margin: 2px 0;
+    padding: 0;
     border: 0;
-    background: transparent;
-    font: inherit;
-    text-align: left;
+    border-radius: 5px;
+    // Visible without hover (phones): a faint tint and plus.
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+    color: color-mix(in srgb, var(--color-text-muted) 55%, transparent);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-out);
 
-    &--action {
-      cursor: pointer;
-
-      &:focus-visible {
-        @include focus-ring;
-
-        border-radius: 8px;
-      }
+    &:hover,
+    &:focus-visible {
+      background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+      color: var(--color-text);
     }
 
     &--past {
-      opacity: 0.45;
+      cursor: default;
+      background: repeating-linear-gradient(
+        135deg,
+        transparent 0 4px,
+        color-mix(in srgb, var(--color-border) 40%, transparent) 4px 5px
+      );
     }
   }
 
-  &__cell {
+  &__plus {
+    opacity: 0.8;
+  }
+
+  &__block {
     --team: var(--color-text-muted);
 
+    position: relative;
+    z-index: 1;
     display: flex;
-    flex: 1 1 0;
     flex-direction: column;
     align-items: center;
     min-width: 0;
-    padding-top: 3px;
+    margin: 2px 0;
+    padding: 4px 2px 0;
     overflow: hidden;
     border: 1.5px solid var(--team);
     border-radius: 6px;
     background: color-mix(in srgb, var(--team) 18%, var(--color-surface));
     color: var(--color-text);
+    font: inherit;
     line-height: 1.1;
+    text-align: center;
+
+    &:is(button) {
+      cursor: pointer;
+
+      &:focus-visible {
+        @include focus-ring;
+      }
+    }
 
     &--own {
       border-color: var(--color-primary);
@@ -650,24 +687,24 @@ $gutter: 26px;
       color: var(--color-primary-contrast);
     }
 
-    &--free {
-      border: 1.5px dashed color-mix(in srgb, var(--color-text-muted) 60%, transparent);
-      background: transparent;
-      color: var(--color-text-muted);
+    &--past {
+      opacity: 0.5;
     }
-  }
-
-  &__part {
-    font-size: 10px;
-    font-weight: 800;
-    opacity: 0.75;
   }
 
   &__team {
     font-family: var(--font-display);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
+  }
+
+  &__time {
+    margin-top: 2px;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    opacity: 0.8;
   }
 
   &__legend {
@@ -708,6 +745,7 @@ $gutter: 26px;
     &--free {
       border: 1.5px dashed var(--color-text-muted);
       background: transparent;
+      color: var(--color-text-muted);
     }
   }
 

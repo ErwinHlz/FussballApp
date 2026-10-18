@@ -1,37 +1,24 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { addDays, parseISO } from 'date-fns'
 import UiIcon from '@/ui/UiIcon.vue'
 import UiBadge from '@/ui/UiBadge.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiCard from '@/ui/UiCard.vue'
 import UiInput from '@/ui/UiInput.vue'
-import { formatDate } from '@/lib/date'
-import SlotForm from '../components/SlotForm.vue'
-import {
-  useCreatePitch,
-  useDeletePitch,
-  useDeleteSlot,
-  usePitches,
-  useSlots,
-} from '../composables/useSchedule'
-import { timeLabel, type PitchSlot } from '../logic'
+import { useCreatePitch, useDeletePitch, usePitches } from '../composables/useSchedule'
+import { OPEN_FROM, OPEN_UNTIL } from '../logic'
 import { pitchSchema } from '../schemas'
 
 const props = defineProps<{ clubId: string }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const pitches = usePitches(() => props.clubId)
-const slots = useSlots(() => props.clubId)
 const createPitch = useCreatePitch(() => props.clubId)
 const deletePitch = useDeletePitch(() => props.clubId)
-const deleteSlot = useDeleteSlot(() => props.clubId)
 
-/** Pitch whose slot form is open. */
-const addingSlotTo = ref<string | null>(null)
 /** Two-step delete: first tap arms, second tap deletes. */
 const armed = ref<string | null>(null)
 
@@ -47,21 +34,6 @@ const onCreatePitch = handleSubmit(async (values) => {
   resetForm()
 })
 
-const slotsByPitch = computed(() => {
-  const map = new Map<string, PitchSlot[]>()
-  for (const slot of slots.data.value ?? []) {
-    map.set(slot.pitch_id, [...(map.get(slot.pitch_id) ?? []), slot])
-  }
-  // Monday first.
-  for (const list of map.values())
-    list.sort((a, b) => ((a.weekday + 6) % 7) - ((b.weekday + 6) % 7))
-  return map
-})
-
-const weekdayName = (weekday: number) =>
-  formatDate(addDays(new Date(2030, 0, 6), weekday), locale.value, 'EEEEEE')
-const date = (iso: string) => formatDate(parseISO(iso), locale.value, 'P')
-
 function confirmDelete(key: string, action: () => void) {
   if (armed.value === key) {
     armed.value = null
@@ -76,7 +48,9 @@ function confirmDelete(key: string, action: () => void) {
   <section class="setup">
     <header>
       <h1>{{ t('schedule.setup') }}</h1>
-      <p class="setup__muted">{{ t('schedule.setupIntro') }}</p>
+      <p class="setup__muted">
+        {{ t('schedule.setupIntro', { from: OPEN_FROM, until: OPEN_UNTIL }) }}
+      </p>
     </header>
 
     <p v-if="pitches.isPending.value" class="setup__muted">{{ t('common.loading') }}</p>
@@ -87,48 +61,9 @@ function confirmDelete(key: string, action: () => void) {
         <UiBadge v-if="pitch.splittable" tone="training">{{ t('schedule.splittable') }}</UiBadge>
       </div>
 
-      <ul v-if="slotsByPitch.get(pitch.id)?.length" class="setup__slots" role="list">
-        <li v-for="slot in slotsByPitch.get(pitch.id)" :key="slot.id" class="setup__slot">
-          <span class="setup__slot-text">
-            <strong>{{ weekdayName(slot.weekday) }}</strong>
-            {{ timeLabel(slot.start_time) }}–{{ timeLabel(slot.end_time) }}
-            <span class="setup__muted">
-              {{ date(slot.valid_from) }} – {{ date(slot.valid_until) }}
-            </span>
-          </span>
-          <UiButton
-            :variant="armed === slot.id ? 'danger' : 'ghost'"
-            :aria-label="armed === slot.id ? undefined : t('schedule.deleteSlot')"
-            :loading="deleteSlot.isPending.value && deleteSlot.variables.value === slot.id"
-            @click="confirmDelete(slot.id, () => deleteSlot.mutate(slot.id))"
-          >
-            <template v-if="armed === slot.id">{{ t('schedule.confirmDelete') }}</template>
-            <UiIcon v-else name="x" :size="18" />
-          </UiButton>
-        </li>
-      </ul>
-      <p v-else class="setup__muted">{{ t('schedule.noSlots') }}</p>
-      <p
-        v-if="armed === pitch.id || slotsByPitch.get(pitch.id)?.some((s) => s.id === armed)"
-        class="setup__warning"
-      >
+      <p v-if="armed === pitch.id" class="setup__warning">
         {{ t('schedule.deleteWarning') }}
       </p>
-
-      <UiButton
-        variant="secondary"
-        block
-        :aria-expanded="addingSlotTo === pitch.id"
-        @click="addingSlotTo = addingSlotTo === pitch.id ? null : pitch.id"
-      >
-        {{ addingSlotTo === pitch.id ? t('common.close') : t('schedule.addSlot') }}
-      </UiButton>
-      <SlotForm
-        v-if="addingSlotTo === pitch.id"
-        :club-id="clubId"
-        :pitch-id="pitch.id"
-        @saved="addingSlotTo = null"
-      />
 
       <UiButton
         :variant="armed === pitch.id ? 'danger' : 'ghost'"
@@ -140,11 +75,7 @@ function confirmDelete(key: string, action: () => void) {
       </UiButton>
     </UiCard>
 
-    <p
-      v-if="deleteSlot.isError.value || deletePitch.isError.value"
-      class="setup__error"
-      role="alert"
-    >
+    <p v-if="deletePitch.isError.value" class="setup__error" role="alert">
       {{ t('schedule.errors.saveFailed') }}
     </p>
 
@@ -199,28 +130,6 @@ function confirmDelete(key: string, action: () => void) {
 
   &__pitch-name {
     font-size: $font-lg;
-  }
-
-  &__slots {
-    display: flex;
-    flex-direction: column;
-  }
-
-  &__slot {
-    display: flex;
-    align-items: center;
-    gap: $space-2;
-    min-height: $touch-target;
-
-    & + & {
-      border-top: 1px solid var(--color-border);
-    }
-  }
-
-  &__slot-text {
-    flex: 1;
-    min-width: 0;
-    font-variant-numeric: tabular-nums;
   }
 
   &__check {

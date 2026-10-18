@@ -2,23 +2,19 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { eventKeys } from '@/features/events/composables/useEvents'
 import {
-  bookSlot,
+  bookPitch,
   createPitch,
-  createSlots,
   deletePitch,
-  deleteSlot,
   endSlotBooking,
   fetchBookings,
   fetchClubTeamNames,
   fetchPitches,
-  fetchSlots,
   releaseSlotDate,
 } from '../api'
 
 export const scheduleKeys = {
   all: (clubId: string) => ['schedule', clubId] as const,
   pitches: (clubId: string) => ['schedule', clubId, 'pitches'] as const,
-  slots: (clubId: string) => ['schedule', clubId, 'slots'] as const,
   bookings: (clubId: string, from: string, until: string) =>
     ['schedule', clubId, 'bookings', from, until] as const,
   teamNames: (clubId: string) => ['schedule', clubId, 'team-names'] as const,
@@ -28,14 +24,6 @@ export function usePitches(clubId: MaybeRefOrGetter<string>) {
   return useQuery({
     queryKey: computed(() => scheduleKeys.pitches(toValue(clubId))),
     queryFn: () => fetchPitches(toValue(clubId)),
-    enabled: computed(() => !!toValue(clubId)),
-  })
-}
-
-export function useSlots(clubId: MaybeRefOrGetter<string>) {
-  return useQuery({
-    queryKey: computed(() => scheduleKeys.slots(toValue(clubId))),
-    queryFn: () => fetchSlots(toValue(clubId)),
     enabled: computed(() => !!toValue(clubId)),
   })
 }
@@ -81,12 +69,8 @@ export const useCreatePitch = (clubId: MaybeRefOrGetter<string>) =>
   useScheduleMutation(clubId, createPitch)
 export const useDeletePitch = (clubId: MaybeRefOrGetter<string>) =>
   useScheduleMutation(clubId, deletePitch, true)
-export const useCreateSlots = (clubId: MaybeRefOrGetter<string>) =>
-  useScheduleMutation(clubId, createSlots)
-export const useDeleteSlot = (clubId: MaybeRefOrGetter<string>) =>
-  useScheduleMutation(clubId, deleteSlot, true)
-export const useBookSlot = (clubId: MaybeRefOrGetter<string>) =>
-  useScheduleMutation(clubId, bookSlot, true)
+export const useBookPitch = (clubId: MaybeRefOrGetter<string>) =>
+  useScheduleMutation(clubId, bookPitch, true)
 export const useReleaseSlotDate = (clubId: MaybeRefOrGetter<string>) =>
   useScheduleMutation(clubId, releaseSlotDate, true)
 export const useEndSlotBooking = (clubId: MaybeRefOrGetter<string>) =>

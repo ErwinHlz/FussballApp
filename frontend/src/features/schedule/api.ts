@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { Pitch, PitchPart, PitchSlot, SlotBooking } from './logic'
+import type { Pitch, PitchPart, SlotBooking } from './logic'
 
 export type ClubTeamName = { id: string; name: string }
 export type BookResult = { booking_id: string; booked: number; skipped: number }
@@ -11,17 +11,6 @@ export async function fetchPitches(clubId: string): Promise<Pitch[]> {
     .eq('club_id', clubId)
     .order('sort_order')
     .order('name')
-  if (error) throw error
-  return data
-}
-
-export async function fetchSlots(clubId: string): Promise<PitchSlot[]> {
-  const { data, error } = await supabase
-    .from('pitch_slots')
-    .select('*')
-    .eq('club_id', clubId)
-    .order('weekday')
-    .order('start_time')
   if (error) throw error
   return data
 }
@@ -64,47 +53,25 @@ export async function deletePitch(pitchId: string): Promise<void> {
   if (error) throw error
 }
 
-/** One slot per weekday. */
-export async function createSlots(input: {
-  clubId: string
+/**
+ * Books the part of the pitch from start to end on the weekday of `from`: until = from books
+ * one date, until = null every week until the end of the season.
+ */
+export async function bookPitch(input: {
   pitchId: string
-  weekdays: number[]
-  startTime: string
-  endTime: string
-  validFrom: string
-  validUntil: string
-}): Promise<void> {
-  const { error } = await supabase.from('pitch_slots').insert(
-    input.weekdays.map((weekday) => ({
-      club_id: input.clubId,
-      pitch_id: input.pitchId,
-      weekday,
-      start_time: input.startTime,
-      end_time: input.endTime,
-      valid_from: input.validFrom,
-      valid_until: input.validUntil,
-    })),
-  )
-  if (error) throw error
-}
-
-export async function deleteSlot(slotId: string): Promise<void> {
-  const { error } = await supabase.from('pitch_slots').delete().eq('id', slotId)
-  if (error) throw error
-}
-
-/** until = from books one date, until = null books every week until the end of the season. */
-export async function bookSlot(input: {
-  slotId: string
   teamId: string
   part: PitchPart
+  start: string
+  end: string
   from: string
   until: string | null
 }): Promise<BookResult> {
-  const { data, error } = await supabase.rpc('book_slot', {
-    p_slot_id: input.slotId,
+  const { data, error } = await supabase.rpc('book_pitch', {
+    p_pitch_id: input.pitchId,
     p_team_id: input.teamId,
     p_part: input.part,
+    p_start: input.start,
+    p_end: input.end,
     p_from: input.from,
     ...(input.until ? { p_until: input.until } : {}),
   })
@@ -128,7 +95,7 @@ export async function endSlotBooking(input: { bookingId: string; from: string })
   if (error) throw error
 }
 
-/** Hint the database sends with a refused request, e.g. 'slot_taken' or 'slot_overlap'. */
+/** Hint the database sends with a refused request, e.g. 'slot_taken' or 'not_bookable'. */
 export function scheduleErrorHint(error: unknown): string | null {
   return (error as { hint?: string } | null)?.hint ?? null
 }

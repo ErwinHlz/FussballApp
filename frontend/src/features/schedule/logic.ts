@@ -3,11 +3,16 @@ import type { Database, Tables } from '@/types/database'
 
 export type PitchPart = Database['public']['Enums']['pitch_part']
 export type Pitch = Tables<'pitches'>
-export type PitchSlot = Tables<'pitch_slots'>
 export type SlotBooking = Tables<'slot_bookings'> & { exceptions: { date: string }[] }
+/** Lane of the calendar: a half of a splittable pitch, or the whole pitch. */
+export type Lane = PitchPart
 
-/** A bookable or booked piece of a slot on one date. */
-export type SlotCell = { part: PitchPart; booking: SlotBooking | null }
+// Bookable time (same rule as private.bookable_range in the database).
+export const OPEN_FROM = '15:00'
+export const OPEN_UNTIL = '20:30'
+export const STEP_MIN = 30
+/** Monday to Friday (0 = Sunday, as JS getDay). */
+export const OPEN_WEEKDAYS = [1, 2, 3, 4, 5]
 
 /** Dates are local calendar days as 'yyyy-MM-dd' (the club's wall-clock dates). */
 export function isoDate(date: Date): string {
@@ -24,66 +29,13 @@ export function weekDates(date: Date): string[] {
   return Array.from({ length: 7 }, (_, i) => isoDate(addDays(monday, i)))
 }
 
+/** The bookable days (Monday to Friday) of the week that contains the date. */
+export function openDates(date: Date): string[] {
+  return weekDates(date).filter((d) => OPEN_WEEKDAYS.includes(weekdayOf(d)))
+}
+
 export function weekdayOf(date: string): number {
   return parseISO(date).getDay()
-}
-
-/** Slots that take place on the date, by start time. */
-export function slotsOn(slots: PitchSlot[], date: string): PitchSlot[] {
-  const weekday = weekdayOf(date)
-  return slots
-    .filter((s) => s.weekday === weekday && s.valid_from <= date && date <= s.valid_until)
-    .sort((a, b) => a.start_time.localeCompare(b.start_time))
-}
-
-/** True if the booking occupies its slot on the date. */
-export function bookingCovers(booking: SlotBooking, date: string): boolean {
-  return (
-    booking.valid_from <= date &&
-    date <= booking.valid_until &&
-    !booking.exceptions.some((x) => x.date === date)
-  )
-}
-
-/**
- * How a slot is shown on a date: the whole pitch (booked as a whole, not splittable, or still
- * completely free on a splittable pitch is shown as two free halves) or halves A and B.
- */
-export function slotCells(
-  slot: PitchSlot,
-  pitch: Pick<Pitch, 'splittable'>,
-  bookings: SlotBooking[],
-  date: string,
-): SlotCell[] {
-  const active = bookings.filter((b) => b.slot_id === slot.id && bookingCovers(b, date))
-  const full = active.find((b) => b.part === 'full')
-  if (full || !pitch.splittable) return [{ part: 'full', booking: full ?? null }]
-  return (['a', 'b'] as const).map((part) => ({
-    part,
-    booking: active.find((b) => b.part === part) ?? null,
-  }))
-}
-
-/** Parts that can still be booked on the date (the whole pitch only if both halves are free). */
-export function freeParts(cells: SlotCell[], splittable: boolean): PitchPart[] {
-  if (cells.length === 1) return cells[0]!.booking ? [] : ['full']
-  const free = cells.filter((c) => !c.booking).map((c) => c.part)
-  return splittable && free.length === 2 ? ['full', ...free] : free
-}
-
-/** True if the slot has already started (its date and start time lie in the past). */
-export function slotStarted(slot: Pick<PitchSlot, 'start_time'>, date: string, now = new Date()) {
-  return parseISO(`${date}T${slot.start_time}`) <= now
-}
-
-/** Default season for new slots: today until the next 30 June. */
-export function defaultSeason(today = new Date()): { from: string; until: string } {
-  const year = today.getMonth() >= 6 ? today.getFullYear() + 1 : today.getFullYear()
-  return { from: isoDate(today), until: `${year}-06-30` }
-}
-
-export function timeLabel(time: string): string {
-  return time.slice(0, 5)
 }
 
 /** Minutes since midnight of a 'HH:mm[:ss]' time. */
@@ -92,29 +44,95 @@ export function minutesOf(time: string): number {
   return h * 60 + m
 }
 
-/**
- * Hours the week calendar shows: from the earliest start to the latest end of the slots on the
- * dates (whole hours), at least the fallback range when nothing takes place.
- */
-export function calendarHours(
-  slots: PitchSlot[],
-  dates: string[],
-  fallback: [number, number] = [16, 21],
-): { from: number; to: number } {
-  const week = dates.flatMap((date) => slotsOn(slots, date))
-  if (!week.length) return { from: fallback[0], to: fallback[1] }
-  const from = Math.floor(Math.min(...week.map((s) => minutesOf(s.start_time))) / 60)
-  const to = Math.ceil(Math.max(...week.map((s) => minutesOf(s.end_time))) / 60)
-  return { from, to: Math.max(to, from + 1) }
+/** 'HH:mm' of minutes since midnight. */
+export function timeOf(minutes: number): string {
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
 }
 
-/** Top offset and height of a slot in the calendar, in hours from the first shown hour. */
-export function slotBox(slot: Pick<PitchSlot, 'start_time' | 'end_time'>, fromHour: number) {
-  const start = minutesOf(slot.start_time)
-  return {
-    top: (start - fromHour * 60) / 60,
-    height: (minutesOf(slot.end_time) - start) / 60,
+export function timeLabel(time: string): string {
+  return time.slice(0, 5)
+}
+
+/** Start times of the rows: 15:00, 15:30 … 20:00. */
+export function halfHours(): string[] {
+  const rows: string[] = []
+  for (let m = minutesOf(OPEN_FROM); m < minutesOf(OPEN_UNTIL); m += STEP_MIN) rows.push(timeOf(m))
+  return rows
+}
+
+/** True if the booking occupies the pitch on the date. */
+export function bookingCovers(booking: SlotBooking, date: string): boolean {
+  return (
+    booking.weekday === weekdayOf(date) &&
+    booking.valid_from <= date &&
+    date <= booking.valid_until &&
+    !booking.exceptions.some((x) => x.date === date)
+  )
+}
+
+/** Bookings of a pitch on a date, by start time. */
+export function bookingsOn(bookings: SlotBooking[], pitchId: string, date: string): SlotBooking[] {
+  return bookings
+    .filter((b) => b.pitch_id === pitchId && bookingCovers(b, date))
+    .sort((a, b) => a.start_time.localeCompare(b.start_time))
+}
+
+/** Parts that conflict: the whole pitch with everything, a half with itself and the whole. */
+export function partsClash(a: PitchPart, b: PitchPart): boolean {
+  return a === 'full' || b === 'full' || a === b
+}
+
+/** The booking that holds the lane during the half hour starting at `time`, if any. */
+export function occupant(day: SlotBooking[], lane: Lane, time: string): SlotBooking | null {
+  const m = minutesOf(time)
+  return (
+    day.find(
+      (b) => partsClash(b.part, lane) && minutesOf(b.start_time) <= m && m < minutesOf(b.end_time),
+    ) ?? null
+  )
+}
+
+/** True if the part is free from start to end on that day. */
+export function rangeFree(day: SlotBooking[], part: PitchPart, start: string, end: string) {
+  const s = minutesOf(start)
+  const e = minutesOf(end)
+  return !day.some(
+    (b) => partsClash(b.part, part) && minutesOf(b.start_time) < e && s < minutesOf(b.end_time),
+  )
+}
+
+/** Lengths (in minutes) a booking from `start` can have for the part: up to the next booking. */
+export function possibleDurations(day: SlotBooking[], part: PitchPart, start: string): number[] {
+  const s = minutesOf(start)
+  const durations: number[] = []
+  for (let e = s + STEP_MIN; e <= minutesOf(OPEN_UNTIL); e += STEP_MIN) {
+    if (!rangeFree(day, part, start, timeOf(e))) break
+    durations.push(e - s)
   }
+  return durations
+}
+
+/** Parts of the pitch that are free for the whole range (whole pitch only if both halves are). */
+export function freeParts(
+  day: SlotBooking[],
+  splittable: boolean,
+  start: string,
+  end: string,
+): PitchPart[] {
+  const parts: PitchPart[] = splittable ? ['full', 'a', 'b'] : ['full']
+  return parts.filter((part) => rangeFree(day, part, start, end))
+}
+
+/** True if the half hour has already started. */
+export function timeStarted(time: string, date: string, now = new Date()): boolean {
+  return parseISO(`${date}T${timeLabel(time)}`) <= now
+}
+
+/** Default season end: the next 30 June. */
+export function seasonEnd(from: string): string {
+  const date = parseISO(from)
+  const year = date.getMonth() >= 6 ? date.getFullYear() + 1 : date.getFullYear()
+  return `${year}-06-30`
 }
 
 /** Short label of a team for small calendar blocks: "U17" stays, "Damen" becomes "DAM". */
@@ -124,42 +142,4 @@ export function teamShortName(name: string): string {
   const first = trimmed.split(/\s+/)[0]!
   if (first.length <= 4 && /\d/.test(first)) return first
   return trimmed.slice(0, 3).toLocaleUpperCase('de')
-}
-
-/**
- * Which part a tap on a whole slot block opens: an own booking (to release it) first,
- * otherwise a free part (to book), otherwise none.
- */
-export function blockTarget(
-  cells: SlotCell[],
-  canManage: (booking: SlotBooking) => boolean,
-): SlotCell | null {
-  return (
-    cells.find((c) => c.booking && canManage(c.booking)) ?? cells.find((c) => !c.booking) ?? null
-  )
-}
-
-/**
- * Hours the calendar shows: every hour touched by a pitch time on the dates, nothing else
- * (an empty afternoon between Saturday morning and the evenings disappears).
- */
-export function relevantHours(slots: PitchSlot[], dates: string[]): number[] {
-  const hours = new Set<number>()
-  for (const slot of dates.flatMap((date) => slotsOn(slots, date))) {
-    const from = Math.floor(minutesOf(slot.start_time) / 60)
-    const to = Math.ceil(minutesOf(slot.end_time) / 60)
-    for (let h = from; h < to; h++) hours.add(h)
-  }
-  return [...hours].sort((a, b) => a - b)
-}
-
-/** Position of a time on the compressed hour axis, in rows from the top (fractions allowed). */
-export function rowOf(hours: number[], time: string): number {
-  const minutes = minutesOf(time)
-  const hour = Math.floor(minutes / 60)
-  const index = hours.indexOf(hour)
-  if (index >= 0) return index + (minutes % 60) / 60
-  // Exactly the end of the last row (e.g. 20:00 after the 19:00 row).
-  const before = hours.filter((h) => h < hour).length
-  return before
 }

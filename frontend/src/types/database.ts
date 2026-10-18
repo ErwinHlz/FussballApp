@@ -341,26 +341,6 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"pitch_slots": {
-                  Row: {
-                    "club_id": string,"created_at": string,"end_time": string,"id": string,"pitch_id": string,"start_time": string,"valid_from": string,"valid_until": string,"weekday": number
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "club_id": string,"created_at"?: string,"end_time": string,"id"?: string,"pitch_id": string,"start_time": string,"valid_from": string,"valid_until": string,"weekday": number
-                  }
-                  Update: {
-                    "club_id"?: string,"created_at"?: string,"end_time"?: string,"id"?: string,"pitch_id"?: string,"start_time"?: string,"valid_from"?: string,"valid_until"?: string,"weekday"?: number
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "pitch_slots_pitch_id_club_id_fkey"
-      columns: ["pitch_id","club_id"]
-isOneToOne: false
-      referencedRelation: "pitches"
-      referencedColumns: ["id","club_id"]
-    }
-                  ]
                 },"pitches": {
                   Row: {
                     "club_id": string,"created_at": string,"id": string,"name": string,"sort_order": number,"splittable": boolean
@@ -437,14 +417,14 @@ isOneToOne: false
                   ]
                 },"slot_bookings": {
                   Row: {
-                    "club_id": string,"created_at": string,"created_by": string | null,"id": string,"part": Database["public"]['Enums']["pitch_part"],"slot_id": string,"team_id": string,"valid_from": string,"valid_until": string
+                    "club_id": string,"created_at": string,"created_by": string | null,"end_time": string,"id": string,"part": Database["public"]['Enums']["pitch_part"],"pitch_id": string,"start_time": string,"team_id": string,"valid_from": string,"valid_until": string,"weekday": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "club_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"part": Database["public"]['Enums']["pitch_part"],"slot_id": string,"team_id": string,"valid_from": string,"valid_until": string
+                    "club_id": string,"created_at"?: string,"created_by"?: string | null,"end_time": string,"id"?: string,"part": Database["public"]['Enums']["pitch_part"],"pitch_id": string,"start_time": string,"team_id": string,"valid_from": string,"valid_until": string,"weekday": number
                   }
                   Update: {
-                    "club_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"part"?: Database["public"]['Enums']["pitch_part"],"slot_id"?: string,"team_id"?: string,"valid_from"?: string,"valid_until"?: string
+                    "club_id"?: string,"created_at"?: string,"created_by"?: string | null,"end_time"?: string,"id"?: string,"part"?: Database["public"]['Enums']["pitch_part"],"pitch_id"?: string,"start_time"?: string,"team_id"?: string,"valid_from"?: string,"valid_until"?: string,"weekday"?: number
                   }
                   Relationships: [
                     {
@@ -460,10 +440,10 @@ isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     },{
-      foreignKeyName: "slot_bookings_slot_id_fkey"
-      columns: ["slot_id"]
+      foreignKeyName: "slot_bookings_pitch_id_fkey"
+      columns: ["pitch_id"]
 isOneToOne: false
-      referencedRelation: "pitch_slots"
+      referencedRelation: "pitches"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "slot_bookings_team_id_fkey"
@@ -644,8 +624,8 @@ isOneToOne: false
 "apply_training_template":
 { Args: { "p_event_id": string,"p_template_id": string }; Returns: number
                            },
-"book_slot":
-{ Args: { "p_from": string,"p_part": Database["public"]['Enums']["pitch_part"],"p_slot_id": string,"p_team_id": string,"p_until"?: string }; Returns: Json
+"book_pitch":
+{ Args: { "p_end": string,"p_from": string,"p_part": Database["public"]['Enums']["pitch_part"],"p_pitch_id": string,"p_start": string,"p_team_id": string,"p_until"?: string }; Returns: Json
                            },
 "booking_club_id":
 { Args: { "p_booking_id": string }; Returns: string

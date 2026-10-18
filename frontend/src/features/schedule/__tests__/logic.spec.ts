@@ -1,208 +1,109 @@
 import { describe, expect, it } from 'vitest'
 import {
-  blockTarget,
   bookingCovers,
-  relevantHours,
-  rowOf,
-  calendarHours,
-  slotBox,
-  defaultSeason,
+  bookingsOn,
   freeParts,
-  slotCells,
-  slotStarted,
-  slotsOn,
+  halfHours,
+  occupant,
+  openDates,
+  possibleDurations,
+  rangeFree,
+  seasonEnd,
   teamShortName,
+  timeStarted,
   weekDates,
-  type PitchSlot,
   type SlotBooking,
 } from '../logic'
 
 // 2026-10-13 is a Tuesday (weekday 2).
-const slot = (patch: Partial<PitchSlot> = {}): PitchSlot => ({
-  id: 's1',
-  club_id: 'c',
-  pitch_id: 'p',
-  weekday: 2,
-  start_time: '17:00:00',
-  end_time: '18:30:00',
-  valid_from: '2026-09-01',
-  valid_until: '2027-06-30',
-  created_at: '',
-  ...patch,
-})
-
 const booking = (patch: Partial<SlotBooking> = {}): SlotBooking => ({
   id: 'b1',
   club_id: 'c',
-  slot_id: 's1',
+  pitch_id: 'p',
   team_id: 't1',
   part: 'a',
-  valid_from: '2026-10-06',
-  valid_until: '2027-06-29',
+  weekday: 2,
+  start_time: '17:00:00',
+  end_time: '18:30:00',
+  valid_from: '2026-10-01',
+  valid_until: '2027-06-30',
   created_by: null,
   created_at: '',
   exceptions: [],
   ...patch,
 })
 
-describe('weekDates', () => {
-  it('runs from Monday to Sunday', () => {
-    expect(weekDates(new Date(2026, 9, 15))).toEqual([
+describe('week and rows', () => {
+  it('weeks start on Monday; only Monday to Friday can be booked', () => {
+    expect(weekDates(new Date(2026, 9, 15))[0]).toBe('2026-10-12')
+    expect(openDates(new Date(2026, 9, 15))).toEqual([
       '2026-10-12',
       '2026-10-13',
       '2026-10-14',
       '2026-10-15',
       '2026-10-16',
-      '2026-10-17',
-      '2026-10-18',
     ])
   })
-})
 
-describe('slotsOn', () => {
-  it('returns the slots of the weekday inside their season, by time', () => {
-    const late = slot({ id: 'late', start_time: '19:00:00' })
-    const other = slot({ id: 'mon', weekday: 1 })
-    const ended = slot({ id: 'old', valid_until: '2026-10-01' })
-    expect(slotsOn([late, slot(), other, ended], '2026-10-13').map((s) => s.id)).toEqual([
-      's1',
-      'late',
-    ])
+  it('has half-hour rows from 15:00 to 20:30', () => {
+    const rows = halfHours()
+    expect(rows).toHaveLength(11)
+    expect(rows[0]).toBe('15:00')
+    expect(rows.at(-1)).toBe('20:00')
   })
 })
 
-describe('bookingCovers', () => {
-  it('respects the range and released dates', () => {
-    const b = booking({ exceptions: [{ date: '2026-10-20' }] })
-    expect(bookingCovers(b, '2026-10-13')).toBe(true)
-    expect(bookingCovers(b, '2026-10-20')).toBe(false)
-    expect(bookingCovers(b, '2026-09-29')).toBe(false)
-  })
-})
-
-describe('slotCells', () => {
-  it('shows two halves on a splittable pitch', () => {
-    const cells = slotCells(slot(), { splittable: true }, [booking()], '2026-10-13')
-    expect(cells.map((c) => [c.part, c.booking?.team_id ?? null])).toEqual([
-      ['a', 't1'],
-      ['b', null],
-    ])
-    expect(freeParts(cells, true)).toEqual(['b'])
+describe('bookings on a day', () => {
+  it('covers its weekday inside the range, except released dates', () => {
+    expect(bookingCovers(booking(), '2026-10-13')).toBe(true)
+    expect(bookingCovers(booking(), '2026-10-14')).toBe(false)
+    expect(bookingCovers(booking({ exceptions: [{ date: '2026-10-13' }] }), '2026-10-13')).toBe(
+      false,
+    )
+    expect(bookingsOn([booking(), booking({ pitch_id: 'q' })], 'p', '2026-10-13')).toHaveLength(1)
   })
 
-  it('shows one cell for a full booking', () => {
-    const cells = slotCells(slot(), { splittable: true }, [booking({ part: 'full' })], '2026-10-13')
-    expect(cells).toHaveLength(1)
-    expect(freeParts(cells, true)).toEqual([])
-  })
-
-  it('offers the whole pitch and both halves when nothing is booked', () => {
-    const cells = slotCells(slot(), { splittable: true }, [], '2026-10-13')
-    expect(freeParts(cells, true)).toEqual(['full', 'a', 'b'])
-  })
-
-  it('shows one cell for pitches that cannot be split', () => {
-    const cells = slotCells(slot(), { splittable: false }, [], '2026-10-13')
-    expect(cells).toEqual([{ part: 'full', booking: null }])
-    expect(freeParts(cells, false)).toEqual(['full'])
-  })
-
-  it('ignores released dates and other slots', () => {
-    const released = booking({ exceptions: [{ date: '2026-10-13' }] })
-    const elsewhere = booking({ id: 'b2', slot_id: 'other', part: 'b' })
-    const cells = slotCells(slot(), { splittable: true }, [released, elsewhere], '2026-10-13')
-    expect(cells.every((c) => c.booking === null)).toBe(true)
-  })
-})
-
-describe('slotStarted', () => {
-  it('compares the local start time', () => {
-    const now = new Date(2026, 9, 13, 17, 30)
-    expect(slotStarted(slot(), '2026-10-13', now)).toBe(true)
-    expect(slotStarted(slot({ start_time: '18:00:00' }), '2026-10-13', now)).toBe(false)
-  })
-})
-
-describe('defaultSeason', () => {
-  it('ends on the next 30 June', () => {
-    expect(defaultSeason(new Date(2026, 9, 9))).toEqual({ from: '2026-10-09', until: '2027-06-30' })
-    expect(defaultSeason(new Date(2027, 2, 1))).toEqual({ from: '2027-03-01', until: '2027-06-30' })
-  })
-})
-
-describe('week calendar', () => {
-  const week = weekDates(new Date(2026, 9, 13))
-
-  it('shows the hours from the earliest start to the latest end of the week', () => {
-    const slots = [
-      slot(),
-      slot({ id: 's2', weekday: 6, start_time: '10:00:00', end_time: '15:30:00' }),
+  it('finds who holds a half hour; the whole pitch blocks both halves', () => {
+    const day = [
+      booking(),
+      booking({ id: 'b2', part: 'full', start_time: '19:00:00', end_time: '20:00:00' }),
     ]
-    expect(calendarHours(slots, week)).toEqual({ from: 10, to: 19 })
-  })
-
-  it('falls back to the evening without slots', () => {
-    expect(calendarHours([], week)).toEqual({ from: 16, to: 21 })
-  })
-
-  it('places a slot by its times', () => {
-    expect(slotBox({ start_time: '17:30:00', end_time: '19:00:00' }, 16)).toEqual({
-      top: 1.5,
-      height: 1.5,
-    })
+    expect(occupant(day, 'a', '17:30')?.id).toBe('b1')
+    expect(occupant(day, 'b', '17:30')).toBeNull()
+    expect(occupant(day, 'a', '18:30')).toBeNull()
+    expect(occupant(day, 'b', '19:30')?.id).toBe('b2')
   })
 })
 
-describe('calendar labels and taps', () => {
+describe('booking a range', () => {
+  const day = [booking()] // half A 17:00–18:30
+
+  it('offers durations up to the next booking or 20:30', () => {
+    expect(possibleDurations(day, 'a', '16:00')).toEqual([30, 60])
+    expect(possibleDurations(day, 'b', '19:30')).toEqual([30, 60])
+    expect(possibleDurations(day, 'full', '17:00')).toEqual([])
+  })
+
+  it('offers the parts that are free for the whole range', () => {
+    expect(freeParts(day, true, '17:00', '18:00')).toEqual(['b'])
+    expect(freeParts(day, true, '18:30', '20:00')).toEqual(['full', 'a', 'b'])
+    expect(freeParts(day, false, '15:00', '16:00')).toEqual(['full'])
+    expect(rangeFree(day, 'a', '18:30', '19:00')).toBe(true)
+  })
+
+  it('knows the season end and past times', () => {
+    expect(seasonEnd('2026-10-13')).toBe('2027-06-30')
+    expect(seasonEnd('2027-03-01')).toBe('2027-06-30')
+    expect(timeStarted('17:00', '2026-10-13', new Date(2026, 9, 13, 17, 5))).toBe(true)
+    expect(timeStarted('17:30', '2026-10-13', new Date(2026, 9, 13, 17, 5))).toBe(false)
+  })
+})
+
+describe('team short names', () => {
   it('shortens team names for small blocks', () => {
     expect(teamShortName('U17')).toBe('U17')
     expect(teamShortName('Damen')).toBe('DAM')
     expect(teamShortName('U19 II')).toBe('U19')
     expect(teamShortName('Herren 2')).toBe('HER')
-  })
-
-  it('opens an own booking first, otherwise a free part', () => {
-    const own = { team_id: 'own' } as SlotBooking
-    const other = { team_id: 'other' } as SlotBooking
-    const mine = (b: SlotBooking) => b.team_id === 'own'
-    expect(
-      blockTarget(
-        [
-          { part: 'a', booking: null },
-          { part: 'b', booking: own },
-        ],
-        mine,
-      )?.part,
-    ).toBe('b')
-    expect(
-      blockTarget(
-        [
-          { part: 'a', booking: other },
-          { part: 'b', booking: null },
-        ],
-        mine,
-      )?.part,
-    ).toBe('b')
-    expect(blockTarget([{ part: 'full', booking: other }], mine)).toBeNull()
-  })
-})
-
-describe('compressed hour axis', () => {
-  const week = weekDates(new Date(2026, 9, 13))
-  const slots = [
-    slot({ start_time: '17:30:00', end_time: '19:00:00' }),
-    slot({ id: 's2', weekday: 6, start_time: '10:00:00', end_time: '12:00:00' }),
-  ]
-
-  it('keeps only hours with pitch times', () => {
-    expect(relevantHours(slots, week)).toEqual([10, 11, 17, 18])
-  })
-
-  it('places times on the remaining rows', () => {
-    const hours = [10, 11, 17, 18]
-    expect(rowOf(hours, '10:00:00')).toBe(0)
-    expect(rowOf(hours, '17:30:00')).toBe(2.5)
-    expect(rowOf(hours, '19:00:00')).toBe(4)
-    expect(rowOf(hours, '12:00:00')).toBe(2)
   })
 })

@@ -162,3 +162,17 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
   Spaltenlinien pro Tag, füllt die Bildschirmhöhe (mindestens 44 px pro Stunde). Gezeigt werden
   nur Stunden mit Platzzeiten in der Woche (`relevantHours`, `rowOf`); übersprungene Stunden
   markiert eine Doppellinie. Blöcke sind in Prozent der Spalte positioniert.
+
+### Belegungsplan in 30-Minuten-Slots (18.10.2026, mit dem Nutzer abgestimmt)
+- Gebucht wird Montag bis Freitag zwischen 15:00 und 20:30 Uhr in halben Stunden; das Wochenende
+  bleibt frei (Spiele). Ein Tipp auf eine freie halbe Stunde (Hälfte A/B oder ganzer Platz) öffnet
+  das Reservieren mit Dauer (bis zur nächsten Buchung bzw. 20:30, vorgeschlagen 90 Min.), Bereich,
+  Mannschaft und „jede Woche bis 30. Juni“ oder „nur dieser Tag“.
+- Datenmodell: Die festen Platzzeiten des Admins (`pitch_slots`) entfallen. `slot_bookings` trägt
+  jetzt selbst `pitch_id`, `weekday`, `start_time`, `end_time`; bestehende Buchungen wurden
+  übernommen. Neue Funktion `book_pitch` (ersetzt `book_slot`) prüft die erlaubten Zeiten
+  (`private.bookable_range`) und Überschneidungen pro Hälfte (`private.range_taken`).
+  Migration `20261018000100_schedule_time_ranges.sql`, pgTAP-Test neu.
+- Admin pflegt unter „Plätze & Zeiten“ nur noch die Plätze (Name, teilbar).
+- Kalender: Spalten Mo–Fr mit Spuren A/B, Zeilen je halbe Stunde (volle Stunden durchgezogen),
+  freie Slots mit dezentem „+“, Buchungen als Blöcke über ihre Dauer.

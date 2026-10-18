@@ -7,24 +7,36 @@ import UiChipGroup from '@/ui/UiChipGroup.vue'
 import BottomSheet from '@/ui/BottomSheet.vue'
 import { formatDate } from '@/lib/date'
 import { scheduleErrorHint, type BookResult } from '../api'
-import { useBookSlot, useEndSlotBooking, useReleaseSlotDate } from '../composables/useSchedule'
+import { useBookPitch, useEndSlotBooking, useReleaseSlotDate } from '../composables/useSchedule'
 import {
   freeParts,
+  minutesOf,
+  possibleDurations,
+  seasonEnd,
   timeLabel,
+  timeOf,
+  type Lane,
   type Pitch,
   type PitchPart,
-  type PitchSlot,
-  type SlotCell,
+  type SlotBooking,
 } from '../logic'
 
+/**
+ * Booking a free half hour (start fixed by the tap): length, part of the pitch, team and
+ * once or every week. Or, for an own booking: give back this date or all from it on.
+ */
 const props = defineProps<{
   clubId: string
-  pitchSlot: PitchSlot
   pitch: Pitch
   date: string
-  cells: SlotCell[]
-  /** The cell that was tapped. */
-  cell: SlotCell
+  /** Free half hour that was tapped ('HH:mm'); unused for a booking. */
+  start: string
+  /** Lane that was tapped: preferred part. */
+  lane: Lane
+  /** All bookings of the pitch on that date. */
+  day: SlotBooking[]
+  /** Booking that was tapped (release), or null (book). */
+  booking: SlotBooking | null
   /** Teams the user may book for (coach or club admin). */
   teams: { id: string; name: string }[]
   teamName: (teamId: string) => string
@@ -34,52 +46,83 @@ const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{ booked: [result: BookResult]; released: [] }>()
 
 const { t, locale } = useI18n()
-const book = useBookSlot(() => props.clubId)
+const book = useBookPitch(() => props.clubId)
 const release = useReleaseSlotDate(() => props.clubId)
 const end = useEndSlotBooking(() => props.clubId)
 
-const booking = computed(() => props.cell.booking)
 const dayLabel = (iso: string) => formatDate(parseISO(iso), locale.value, 'EEEEEE, P')
-const summary = computed(
-  () =>
-    `${formatDate(parseISO(props.date), locale.value, 'EEEE, P')} · ${timeLabel(props.pitchSlot.start_time)}–${timeLabel(props.pitchSlot.end_time)} · ${props.pitch.name}`,
-)
 
 // Booking form
 const part = ref<PitchPart>('full')
-const teamId = ref<string>('')
-const repeat = ref<'once' | 'weekly'>('once')
+const duration = ref(90)
+const teamId = ref('')
+const repeat = ref<'once' | 'weekly'>('weekly')
+
+const durations = computed(() => possibleDurations(props.day, part.value, props.start))
+const endTime = computed(() => timeOf(minutesOf(props.start) + duration.value))
 
 watch(
   open,
   (isOpen) => {
     if (!isOpen) return
-    part.value = props.cell.part
+    // The tapped lane if it can be booked from here, otherwise the first part that can.
+    const parts = freeParts(
+      props.day,
+      props.pitch.splittable,
+      props.start,
+      timeOf(minutesOf(props.start) + 30),
+    )
+    part.value = parts.includes(props.lane) ? props.lane : (parts[0] ?? 'full')
+    const lengths = possibleDurations(props.day, part.value, props.start)
+    duration.value = lengths.includes(90) ? 90 : (lengths.at(-1) ?? 30)
     teamId.value = props.teams[0]?.id ?? ''
-    repeat.value = 'once'
+    repeat.value = 'weekly'
     book.reset()
     release.reset()
     end.reset()
   },
   { immediate: true },
 )
+// Another part may leave less time: keep the length possible.
+watch(durations, (lengths) => {
+  if (!lengths.includes(duration.value)) duration.value = lengths.at(-1) ?? 30
+})
 
 const partOptions = computed(() =>
-  freeParts(props.cells, props.pitch.splittable).map((value) => ({
-    value,
-    label: t(`schedule.parts.${value}`),
+  freeParts(
+    props.day,
+    props.pitch.splittable,
+    props.start,
+    timeOf(minutesOf(props.start) + 30),
+  ).map((value) => ({ value, label: t(`schedule.parts.${value}`) })),
+)
+// Chip groups work with strings.
+const durationKey = computed({
+  get: () => String(duration.value),
+  set: (value: string) => (duration.value = Number(value)),
+})
+const durationOptions = computed(() =>
+  durations.value.map((minutes) => ({
+    value: String(minutes),
+    label: t('schedule.duration', { n: minutes }),
   })),
 )
 const teamOptions = computed(() =>
   props.teams.map((team) => ({ value: team.id, label: team.name })),
 )
 const repeatOptions = computed(() => [
-  { value: 'once' as const, label: t('schedule.once', { date: dayLabel(props.date) }) },
   {
     value: 'weekly' as const,
-    label: t('schedule.weekly', { date: dayLabel(props.pitchSlot.valid_until) }),
+    label: t('schedule.weekly', { date: dayLabel(seasonEnd(props.date)) }),
   },
+  { value: 'once' as const, label: t('schedule.once', { date: dayLabel(props.date) }) },
 ])
+
+const summary = computed(() => {
+  const from = props.booking ? timeLabel(props.booking.start_time) : props.start
+  const to = props.booking ? timeLabel(props.booking.end_time) : endTime.value
+  return `${formatDate(parseISO(props.date), locale.value, 'EEEE, P')} · ${from}–${to} · ${props.pitch.name}`
+})
 
 const bookError = computed(() => {
   if (!book.isError.value) return null
@@ -90,9 +133,11 @@ const bookError = computed(() => {
 
 async function submitBooking() {
   const result = await book.mutateAsync({
-    slotId: props.pitchSlot.id,
+    pitchId: props.pitch.id,
     teamId: teamId.value,
     part: part.value,
+    start: props.start,
+    end: endTime.value,
     from: props.date,
     until: repeat.value === 'once' ? props.date : null,
   })
@@ -102,11 +147,11 @@ async function submitBooking() {
 
 // Release
 const canManage = computed(
-  () => !!booking.value && props.teams.some((team) => team.id === booking.value!.team_id),
+  () => !!props.booking && props.teams.some((team) => team.id === props.booking!.team_id),
 )
-const isRecurring = computed(() => !!booking.value && booking.value.valid_until > props.date)
+const isRecurring = computed(() => !!props.booking && props.booking.valid_until > props.date)
 const rangeLabel = computed(() => {
-  const b = booking.value
+  const b = props.booking
   if (!b) return ''
   return b.valid_from === b.valid_until
     ? t('schedule.onlyOn', { date: dayLabel(b.valid_from) })
@@ -114,13 +159,13 @@ const rangeLabel = computed(() => {
 })
 
 async function releaseDate() {
-  await release.mutateAsync({ bookingId: booking.value!.id, date: props.date })
+  await release.mutateAsync({ bookingId: props.booking!.id, date: props.date })
   open.value = false
   emit('released')
 }
 
 async function endBooking() {
-  await end.mutateAsync({ bookingId: booking.value!.id, from: props.date })
+  await end.mutateAsync({ bookingId: props.booking!.id, from: props.date })
   open.value = false
   emit('released')
 }
@@ -135,12 +180,22 @@ async function endBooking() {
         : t('schedule.bookTitle')
     "
   >
-    <div class="slot-sheet">
-      <p class="slot-sheet__summary">{{ summary }}</p>
+    <div class="booking-sheet">
+      <p class="booking-sheet__summary">{{ summary }}</p>
 
       <!-- Free: book -->
       <template v-if="!booking">
-        <UiChipGroup v-model="part" :label="t('schedule.part')" :options="partOptions" />
+        <UiChipGroup
+          v-model="durationKey"
+          :label="t('schedule.length')"
+          :options="durationOptions"
+        />
+        <UiChipGroup
+          v-if="partOptions.length > 1"
+          v-model="part"
+          :label="t('schedule.part')"
+          :options="partOptions"
+        />
         <UiChipGroup
           v-if="teams.length > 1"
           v-model="teamId"
@@ -148,15 +203,19 @@ async function endBooking() {
           :options="teamOptions"
         />
         <UiChipGroup v-model="repeat" :label="t('schedule.repeat')" :options="repeatOptions" />
-        <p class="slot-sheet__hint">{{ t('schedule.bookHint') }}</p>
-        <p v-if="bookError" class="slot-sheet__error" role="alert">{{ bookError }}</p>
+        <p class="booking-sheet__hint">{{ t('schedule.bookHint') }}</p>
+        <p v-if="bookError" class="booking-sheet__error" role="alert">{{ bookError }}</p>
       </template>
 
       <!-- Booked -->
       <template v-else>
         <p>{{ rangeLabel }}</p>
-        <p v-if="canManage" class="slot-sheet__hint">{{ t('schedule.releaseHint') }}</p>
-        <p v-if="release.isError.value || end.isError.value" class="slot-sheet__error" role="alert">
+        <p v-if="canManage" class="booking-sheet__hint">{{ t('schedule.releaseHint') }}</p>
+        <p
+          v-if="release.isError.value || end.isError.value"
+          class="booking-sheet__error"
+          role="alert"
+        >
           {{ t('schedule.errors.releaseFailed') }}
         </p>
       </template>
@@ -166,10 +225,10 @@ async function endBooking() {
       <template v-if="!booking">
         <UiButton variant="secondary" @click="open = false">{{ t('common.cancel') }}</UiButton>
         <UiButton :disabled="!teamId" :loading="book.isPending.value" @click="submitBooking">
-          {{ t('schedule.book') }}
+          {{ t('schedule.bookUntil', { time: endTime }) }}
         </UiButton>
       </template>
-      <div v-else-if="canManage" class="slot-sheet__actions">
+      <div v-else-if="canManage" class="booking-sheet__actions">
         <UiButton variant="danger" block :loading="release.isPending.value" @click="releaseDate">
           {{ t('schedule.releaseDate', { date: dayLabel(date) }) }}
         </UiButton>
@@ -191,18 +250,18 @@ async function endBooking() {
 </template>
 
 <style scoped lang="scss">
-.slot-sheet {
+.booking-sheet {
   display: flex;
   flex-direction: column;
   gap: $space-4;
 
   &__summary {
-    font-weight: 600;
+    font-weight: 700;
   }
 
   &__hint {
-    font-size: $font-sm;
     color: var(--color-text-muted);
+    font-size: $font-sm;
   }
 
   &__error {

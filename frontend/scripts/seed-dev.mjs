@@ -175,44 +175,23 @@ const pitches = must(
   'pitches',
 )
 const [grass, turf] = pitches
-const season = { valid_from: day(-30), valid_until: day(180) }
-const slotRows = [
-  [turf, 1, '17:00', '18:30'],
-  [turf, 1, '18:30', '20:00'],
-  [turf, 2, '17:00', '18:30'],
-  [turf, 2, '18:30', '20:00'],
-  [turf, 3, '18:30', '20:00'],
-  [turf, 4, '17:00', '18:30'],
-  [turf, 4, '18:30', '20:00'],
-  [grass, 5, '17:30', '19:00'],
-  [grass, 6, '10:00', '16:00'],
-  [grass, 0, '10:00', '16:00'],
-].map(([pitch, weekday, start_time, end_time]) => ({
-  club_id: club.id,
-  pitch_id: pitch.id,
-  weekday,
-  start_time,
-  end_time,
-  ...season,
-}))
-const slots = must(await admin.from('pitch_slots').insert(slotRows).select(), 'slots')
-const slot = (pitch, weekday, start) =>
-  slots.find(
-    (s) => s.pitch_id === pitch.id && s.weekday === weekday && s.start_time.startsWith(start),
-  )
+// Monday to Friday, 15:00–20:30 in half hours; weekly for six weeks.
 const until = day(42)
-for (const [teamName, s, part] of [
-  ['U17', slot(turf, 2, '18:30'), 'full'],
-  ['U17', slot(turf, 4, '18:30'), 'full'],
-  ['Damen', slot(turf, 1, '18:30'), 'a'],
-  ['Damen', slot(turf, 3, '18:30'), 'a'],
+for (const [teamName, pitch, weekday, start, end, part] of [
+  ['U17', turf, 2, '18:30', '20:00', 'full'],
+  ['U17', turf, 4, '18:30', '20:00', 'full'],
+  ['Damen', turf, 1, '18:30', '20:00', 'a'],
+  ['Damen', turf, 3, '18:30', '20:00', 'a'],
+  ['Damen', grass, 5, '17:00', '18:30', 'full'],
 ]) {
   must(
-    await coachOf[teamName].rpc('book_slot', {
-      p_slot_id: s.id,
+    await coachOf[teamName].rpc('book_pitch', {
+      p_pitch_id: pitch.id,
       p_team_id: teams[teamName].id,
       p_part: part,
-      p_from: day(0),
+      p_start: start,
+      p_end: end,
+      p_from: day(nextWeekday(weekday, 1)),
       p_until: until,
     }),
     `booking ${teamName}`,
