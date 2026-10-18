@@ -137,3 +137,92 @@ test('the database only takes Monday to Friday, 15:00–20:30, in half hours', a
   expect((await book('17:15', '18:00')).error?.hint).toBe('not_bookable')
   expect((await book('19:00', '20:30')).error).toBeNull()
 })
+
+test('a new training on a pitch lands in the schedule; a time outside is explained', async ({
+  page,
+}) => {
+  const demo = await seedDemo()
+  await demo.coach.sb.from('pitches').insert({ club_id: demo.club.id, name: 'Kunstrasen' })
+  await login(page, demo.coach.email, '/events/new?kind=training')
+  await page.getByRole('button', { name: 'Kunstrasen', exact: true }).click()
+  await page.getByRole('radio', { name: 'Hälfte B' }).click()
+  // No free text place for a pitch.
+  await expect(page.getByLabel('Ort', { exact: true })).toHaveCount(0)
+  await page.getByLabel('Anderes Datum').fill(format(target, 'yyyy-MM-dd'))
+  await page.getByLabel('Beginn').fill('21:00')
+  await expect(page.getByRole('alert')).toContainText('zwischen 15:00 und 20:30')
+  await page.getByLabel('Beginn').fill('17:30')
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Anlegen', exact: true }).click()
+
+  await expect(page).toHaveURL(/\/events\/[0-9a-f-]{36}$/)
+  await expect(page.getByRole('link', { name: /Kunstrasen · B/ })).toBeVisible()
+  await expect(page.getByText('Im Belegungsplan eintragen')).toHaveCount(0)
+  await openTargetWeek(page, demo.club.id)
+  await expect(booking(page, '17:30–19:00, Hälfte B: U17')).toBeVisible()
+})
+
+test('an existing training is entered in the schedule afterwards', async ({ page }) => {
+  const demo = await seedDemo()
+  await demo.coach.sb.from('pitches').insert({ club_id: demo.club.id, name: 'Kunstrasen' })
+  const start = new Date(target)
+  start.setHours(16, 0, 0, 0)
+  const training = (
+    await demo.coach.sb
+      .from('events')
+      .insert({
+        team_id: demo.team.id,
+        type: 'training',
+        starts_at: start.toISOString(),
+        ends_at: new Date(start.getTime() + 60 * 60_000).toISOString(),
+        location: 'Kunstrasen · A',
+      })
+      .select()
+      .single()
+  ).data!
+
+  await login(page, demo.coach.email, `/events/${training.id}`)
+  await page.getByRole('button', { name: 'Im Belegungsplan eintragen' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Im Belegungsplan eintragen' })
+  // The place already names the pitch and half: both are preselected.
+  await expect(sheet.getByRole('button', { name: 'Kunstrasen', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(sheet.getByRole('radio', { name: 'Hälfte A' })).toBeChecked()
+  await sheet.getByRole('button', { name: 'Eintragen' }).click()
+  await expect(page.getByText('Im Belegungsplan eingetragen.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Im Belegungsplan eintragen' })).toHaveCount(0)
+
+  await openTargetWeek(page, demo.club.id)
+  await expect(booking(page, '16:00–17:00, Hälfte A: U17')).toBeVisible()
+})
+
+test('a training series on a pitch books every week of both weekdays', async ({ page }) => {
+  const demo = await seedDemo()
+  await demo.coach.sb.from('pitches').insert({ club_id: demo.club.id, name: 'Kunstrasen' })
+  const from = startOfWeek(addDays(new Date(), 7), { weekStartsOn: 1 })
+  await login(page, demo.coach.email, '/events/new/series')
+  const weekdays = page.getByRole('group', { name: 'Wochentage' })
+  await weekdays.getByRole('button', { name: 'Di', exact: true }).click()
+  await weekdays.getByRole('button', { name: 'Do', exact: true }).click()
+  await page.getByLabel('Von').fill(format(from, 'yyyy-MM-dd'))
+  await page.getByLabel('Bis').fill(format(addDays(from, 20), 'yyyy-MM-dd'))
+  await page.getByLabel('Beginn').fill('18:00')
+  await page.getByLabel('Dauer (Minuten)').fill('90')
+  await page.getByRole('button', { name: 'Kunstrasen', exact: true }).click()
+  await page.getByRole('button', { name: /6 Trainings anlegen/ }).click()
+  await expect(page).toHaveURL(/\/events$/)
+
+  // Next week: Tuesday and Thursday booked on the whole pitch.
+  await page.goto('/events/schedule')
+  await page.getByRole('button', { name: 'Nächste Woche' }).click()
+  const tue = format(addDays(from, 1), 'EEEEEE d.M.', { locale: de })
+  const thu = format(addDays(from, 3), 'EEEEEE d.M.', { locale: de })
+  await expect(
+    page.getByRole('button', { name: `${tue}, 18:00–19:30, Ganzer Platz: U17` }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: `${thu}, 18:00–19:30, Ganzer Platz: U17` }),
+  ).toBeVisible()
+})

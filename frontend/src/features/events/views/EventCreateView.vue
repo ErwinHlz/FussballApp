@@ -13,6 +13,15 @@ import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import type { EventInput } from '../api'
 import LocationField from '../components/LocationField.vue'
+import PitchPicker from '@/features/schedule/components/PitchPicker.vue'
+import { firstEventOfBooking, scheduleErrorHint } from '@/features/schedule/api'
+import { useBookPitch, usePitches } from '@/features/schedule/composables/useSchedule'
+import {
+  bookingProblem,
+  pitchFromLocation,
+  placeLabel,
+  type PitchChoice,
+} from '@/features/schedule/logic'
 import { useCreateEvent, useTeamEvents } from '../composables/useEvents'
 import { combineDateTime } from '../schemas'
 import {
@@ -42,6 +51,32 @@ const teamId = computed(() => activeTeam.value?.team_id ?? null)
 const events = useTeamEvents(teamId)
 const allEvents = computed(() => events.data.value ?? [])
 const createEvent = useCreateEvent(teamId)
+
+// Trainings on one of the club's pitches go into the schedule (booked like there).
+const clubId = computed(() => activeTeam.value?.club_id ?? '')
+const pitches = usePitches(clubId)
+const clubPitches = computed(() => pitches.data.value ?? [])
+const bookPitch = useBookPitch(clubId)
+const pitchChoice = ref<PitchChoice>({ pitchId: null, part: 'full' })
+// Set when the coach picks a pitch; then suggestions no longer replace it.
+let pitchTouched = false
+function onPitchPicked() {
+  pitchTouched = true
+}
+/** Pitch of the last training (from its place), unless the coach already picked one. */
+function suggestPitch() {
+  if (pitchTouched || kind.value !== 'training') return
+  const choice = pitchFromLocation(clubPitches.value, defaults.value?.location)
+  pitchChoice.value = choice ?? { pitchId: null, part: 'full' }
+}
+const onPitch = computed(() => kind.value === 'training' && !!pitchChoice.value.pitchId)
+const durationMin = computed(() => defaults.value?.durationMin ?? 90)
+const pitchProblem = computed(() =>
+  onPitch.value && date.value && time.value
+    ? bookingProblem(new Date(`${date.value}T12:00`).getDay(), time.value, durationMin.value)
+    : null,
+)
+const bookFailed = ref<string | null>(null)
 
 const kind = computed<QuickKind | null>(() => {
   const value = route.query.kind
@@ -96,6 +131,7 @@ function applySuggestion() {
   location.value = suggested.location
   meetLocation.value = suggested.meetLocation
   meetTime.value = kind.value === 'match' ? shiftTime(d.time, -meetOffset.value) : ''
+  suggestPitch()
 }
 function untouched() {
   return (
@@ -119,6 +155,7 @@ watch(
 watch(allEvents, () => {
   if (kind.value && untouched()) applySuggestion()
 })
+watch(clubPitches, () => suggestPitch())
 
 // Meeting time follows the kick-off until it is changed by hand.
 let meetEdited = false
@@ -195,6 +232,7 @@ const missing = computed(() => {
   if (!date.value || !time.value) return true
   if (kind.value === 'event' && !title.value.trim()) return true
   if (kind.value === 'match' && !opponent.value.trim()) return true
+  if (pitchProblem.value) return true
   return false
 })
 
@@ -238,10 +276,35 @@ function input(): EventInput {
 
 async function create() {
   tried.value = true
+  bookFailed.value = null
   if (missing.value || !kind.value) return
-  const created = await createEvent.mutateAsync(input())
   const label = t(`events.quick.created.${kind.value}`)
-  await router.replace({ name: 'event', params: { eventId: created.id } })
+  let eventId: string
+  if (onPitch.value) {
+    // Booked in the schedule: the booking creates the training.
+    try {
+      const result = await bookPitch.mutateAsync({
+        pitchId: pitchChoice.value.pitchId!,
+        teamId: teamId.value!,
+        part: pitchChoice.value.part,
+        start: time.value,
+        end: shiftTime(time.value, durationMin.value),
+        from: date.value,
+        until: date.value,
+        deadlineHours: defaults.value?.deadlineHours ?? null,
+      })
+      eventId = await firstEventOfBooking(result.booking_id)
+    } catch (error) {
+      bookFailed.value =
+        scheduleErrorHint(error) === 'slot_taken'
+          ? t('schedule.errors.pitchTaken')
+          : t('events.form.saveFailed')
+      return
+    }
+  } else {
+    eventId = (await createEvent.mutateAsync(input())).id
+  }
+  await router.replace({ name: 'event', params: { eventId } })
   snackbar.show({ text: label })
 }
 
@@ -250,7 +313,9 @@ function customize() {
   if (!kind.value) return
   const d = defaults.value!
   const query: Record<string, string> = { date: date.value, time: time.value }
-  if (location.value.trim()) query.location = location.value.trim()
+  const pitch = clubPitches.value.find((p) => p.id === pitchChoice.value.pitchId)
+  if (onPitch.value && pitch) query.location = placeLabel(pitch, pitchChoice.value.part)
+  else if (location.value.trim()) query.location = location.value.trim()
   if (kind.value !== 'match') query.duration = String(d.durationMin)
   if (d.deadlineHours !== null) query.deadline = String(d.deadlineHours)
   if (kind.value === 'event' && title.value) query.title = title.value
@@ -360,7 +425,19 @@ const heading = computed(() =>
         />
       </fieldset>
 
+      <!-- Trainings: a pitch of the club (goes into the schedule) or another place -->
+      <PitchPicker
+        v-if="kind === 'training' && clubPitches.length"
+        v-model="pitchChoice"
+        :pitches="clubPitches"
+        allow-other
+        @update:model-value="onPitchPicked"
+      />
+      <p v-if="pitchProblem" class="create__error" role="alert">
+        {{ t(`schedule.problems.${pitchProblem}`) }}
+      </p>
       <LocationField
+        v-if="!onPitch"
         v-model="location"
         :label="kind === 'match' ? t('events.form.venueLocation') : t('events.form.location')"
         :suggestions="places"
@@ -378,13 +455,18 @@ const heading = computed(() =>
       <p v-if="createEvent.isError.value" class="create__error" role="alert">
         {{ t('events.form.saveFailed') }}
       </p>
+      <p v-if="bookFailed" class="create__error" role="alert">{{ bookFailed }}</p>
       <button type="button" class="create__more" @click="customize">
         {{ t('events.quick.customize') }}
       </button>
     </form>
 
     <ActionBar v-if="kind" :label="heading">
-      <UiButton block :loading="createEvent.isPending.value" @click="create">
+      <UiButton
+        block
+        :loading="createEvent.isPending.value || bookPitch.isPending.value"
+        @click="create"
+      >
         {{ t('events.quick.create') }}
       </UiButton>
     </ActionBar>

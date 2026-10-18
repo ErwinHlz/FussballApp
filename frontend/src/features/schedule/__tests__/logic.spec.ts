@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
   bookingCovers,
+  bookingProblem,
   bookingsOn,
   freeParts,
   halfHours,
   occupant,
   openDates,
+  pitchFromLocation,
+  placeLabel,
   possibleDurations,
   rangeFree,
   seasonEnd,
@@ -105,5 +108,29 @@ describe('team short names', () => {
     expect(teamShortName('Damen')).toBe('DAM')
     expect(teamShortName('U19 II')).toBe('U19')
     expect(teamShortName('Herren 2')).toBe('HER')
+  })
+})
+
+describe('pitch for a training', () => {
+  const pitches = [
+    { id: 'p1', name: 'Kunstrasen', splittable: true },
+    { id: 'p2', name: 'Rasen', splittable: false },
+  ]
+
+  it('labels the place like the database and reads it back', () => {
+    expect(placeLabel(pitches[0]!, 'a')).toBe('Kunstrasen · A')
+    expect(placeLabel(pitches[1]!, 'full')).toBe('Rasen')
+    expect(pitchFromLocation(pitches, 'Kunstrasen · B')).toEqual({ pitchId: 'p1', part: 'b' })
+    expect(pitchFromLocation(pitches, 'Rasen')).toEqual({ pitchId: 'p2', part: 'full' })
+    expect(pitchFromLocation(pitches, 'Sportpark')).toBeNull()
+  })
+
+  it('tells why a time cannot go into the schedule', () => {
+    expect(bookingProblem(2, '17:00', 90)).toBeNull()
+    expect(bookingProblem(6, '17:00', 90)).toBe('weekday')
+    expect(bookingProblem(2, '19:30', 90)).toBe('time')
+    expect(bookingProblem(2, '14:30', 60)).toBe('time')
+    expect(bookingProblem(2, '17:15', 60)).toBe('step')
+    expect(bookingProblem(2, '17:00', 75)).toBe('step')
   })
 })

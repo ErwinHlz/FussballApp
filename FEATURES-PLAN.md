@@ -176,3 +176,19 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
 - Admin pflegt unter „Plätze & Zeiten“ nur noch die Plätze (Name, teilbar).
 - Kalender: Spalten Mo–Fr mit Spuren A/B, Zeilen je halbe Stunde (volle Stunden durchgezogen),
   freie Slots mit dezentem „+“, Buchungen als Blöcke über ihre Dauer.
+
+### Trainings im Belegungsplan (18.10.2026, mit dem Nutzer abgestimmt)
+- Beim Anlegen von Training (Schnell-Anlegen und Formular) und Trainingsserie wählt man einen
+  Platz des Vereins mit Hälfte A/B oder ganzem Platz – oder „Anderer Ort“ (Freitext wie bisher).
+  Mit Platz bucht `book_pitch` die Zeit (einmalig bzw. jede Woche je Wochentag) und legt die
+  Trainings an, inklusive Anmeldeschluss (`p_deadline_hours`, Migration
+  `20261018000300_book_pitch_deadline.sql`). Zeiten außerhalb Mo–Fr 15:00–20:30 oder nicht in
+  halben Stunden werden direkt im Formular erklärt. Vorbelegt wird der Platz aus dem Ort des
+  letzten Trainings („Kunstrasen · A“).
+- Bereits angelegte Trainings ohne Platz zeigen Trainern auf der Termin-Seite „Im Belegungsplan
+  eintragen“: Platz und Hälfte wählen (vorbelegt aus dem Ort), bei Serien optional alle kommenden
+  Termine. Neue Funktion `attach_events_to_pitch` (Migration `20261018000200`): bucht zu den
+  Zeiten des Trainings, belegte Termine werden übersprungen, Ort wird zum Platz.
+- Behoben dabei: Zahlenfelder (`type="number"`) lieferten nach dem Tippen eine Zahl statt Text,
+  dadurch scheiterte die Formularprüfung z. B. bei der Dauer einer Trainingsserie. `UiInput`
+  gibt jetzt immer Text weiter.

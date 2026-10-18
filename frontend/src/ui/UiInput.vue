@@ -33,6 +33,11 @@ const props = withDefaults(
 const model = defineModel<string>({ default: '' })
 
 const { t } = useI18n()
+// Always text, also for type="number" (v-model would turn it into a number there, which the
+// form schemas reject).
+function onInput(event: Event) {
+  model.value = (event.target as HTMLInputElement).value
+}
 const id = useId()
 const revealed = ref(false)
 const inputType = computed(() =>
@@ -55,7 +60,7 @@ const describedBy = computed(() => {
     <div class="ui-input__box">
       <input
         :id="id"
-        v-model="model"
+        :value="model"
         class="ui-input__field"
         :class="{ 'ui-input__field--reveal': type === 'password' }"
         :type="inputType"
@@ -67,6 +72,7 @@ const describedBy = computed(() => {
         :aria-invalid="!!error || undefined"
         :aria-describedby="describedBy"
         :list="suggestions?.length ? `${id}-suggestions` : undefined"
+        @input="onInput"
       />
       <datalist v-if="suggestions?.length" :id="`${id}-suggestions`">
         <option v-for="item in suggestions" :key="item" :value="item" />

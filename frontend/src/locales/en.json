@@ -994,7 +994,8 @@
       "taken": "This time has been taken in the meantime.",
       "bookFailed": "Booking failed. Please try again.",
       "releaseFailed": "Releasing failed. Please try again.",
-      "saveFailed": "Saving failed. Please try again."
+      "saveFailed": "Saving failed. Please try again.",
+      "pitchTaken": "The pitch is already taken at that time. Choose another half, time or pitch."
     },
     "splittable": "Split A/B",
     "splittableLabel": "Can be split into two halves",
@@ -1017,7 +1018,24 @@
     "freeCell": "{day}, {time}, {part} free – book",
     "length": "Length",
     "duration": "{n} min",
-    "bookUntil": "Book until {time}"
+    "bookUntil": "Book until {time}",
+    "pitch": "Pitch",
+    "otherPlace": "Other place",
+    "problems": {
+      "weekday": "The schedule only takes Monday to Friday. Choose “Other place” or another day.",
+      "time": "The schedule only takes times between 15:00 and 20:30. Change start or length, or choose “Other place”.",
+      "step": "The schedule works in half hours: start on the hour or half hour, length in steps of 30 minutes."
+    },
+    "attach": {
+      "missing": "This training is not in the pitch schedule yet.",
+      "button": "Enter in the schedule",
+      "title": "Enter in the schedule",
+      "wholeSeries": "Also all upcoming dates of this series",
+      "hint": "The pitch is booked at the times of the training and set as its place.",
+      "confirm": "Enter",
+      "done": "Entered in the schedule. | {n} trainings entered in the schedule.",
+      "doneSkipped": "{n} trainings entered, {skipped} were already taken."
+    }
   },
   "branding": {
     "title": "Club logo",

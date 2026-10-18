@@ -65,6 +65,8 @@ export async function bookPitch(input: {
   end: string
   from: string
   until: string | null
+  /** Response deadline of the created trainings, hours before the start. */
+  deadlineHours?: number | null
 }): Promise<BookResult> {
   const { data, error } = await supabase.rpc('book_pitch', {
     p_pitch_id: input.pitchId,
@@ -74,9 +76,40 @@ export async function bookPitch(input: {
     p_end: input.end,
     p_from: input.from,
     ...(input.until ? { p_until: input.until } : {}),
+    ...(input.deadlineHours != null ? { p_deadline_hours: input.deadlineHours } : {}),
   })
   if (error) throw error
   return data as BookResult
+}
+
+/** Enters a training created without the schedule (or all upcoming ones of its series). */
+export async function attachEventsToPitch(input: {
+  eventId: string
+  pitchId: string
+  part: PitchPart
+  wholeSeries: boolean
+}): Promise<BookResult> {
+  const { data, error } = await supabase.rpc('attach_events_to_pitch', {
+    p_event_id: input.eventId,
+    p_pitch_id: input.pitchId,
+    p_part: input.part,
+    p_whole_series: input.wholeSeries,
+  })
+  if (error) throw error
+  return data as BookResult
+}
+
+/** The first training a booking created (to open it after booking from the event form). */
+export async function firstEventOfBooking(bookingId: string): Promise<string> {
+  const { data, error } = await supabase
+    .from('events')
+    .select('id')
+    .eq('booking_id', bookingId)
+    .order('starts_at')
+    .limit(1)
+    .single()
+  if (error) throw error
+  return data.id
 }
 
 export async function releaseSlotDate(input: { bookingId: string; date: string }): Promise<void> {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
@@ -14,12 +14,17 @@ import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import type { EventInput } from '../api'
 import LocationField from '../components/LocationField.vue'
+import PitchPicker from '@/features/schedule/components/PitchPicker.vue'
+import { firstEventOfBooking, scheduleErrorHint } from '@/features/schedule/api'
+import { useBookPitch, usePitches } from '@/features/schedule/composables/useSchedule'
+import { bookingProblem, pitchFromLocation, type PitchChoice } from '@/features/schedule/logic'
 import {
   COMPETITIONS,
   DEADLINE_HOURS,
   deadlineFromHours,
   deadlineOffset,
   placeSuggestions,
+  shiftTime,
   generateMultiWeekdayOccurrences,
   type Competition,
 } from '../logic'
@@ -204,8 +209,59 @@ const seriesFirstDate = computed(() => {
   return first ? formatDate(first, locale.value, 'EEEE, PPP') : null
 })
 
+// New trainings and series on one of the club's pitches go into the schedule (booked like
+// there); editing keeps the place as text.
+const clubId = computed(() => activeTeam.value?.club_id ?? '')
+const pitches = usePitches(clubId)
+const clubPitches = computed(() => pitches.data.value ?? [])
+const bookPitch = useBookPitch(clubId)
+const canUsePitch = computed(
+  () => !isEdit.value && (kind.value === 'training' || kind.value === 'series'),
+)
+const pitchChoice = ref<PitchChoice>({ pitchId: null, part: 'full' })
+let pitchTouched = false
+function onPitchPicked() {
+  pitchTouched = true
+}
+// The place handed over from the quick form (e.g. "Kunstrasen · A") picks the pitch.
+watch(
+  clubPitches,
+  (list) => {
+    if (pitchTouched) return
+    pitchChoice.value = pitchFromLocation(list, fromQuick('location')) ?? {
+      pitchId: null,
+      part: 'full',
+    }
+  },
+  { immediate: true },
+)
+const onPitch = computed(() => canUsePitch.value && !!pitchChoice.value.pitchId)
+const pitchProblem = computed(() => {
+  if (!onPitch.value) return null
+  const v = values as Record<string, string | string[] | undefined>
+  const start = String(v.startTime ?? '')
+  const duration = Number(v.durationMin)
+  if (!start || !duration) return null
+  const weekdays =
+    kind.value === 'series'
+      ? ((v.weekdays as string[]) ?? []).map(Number)
+      : v.date
+        ? [new Date(`${v.date}T12:00`).getDay()]
+        : []
+  for (const weekday of weekdays) {
+    const problem = bookingProblem(weekday, start, duration)
+    if (problem) return problem
+  }
+  return null
+})
+const bookFailed = ref<string | null>(null)
+
 const isSaving = computed(
-  () => createEvent.isPending.value || createSeries.isPending.value || updateEvent.isPending.value,
+  () =>
+    createEvent.isPending.value ||
+    createSeries.isPending.value ||
+    updateEvent.isPending.value ||
+    bookPitch.isPending.value,
 )
 const saveFailed = computed(
   () => createEvent.isError.value || createSeries.isError.value || updateEvent.isError.value,
@@ -220,6 +276,51 @@ const onSubmit = handleSubmit(async (raw) => {
   const v = raw as Record<string, string | string[] | undefined>
   const text = (key: string) => (typeof v[key] === 'string' && v[key] ? (v[key] as string) : null)
   const deadlineHours = parseDeadline(String(v.deadline))
+  bookFailed.value = null
+
+  // On a pitch: the schedule books it and creates the trainings.
+  if (onPitch.value) {
+    if (pitchProblem.value) return
+    const start = String(v.startTime)
+    const end = shiftTime(start, Number(v.durationMin))
+    const booking = {
+      pitchId: pitchChoice.value.pitchId!,
+      teamId: teamId.value!,
+      part: pitchChoice.value.part,
+      start,
+      end,
+      deadlineHours,
+    }
+    try {
+      if (kind.value === 'series') {
+        for (const series of seriesPreview.value) {
+          if (!series.dates.length) continue
+          await bookPitch.mutateAsync({
+            ...booking,
+            from: format(series.dates[0]!, 'yyyy-MM-dd'),
+            until: String(v.validUntil),
+          })
+        }
+        await router.replace({ name: 'events' })
+      } else {
+        const result = await bookPitch.mutateAsync({
+          ...booking,
+          from: String(v.date),
+          until: String(v.date),
+        })
+        const eventId = await firstEventOfBooking(result.booking_id)
+        if (text('notes'))
+          await updateEvent.mutateAsync({ eventId, patch: { notes: text('notes') } })
+        await router.replace({ name: 'event', params: { eventId } })
+      }
+    } catch (error) {
+      bookFailed.value =
+        scheduleErrorHint(error) === 'slot_taken'
+          ? t('schedule.errors.pitchTaken')
+          : t('events.form.saveFailed')
+    }
+    return
+  }
 
   if (kind.value === 'series') {
     for (const series of seriesPreview.value) {
@@ -394,7 +495,18 @@ const onSubmit = handleSubmit(async (raw) => {
         :suggestions="places"
         :error="err('meetLocation')"
       />
+      <PitchPicker
+        v-if="canUsePitch && clubPitches.length"
+        v-model="pitchChoice"
+        :pitches="clubPitches"
+        allow-other
+        @update:model-value="onPitchPicked"
+      />
+      <p v-if="pitchProblem" class="event-form__error" role="alert">
+        {{ t(`schedule.problems.${pitchProblem}`) }}
+      </p>
       <LocationField
+        v-if="!onPitch"
         v-model="location"
         :label="kind === 'match' ? t('events.form.venueLocation') : t('events.form.location')"
         :suggestions="places"
@@ -419,6 +531,7 @@ const onSubmit = handleSubmit(async (raw) => {
         </span>
       </UiCard>
 
+      <p v-if="bookFailed" class="event-form__error" role="alert">{{ bookFailed }}</p>
       <p v-if="saveFailed" class="event-form__error" role="alert">
         {{ t('events.form.saveFailed') }}
       </p>

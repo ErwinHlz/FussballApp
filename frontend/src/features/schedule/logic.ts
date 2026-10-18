@@ -143,3 +143,44 @@ export function teamShortName(name: string): string {
   if (first.length <= 4 && /\d/.test(first)) return first
   return trimmed.slice(0, 3).toLocaleUpperCase('de')
 }
+
+/** Pitch and part chosen for a training; pitchId null = another place (free text). */
+export type PitchChoice = { pitchId: string | null; part: PitchPart }
+
+/** "Kunstrasen · A": the place a booked training gets (same as in the database). */
+export function placeLabel(pitch: Pick<Pitch, 'name'>, part: PitchPart): string {
+  return part === 'full' ? pitch.name : `${pitch.name} · ${part.toUpperCase()}`
+}
+
+/** Pitch and part of an earlier training's place, if it was one of the club's pitches. */
+export function pitchFromLocation(
+  pitches: Pick<Pitch, 'id' | 'name' | 'splittable'>[],
+  location: string | null | undefined,
+): PitchChoice | null {
+  if (!location) return null
+  for (const pitch of pitches) {
+    if (location === pitch.name) return { pitchId: pitch.id, part: 'full' }
+    if (pitch.splittable && location === `${pitch.name} · A`)
+      return { pitchId: pitch.id, part: 'a' }
+    if (pitch.splittable && location === `${pitch.name} · B`)
+      return { pitchId: pitch.id, part: 'b' }
+  }
+  return null
+}
+
+/**
+ * Why a training at that time cannot go into the schedule, or null if it can: only Monday to
+ * Friday ('weekday'), within 15:00–20:30 ('time'), in half hours ('step').
+ */
+export function bookingProblem(
+  weekday: number,
+  start: string,
+  durationMin: number,
+): 'weekday' | 'time' | 'step' | null {
+  if (!OPEN_WEEKDAYS.includes(weekday)) return 'weekday'
+  const s = minutesOf(start)
+  const e = s + durationMin
+  if (s % STEP_MIN || durationMin % STEP_MIN || durationMin <= 0) return 'step'
+  if (s < minutesOf(OPEN_FROM) || e > minutesOf(OPEN_UNTIL)) return 'time'
+  return null
+}

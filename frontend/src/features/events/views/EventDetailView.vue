@@ -17,6 +17,7 @@ import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import TrainingFlow from '@/features/player-view/components/TrainingFlow.vue'
 import { relativeDay } from '@/features/player-view/logic'
 import PlanSection from '@/features/training-plan/components/PlanSection.vue'
+import AttachToSchedule from '@/features/schedule/components/AttachToSchedule.vue'
 import AttendanceOverview from '../components/AttendanceOverview.vue'
 import DeclineSheet from '../components/DeclineSheet.vue'
 import EventCoachNav from '../components/EventCoachNav.vue'
@@ -47,6 +48,19 @@ const isCoach = computed(() => {
 })
 
 const e = computed(() => event.data.value)
+// Upcoming trainings that are not in the club's schedule yet can be entered there.
+const clubId = computed(
+  () => myTeams.data.value?.find((t) => t.team_id === teamId.value)?.club_id ?? '',
+)
+const canAttach = computed(
+  () =>
+    isCoach.value &&
+    !!e.value &&
+    e.value.type === 'training' &&
+    !e.value.booking_id &&
+    !e.value.is_cancelled &&
+    new Date(e.value.starts_at) > new Date(),
+)
 const myAttendance = computed(
   () => e.value?.attendances.find((a) => a.member_id === myMember.value?.id) ?? null,
 )
@@ -256,6 +270,8 @@ async function remove() {
           <dd>{{ t('events.ofPlayers', { n: yesCount, total: players.length }) }}</dd>
         </div>
       </dl>
+
+      <AttachToSchedule v-if="canAttach && clubId" :event="e" :club-id="clubId" />
 
       <p v-if="e.notes" class="detail__notes">
         <UiIcon name="note" :size="20" />

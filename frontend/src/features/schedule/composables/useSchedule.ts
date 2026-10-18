@@ -2,6 +2,7 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { eventKeys } from '@/features/events/composables/useEvents'
 import {
+  attachEventsToPitch,
   bookPitch,
   createPitch,
   deletePitch,
@@ -75,3 +76,5 @@ export const useReleaseSlotDate = (clubId: MaybeRefOrGetter<string>) =>
   useScheduleMutation(clubId, releaseSlotDate, true)
 export const useEndSlotBooking = (clubId: MaybeRefOrGetter<string>) =>
   useScheduleMutation(clubId, endSlotBooking, true)
+export const useAttachEvents = (clubId: MaybeRefOrGetter<string>) =>
+  useScheduleMutation(clubId, attachEventsToPitch, true)

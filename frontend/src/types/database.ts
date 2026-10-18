@@ -624,8 +624,11 @@ isOneToOne: false
 "apply_training_template":
 { Args: { "p_event_id": string,"p_template_id": string }; Returns: number
                            },
+"attach_events_to_pitch":
+{ Args: { "p_event_id": string,"p_part": Database["public"]['Enums']["pitch_part"],"p_pitch_id": string,"p_whole_series"?: boolean }; Returns: Json
+                           },
 "book_pitch":
-{ Args: { "p_end": string,"p_from": string,"p_part": Database["public"]['Enums']["pitch_part"],"p_pitch_id": string,"p_start": string,"p_team_id": string,"p_until"?: string }; Returns: Json
+{ Args: { "p_deadline_hours"?: number,"p_end": string,"p_from": string,"p_part": Database["public"]['Enums']["pitch_part"],"p_pitch_id": string,"p_start": string,"p_team_id": string,"p_until"?: string }; Returns: Json
                            },
 "booking_club_id":
 { Args: { "p_booking_id": string }; Returns: string

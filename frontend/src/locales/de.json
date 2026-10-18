@@ -994,7 +994,8 @@
       "taken": "Diese Zeit ist inzwischen belegt.",
       "bookFailed": "Reservieren fehlgeschlagen. Bitte versuche es erneut.",
       "releaseFailed": "Abgeben fehlgeschlagen. Bitte versuche es erneut.",
-      "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+      "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+      "pitchTaken": "Der Platz ist zu dieser Zeit schon belegt. Wähle eine andere Hälfte, Zeit oder einen anderen Platz."
     },
     "splittable": "Teilbar A/B",
     "splittableLabel": "In zwei Hälften teilbar",
@@ -1017,7 +1018,24 @@
     "freeCell": "{day}, {time}, {part} frei – reservieren",
     "length": "Dauer",
     "duration": "{n} Min.",
-    "bookUntil": "Bis {time} reservieren"
+    "bookUntil": "Bis {time} reservieren",
+    "pitch": "Platz",
+    "otherPlace": "Anderer Ort",
+    "problems": {
+      "weekday": "Im Belegungsplan kann nur montags bis freitags reserviert werden. Wähle „Anderer Ort“ oder einen anderen Tag.",
+      "time": "Im Belegungsplan geht es nur zwischen 15:00 und 20:30 Uhr. Passe Beginn oder Dauer an oder wähle „Anderer Ort“.",
+      "step": "Im Belegungsplan wird in halben Stunden reserviert: Beginn zur vollen oder halben Stunde, Dauer in 30-Minuten-Schritten."
+    },
+    "attach": {
+      "missing": "Dieses Training steht noch nicht im Belegungsplan.",
+      "button": "Im Belegungsplan eintragen",
+      "title": "Im Belegungsplan eintragen",
+      "wholeSeries": "Auch alle kommenden Termine dieser Serie",
+      "hint": "Der Platz wird zu den Zeiten des Trainings reserviert und als Ort eingetragen.",
+      "confirm": "Eintragen",
+      "done": "Im Belegungsplan eingetragen. | {n} Trainings im Belegungsplan eingetragen.",
+      "doneSkipped": "{n} Trainings eingetragen, {skipped} waren schon belegt."
+    }
   },
   "branding": {
     "title": "Vereinslogo",
