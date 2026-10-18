@@ -1017,11 +1017,8 @@
     "seasonUntil": "Valid until",
     "swipeHint": "Swipe left or right for the next or previous day.",
     "thisWeek": "Back to this week",
-    "legendOwn": "Own team",
-    "legendTaken": "Taken",
     "legendFree": "Free",
-    "calendarHint": "Swipe sideways for more days. Tap a free time to book it, or one of yours to release it.",
-    "allPitches": "All pitches",
+    "calendarHint": "Tap a free time to book it for your team, or one of yours to release it. Your team appears in your accent color.",
     "pitchFilter": "Choose pitch",
     "today": "Today"
   },

@@ -19,12 +19,13 @@ async function openTomorrow(page: Page, clubId: string) {
   if (new Date().getDay() === 0) await page.getByRole('button', { name: 'Nächste Woche' }).click()
 }
 
-/** A part of tomorrow's 17:00 slot on the Kunstrasen, by its full name. */
-const part = (page: Page, text: string) =>
-  page.getByLabel(
-    `${format(tomorrow, 'EEEEEE d.M.', { locale: de })}, 17:00–18:30, Kunstrasen, ${text}`,
-    { exact: true },
-  )
+/** Tomorrow's 17:00 slot on the Kunstrasen (one block with halves A and B). */
+const slotBlock = (page: Page) =>
+  page.getByRole('button', {
+    name: new RegExp(
+      `^${format(tomorrow, 'EEEEEE d.M.', { locale: de })}, 17:00–18:30, Kunstrasen: `,
+    ),
+  })
 
 test('admin sets up a pitch, a coach books and releases half of it', async ({ browser }) => {
   const demo = await seedDemo()
@@ -66,14 +67,17 @@ test('admin sets up a pitch, a coach books and releases half of it', async ({ br
   await login(page, carl.email)
   await openTomorrow(page, demo.club.id)
   await expect(page.getByRole('link', { name: 'Plätze & Zeiten' })).toHaveCount(0)
-  await part(page, 'A frei').click()
+  // Both halves free: a tap books half A (the sheet offers the other parts, too).
+  await expect(slotBlock(page)).toHaveAccessibleName(/A frei, B frei$/)
+  await slotBlock(page).click()
   const sheet = page.getByRole('dialog')
   await sheet.getByRole('button', { name: /^Jede Woche bis/ }).click()
   await page.waitForTimeout(300)
   await page.screenshot({ path: 'e2e/__screens__/42-schedule-book.png' })
   await sheet.getByRole('button', { name: 'Reservieren' }).click()
   await expect(page.getByRole('status')).toContainText('Trainings sind angelegt')
-  await expect(part(page, 'A U19')).toHaveClass(/schedule__cell--own/)
+  await expect(slotBlock(page)).toHaveAccessibleName(/A U19, B frei$/)
+  await expect(slotBlock(page).locator('.schedule__cell--own')).toContainText('U19')
   await page.waitForTimeout(400)
   await page.screenshot({ path: 'e2e/__screens__/40-schedule.png', fullPage: true })
   // The week calendar with free, own and taken parts passes the WCAG check.
@@ -85,17 +89,18 @@ test('admin sets up a pitch, a coach books and releases half of it', async ({ br
 
   // The admin sees the booking live in the plan with the team name.
   await openTomorrow(admin, demo.club.id)
-  await expect(part(admin, 'A U19')).toBeVisible()
+  await expect(slotBlock(admin)).toHaveAccessibleName(/A U19, B frei$/)
 
   // Coach gives back tomorrow only.
   await openTomorrow(page, demo.club.id)
-  await part(page, 'A U19').click()
+  // The own booking comes first: a tap opens it to give it back.
+  await slotBlock(page).click()
   await page
     .getByRole('dialog')
     .getByRole('button', { name: /^Nur .* abgeben$/ })
     .click()
   await expect(page.getByRole('status')).toContainText('Abgegeben')
-  await expect(part(page, 'A frei')).toBeVisible()
+  await expect(slotBlock(page)).toHaveAccessibleName(/A frei, B frei$/)
 
   // Next week the booking still holds.
   await page.getByRole('button', { name: 'Nächste Woche' }).click()

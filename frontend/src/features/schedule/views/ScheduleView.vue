@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { addWeeks, getISOWeek, parseISO } from 'date-fns'
-import UiChip from '@/ui/UiChip.vue'
 import UiEmptyState from '@/ui/UiEmptyState.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import UiIconButton from '@/ui/UiIconButton.vue'
+import UiSegmented from '@/ui/UiSegmented.vue'
 import UiSkeleton from '@/ui/UiSkeleton.vue'
 import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
@@ -15,23 +15,27 @@ import SlotSheet from '../components/SlotSheet.vue'
 import type { BookResult } from '../api'
 import { useBookings, useClubTeamNames, usePitches, useSlots } from '../composables/useSchedule'
 import {
+  blockTarget,
   calendarHours,
   isoDate,
   slotBox,
   slotCells,
   slotStarted,
   slotsOn,
+  teamShortName,
   timeLabel,
   weekDates,
   type Pitch,
   type PitchSlot,
+  type SlotBooking,
   type SlotCell,
 } from '../logic'
 
 /**
- * The club's pitch schedule as a week calendar: days as columns, each pitch a lane, the pitch
- * times as blocks with the booked teams. Coaches tap a free part to book it or their own to
- * release it. Shown in the events tab for the club of the active team.
+ * The club's pitch schedule as a week calendar that fits the screen: seven day columns, one
+ * pitch at a time (switch above), halves A and B side by side. Teams are colored blocks with a
+ * short name and a legend; the own team in the accent color, free times dashed. Tapping a
+ * block books a free part or releases an own one. Club of the active team.
  */
 const { t, locale } = useI18n()
 const { myTeams, activeTeam } = useActiveTeam()
@@ -41,7 +45,7 @@ const slots = useSlots(clubId)
 const teamNames = useClubTeamNames(clubId)
 const myClubs = useMyClubs()
 
-const HOUR = 52 // px per hour
+const HOUR = 44 // px per hour
 const today = isoDate(new Date())
 const weekOffset = ref(0)
 const days = computed(() => weekDates(addWeeks(new Date(), weekOffset.value)))
@@ -79,57 +83,96 @@ const ownTeamIds = computed(
 )
 const teamName = (teamId: string) =>
   teamNames.data.value?.find((team) => team.id === teamId)?.name ?? '…'
+const canManage = (booking: SlotBooking) =>
+  bookableTeams.value.some((team) => team.id === booking.team_id)
 
-// One pitch or all of them; with all, every pitch is a lane in each day.
-const pitchFilter = ref<string | null>(null)
+// Other teams get distinct colors (by their place in the club), the own team the accent color.
+// Blue comes last: many accent colors are blue, the own team must stand out.
+const TEAM_HUES = ['#db2777', '#ea580c', '#7c3aed', '#0891b2', '#ca8a04', '#16a34a', '#2563eb']
+function teamStyle(teamId: string) {
+  if (ownTeamIds.value.has(teamId)) return undefined
+  const index = Math.max(
+    (teamNames.data.value ?? []).findIndex((team) => team.id === teamId),
+    0,
+  )
+  return { '--team': TEAM_HUES[index % TEAM_HUES.length] }
+}
+
+// One pitch at a time; the one with the most times this week comes first.
 const allPitches = computed(() =>
   [...(pitches.data.value ?? [])].sort((a, b) => a.sort_order - b.sort_order),
 )
-const sortedPitches = computed(() =>
-  pitchFilter.value ? allPitches.value.filter((p) => p.id === pitchFilter.value) : allPitches.value,
+const chosenPitch = ref<string | null>(null)
+const busiestPitch = computed(() => {
+  const count = (pitch: Pitch) =>
+    days.value.reduce(
+      (n, date) =>
+        n + slotsOn(slots.data.value ?? [], date).filter((s) => s.pitch_id === pitch.id).length,
+      0,
+    )
+  return [...allPitches.value].sort((a, b) => count(b) - count(a))[0] ?? null
+})
+const pitch = computed(
+  () => allPitches.value.find((p) => p.id === chosenPitch.value) ?? busiestPitch.value,
 )
-// Halves A and B sit side by side, so a splittable pitch takes two parts of the day's width.
-const weight = (pitch: Pitch) => (pitch.splittable ? 2 : 1)
-const totalWeight = computed(() => sortedPitches.value.reduce((n, p) => n + weight(p), 0) || 1)
-const laneStart = (index: number) =>
-  sortedPitches.value.slice(0, index).reduce((n, p) => n + weight(p), 0) / totalWeight.value
-// The calendar scrolls sideways on small screens; every part stays readable.
-const dayWidth = computed(() => Math.max(112, totalWeight.value * 60))
-const hours = computed(() => calendarHours(slots.data.value ?? [], days.value))
+const pitchId = computed({
+  get: () => pitch.value?.id ?? '',
+  set: (value: string) => (chosenPitch.value = value),
+})
+const pitchOptions = computed(() => allPitches.value.map((p) => ({ value: p.id, label: p.name })))
+
+const pitchSlots = computed(() =>
+  (slots.data.value ?? []).filter((s) => s.pitch_id === pitch.value?.id),
+)
+const hours = computed(() => calendarHours(pitchSlots.value, days.value))
 const hourMarks = computed(() =>
-  Array.from({ length: hours.value.to - hours.value.from + 1 }, (_, i) => hours.value.from + i),
+  Array.from({ length: hours.value.to - hours.value.from }, (_, i) => hours.value.from + i),
 )
 
 type Block = {
   slot: PitchSlot
-  pitch: Pitch
-  lane: number
   top: number
   height: number
   started: boolean
   cells: SlotCell[]
+  target: SlotCell | null
 }
 const columns = computed(() =>
   days.value.map((date) => {
     const blocks: Block[] = []
-    for (const slot of slotsOn(slots.data.value ?? [], date)) {
-      const lane = sortedPitches.value.findIndex((p) => p.id === slot.pitch_id)
-      if (lane < 0) continue
-      const pitch = sortedPitches.value[lane]!
-      const box = slotBox(slot, hours.value.from)
-      blocks.push({
-        slot,
-        pitch,
-        lane,
-        top: box.top * HOUR,
-        height: box.height * HOUR,
-        started: slotStarted(slot, date),
-        cells: slotCells(slot, pitch, bookings.data.value ?? [], date),
-      })
+    const current = pitch.value
+    if (current) {
+      for (const slot of slotsOn(pitchSlots.value, date)) {
+        const box = slotBox(slot, hours.value.from)
+        const started = slotStarted(slot, date)
+        const cells = slotCells(slot, current, bookings.data.value ?? [], date)
+        blocks.push({
+          slot,
+          top: box.top * HOUR,
+          height: box.height * HOUR,
+          started,
+          cells,
+          target: started || !bookableTeams.value.length ? null : blockTarget(cells, canManage),
+        })
+      }
     }
     return { date, blocks }
   }),
 )
+
+/** Teams that appear this week (for the legend). */
+const legendTeams = computed(() => {
+  const ids = new Set<string>()
+  for (const column of columns.value)
+    for (const block of column.blocks)
+      for (const cell of block.cells) if (cell.booking) ids.add(cell.booking.team_id)
+  return [...ids].map((id) => ({
+    id,
+    name: teamName(id),
+    short: teamShortName(teamName(id)),
+    own: ownTeamIds.value.has(id),
+  }))
+})
 
 const isLoading = computed(
   () => pitches.isPending.value || slots.isPending.value || bookings.isPending.value,
@@ -138,41 +181,16 @@ const loadFailed = computed(
   () => pitches.isError.value || slots.isError.value || bookings.isError.value,
 )
 
-// Start with today in view, scrolled down to its first pitch time (or the week's first one on
-// a weekday, so a long weekend slot does not leave the evenings out of sight).
-const scroller = ref<HTMLElement | null>(null)
-async function showToday() {
-  await nextTick()
-  if (!scroller.value) return
-  const index = days.value.indexOf(today)
-  scroller.value.scrollLeft = index > 0 ? index * dayWidth.value - 8 : 0
-  const column = columns.value[Math.max(index, 0)]
-  const weekdays = columns.value.slice(0, 5).flatMap((c) => c.blocks)
-  const blocks = column?.blocks.length ? column.blocks : weekdays
-  const first = Math.min(...blocks.map((b) => b.top))
-  scroller.value.scrollTop = Number.isFinite(first) ? Math.max(first - 12, 0) : 0
-}
-watch([isLoading, weekOffset], () => void showToday(), { immediate: true })
-
 // Sheet
-const sheet = ref<{
-  slot: PitchSlot
-  pitch: Pitch
-  cells: SlotCell[]
-  cell: SlotCell
-  date: string
-} | null>(null)
+const sheet = ref<{ slot: PitchSlot; cells: SlotCell[]; cell: SlotCell; date: string } | null>(null)
 const sheetOpen = ref(false)
 const notice = ref<string | null>(null)
+watch(weekOffset, () => (notice.value = null))
 
-function canOpen(cell: SlotCell, started: boolean) {
-  if (started || !bookableTeams.value.length) return false
-  return !cell.booking || bookableTeams.value.some((team) => team.id === cell.booking!.team_id)
-}
-
-function openCell(block: Block, cell: SlotCell, date: string) {
+function openBlock(block: Block, date: string) {
+  if (!block.target) return
   notice.value = null
-  sheet.value = { slot: block.slot, pitch: block.pitch, cells: block.cells, cell, date }
+  sheet.value = { slot: block.slot, cells: block.cells, cell: block.target, date }
   sheetOpen.value = true
 }
 
@@ -186,15 +204,19 @@ function onBooked(result: BookResult) {
 function cellText(cell: SlotCell) {
   return cell.booking ? teamName(cell.booking.team_id) : t('schedule.free')
 }
-/** Full description for screen readers: day, time, pitch, part and who has it. */
-function cellLabel(block: Block, cell: SlotCell, date: string) {
-  // Ends with the visible text (e.g. "A U17"), so speech input finds it.
-  const part = cell.part === 'full' ? '' : `${cell.part.toUpperCase()} `
+/** Full description for screen readers: day, time, pitch and every part. */
+function blockLabel(block: Block, date: string) {
   const time = `${timeLabel(block.slot.start_time)}–${timeLabel(block.slot.end_time)}`
-  return `${formatDate(parseISO(date), locale.value, 'EEEEEE d.M.')}, ${time}, ${block.pitch.name}, ${part}${cellText(cell)}`
+  const parts = block.cells
+    .map((cell) =>
+      cell.part === 'full' ? cellText(cell) : `${cell.part.toUpperCase()} ${cellText(cell)}`,
+    )
+    .join(', ')
+  return `${formatDate(parseISO(date), locale.value, 'EEEEEE d.M.')}, ${time}, ${pitch.value?.name}: ${parts}`
 }
 const dayName = (date: string) => formatDate(parseISO(date), locale.value, 'EEEEEE')
-const dayNumber = (date: string) => formatDate(parseISO(date), locale.value, 'd.M.')
+const dayNumber = (date: string) => formatDate(parseISO(date), locale.value, 'd')
+const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE, d. MMMM')
 </script>
 
 <template>
@@ -241,7 +263,7 @@ const dayNumber = (date: string) => formatDate(parseISO(date), locale.value, 'd.
     <p v-if="notice" class="schedule__notice" role="status">✓ {{ notice }}</p>
 
     <div v-if="isLoading" aria-busy="true">
-      <UiSkeleton shape="block" height="320px" />
+      <UiSkeleton shape="block" height="360px" />
     </div>
     <p v-else-if="loadFailed" class="schedule__error" role="alert">
       {{ t('schedule.loadFailed') }}
@@ -263,34 +285,19 @@ const dayNumber = (date: string) => formatDate(parseISO(date), locale.value, 'd.
     </UiEmptyState>
 
     <template v-else>
-      <div
+      <UiSegmented
         v-if="allPitches.length > 1"
-        class="schedule__pitches"
-        role="group"
-        :aria-label="t('schedule.pitchFilter')"
-      >
-        <UiChip :model-value="!pitchFilter" @update:model-value="pitchFilter = null">
-          {{ t('schedule.allPitches') }}
-        </UiChip>
-        <UiChip
-          v-for="pitch in allPitches"
-          :key="pitch.id"
-          :model-value="pitchFilter === pitch.id"
-          @update:model-value="pitchFilter = pitch.id"
-        >
-          {{ pitch.name }}
-        </UiChip>
-      </div>
+        v-model="pitchId"
+        as="radio"
+        :label="t('schedule.pitchFilter')"
+        :options="pitchOptions"
+      />
 
-      <div
-        ref="scroller"
-        class="schedule__calendar"
-        :style="{ '--day-width': `${dayWidth}px`, '--hour': `${HOUR}px` }"
-      >
-        <div class="schedule__grid">
-          <!-- Corner and day headers -->
-          <div class="schedule__corner" aria-hidden="true" />
-          <div
+      <div class="schedule__calendar" :style="{ '--hour': `${HOUR}px` }">
+        <!-- Day header: stays below the top bar while scrolling -->
+        <div class="schedule__days" aria-hidden="true">
+          <span class="schedule__corner" />
+          <span
             v-for="column in columns"
             :key="`h-${column.date}`"
             class="schedule__day-head"
@@ -298,18 +305,10 @@ const dayNumber = (date: string) => formatDate(parseISO(date), locale.value, 'd.
           >
             <span class="schedule__day-name">{{ dayName(column.date) }}</span>
             <span class="schedule__day-number">{{ dayNumber(column.date) }}</span>
-            <span
-              class="schedule__lanes"
-              aria-hidden="true"
-              :style="{ gridTemplateColumns: sortedPitches.map((p) => `${weight(p)}fr`).join(' ') }"
-            >
-              <span v-for="pitch in sortedPitches" :key="pitch.id" class="schedule__lane-name">
-                {{ pitch.name }}
-              </span>
-            </span>
-          </div>
+          </span>
+        </div>
 
-          <!-- Hours -->
+        <div class="schedule__body" :style="{ height: `${(hours.to - hours.from) * HOUR}px` }">
           <div class="schedule__hours" aria-hidden="true">
             <span
               v-for="(hour, i) in hourMarks"
@@ -317,75 +316,84 @@ const dayNumber = (date: string) => formatDate(parseISO(date), locale.value, 'd.
               class="schedule__hour"
               :style="{ top: `${i * HOUR}px` }"
             >
-              {{ String(hour).padStart(2, '0') }}
+              {{ hour }}
             </span>
           </div>
 
-          <!-- Days -->
           <section
             v-for="column in columns"
             :key="column.date"
             class="schedule__day"
             :class="{ 'schedule__day--today': column.date === today }"
-            :aria-label="formatDate(parseISO(column.date), locale, 'EEEE, d. MMMM')"
-            :style="{ height: `${(hours.to - hours.from) * HOUR}px` }"
+            :aria-label="dayLong(column.date)"
           >
-            <div
+            <component
+              :is="block.target ? 'button' : 'div'"
               v-for="block in column.blocks"
               :key="block.slot.id"
+              :type="block.target ? 'button' : undefined"
+              :role="block.target ? undefined : 'img'"
               class="schedule__block"
-              :class="{ 'schedule__block--past': block.started }"
-              :style="{
-                top: `${block.top}px`,
-                height: `${block.height}px`,
-                left: `${laneStart(block.lane) * 100}%`,
-                width: `${(weight(block.pitch) / totalWeight) * 100}%`,
+              :class="{
+                'schedule__block--past': block.started,
+                'schedule__block--action': !!block.target,
               }"
+              :style="{ top: `${block.top}px`, height: `${block.height}px` }"
+              :aria-label="block.target ? undefined : blockLabel(block, column.date)"
+              @click="openBlock(block, column.date)"
             >
-              <component
-                :is="canOpen(cell, block.started) ? 'button' : 'div'"
+              <!-- Buttons are named by their (hidden) text, so the name contains what is seen. -->
+              <span v-if="block.target" class="visually-hidden">{{
+                blockLabel(block, column.date)
+              }}</span>
+              <span
                 v-for="cell in block.cells"
                 :key="cell.part"
-                :type="canOpen(cell, block.started) ? 'button' : undefined"
                 class="schedule__cell"
                 :class="{
                   'schedule__cell--free': !cell.booking,
                   'schedule__cell--own': cell.booking && ownTeamIds.has(cell.booking.team_id),
-                  'schedule__cell--action': canOpen(cell, block.started),
                 }"
-                :aria-label="cellLabel(block, cell, column.date)"
-                :role="canOpen(cell, block.started) ? undefined : 'img'"
-                @click="canOpen(cell, block.started) && openCell(block, cell, column.date)"
+                :style="cell.booking ? teamStyle(cell.booking.team_id) : undefined"
+                aria-hidden="true"
               >
                 <span v-if="cell.part !== 'full'" class="schedule__part">
-                  {{ cell.part.toUpperCase() }}{{ ' ' }}
+                  {{ cell.part.toUpperCase() }}
                 </span>
-                <span class="schedule__team">{{ cellText(cell) }}</span>
-              </component>
-            </div>
+                <span v-if="cell.booking" class="schedule__team">
+                  {{ teamShortName(teamName(cell.booking.team_id)) }}
+                </span>
+              </span>
+            </component>
           </section>
         </div>
       </div>
+
       <ul class="schedule__legend" role="list">
-        <li>
-          <span class="schedule__swatch schedule__swatch--own" />{{ t('schedule.legendOwn') }}
+        <li v-for="team in legendTeams" :key="team.id">
+          <span
+            class="schedule__swatch"
+            :class="{ 'schedule__swatch--own': team.own }"
+            :style="team.own ? undefined : teamStyle(team.id)"
+            aria-hidden="true"
+            >{{ team.short }}</span
+          >
+          {{ team.name }}
         </li>
         <li>
-          <span class="schedule__swatch schedule__swatch--taken" />{{ t('schedule.legendTaken') }}
-        </li>
-        <li>
-          <span class="schedule__swatch schedule__swatch--free" />{{ t('schedule.legendFree') }}
+          <span class="schedule__swatch schedule__swatch--free" aria-hidden="true" />
+          {{ t('schedule.legendFree') }}
         </li>
       </ul>
       <p class="schedule__hint">{{ t('schedule.calendarHint') }}</p>
     </template>
 
     <SlotSheet
-      v-if="sheet"
+      v-if="sheet && pitch"
       v-model:open="sheetOpen"
       :club-id="clubId"
       :pitch-slot="sheet.slot"
-      :pitch="sheet.pitch"
+      :pitch="pitch"
       :date="sheet.date"
       :cells="sheet.cells"
       :cell="sheet.cell"
@@ -398,7 +406,7 @@ const dayNumber = (date: string) => formatDate(parseISO(date), locale.value, 'd.
 </template>
 
 <style scoped lang="scss">
-$gutter: 36px;
+$gutter: 26px;
 
 .schedule {
   display: flex;
@@ -430,8 +438,7 @@ $gutter: 36px;
   &__week {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: $space-2;
+    gap: $space-1;
   }
 
   &__week-label {
@@ -458,7 +465,7 @@ $gutter: 36px;
   &__notice {
     padding: $space-2 $space-3;
     border-radius: $radius-md;
-    background: var(--color-yes-bg, var(--color-surface));
+    background: var(--color-surface);
     font-weight: 700;
   }
 
@@ -466,199 +473,145 @@ $gutter: 36px;
     color: var(--color-danger);
   }
 
-  &__legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $space-1 $space-4;
-    margin: 0;
-    color: var(--color-text-muted);
-    font-size: $font-sm;
-
-    li {
-      display: inline-flex;
-      align-items: center;
-      gap: $space-1;
-    }
-  }
-
-  &__swatch {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-
-    &--own {
-      background: var(--color-primary);
-    }
-
-    &--taken {
-      background: var(--color-surface-muted);
-      outline: 1px solid var(--color-border);
-    }
-
-    &--free {
-      border: 2px dashed var(--color-primary);
-    }
-  }
-
-  // Own scroll area in both directions; day headers and the hour column stay put.
+  // The whole week on one screen: full width, seven equal columns.
   &__calendar {
-    // Exactly the rest of the screen below the page head (title, week, pitches).
-    height: calc(
-      100dvh - var(--top-bar-height, 64px) - var(--area-nav-height, 0px) - var(--nav-offset, 0px) -
-        196px
-    );
-    min-height: 300px;
-    margin-inline: -$space-4;
-    overflow: auto;
-    border-block: 1px solid var(--color-border);
+    margin-inline: -$space-2;
+    border-radius: $radius-xl;
     background: var(--color-surface);
-    overscroll-behavior-x: contain;
+    box-shadow: var(--shadow-sm, 0 1px 2px rgb(0 0 0 / 6%));
   }
 
-  &__grid {
+  &__days,
+  &__body {
     display: grid;
-    grid-template-columns: $gutter repeat(7, var(--day-width));
-    width: max-content;
+    grid-template-columns: $gutter repeat(7, minmax(0, 1fr));
   }
 
-  &__corner,
-  &__hours {
+  &__days {
     position: sticky;
-    left: 0;
-    z-index: 2;
-    background: var(--color-surface);
-  }
-
-  &__corner {
-    top: 0;
-    z-index: 4;
+    top: calc(var(--top-bar-height, 64px) + var(--area-nav-height, 0px));
+    z-index: 3;
+    padding: $space-2 0 $space-1;
+    border-radius: $radius-xl $radius-xl 0 0;
     border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
   }
 
   &__day-head {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background: var(--color-surface);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: $space-2 2px $space-1;
-    border-bottom: 1px solid var(--color-border);
-    border-left: 1px solid var(--color-border);
-    line-height: 1.1;
-
-    &--today {
-      background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
-    }
+    gap: 2px;
+    line-height: 1;
   }
 
   &__day-name {
     color: var(--color-text-muted);
-    font-size: $font-xs;
+    font-size: 11px;
     font-weight: 800;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
   &__day-number {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     font-family: var(--font-display);
     font-size: $font-lg;
     font-weight: 800;
   }
 
-  &__pitches {
-    display: flex;
-    gap: $space-2;
-    margin-inline: -$space-4;
-    padding: 0 $space-4 2px;
-    overflow-x: auto;
-    scrollbar-width: none;
-
-    > * {
-      flex-shrink: 0;
-    }
+  &__day-head--today &__day-name {
+    color: var(--color-text);
   }
 
-  &__lanes {
-    display: grid;
-    width: 100%;
-    margin-top: 2px;
+  &__day-head--today &__day-number {
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
   }
 
-  &__lane-name {
-    @include truncate;
-
-    padding: 0 2px;
-    color: var(--color-text-muted);
-    font-size: 10px;
-    font-weight: 700;
-    text-align: center;
+  &__body {
+    position: relative;
+    margin-bottom: $space-2;
   }
 
   &__hours {
-    position: sticky;
-    border-right: 1px solid var(--color-border);
+    position: relative;
   }
 
   &__hour {
     position: absolute;
     right: 4px;
     color: var(--color-text-muted);
-    font-size: $font-xs;
+    font-size: 11px;
     font-variant-numeric: tabular-nums;
     font-weight: 700;
     transform: translateY(-50%);
 
     &:first-child {
-      transform: none;
+      transform: translateY(2px);
     }
   }
 
   &__day {
     position: relative;
-    border-left: 1px solid var(--color-border);
     // Hour lines.
-    background-image: linear-gradient(to bottom, var(--color-border) 1px, transparent 1px);
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-border) 70%, transparent) 1px,
+      transparent 1px
+    );
     background-size: 100% var(--hour);
 
     &--today {
-      background-color: color-mix(in srgb, var(--color-primary) 6%, transparent);
+      background-color: color-mix(in srgb, var(--color-primary) 7%, transparent);
     }
   }
 
   &__block {
     position: absolute;
+    inset-inline: 2px;
     display: flex;
     gap: 2px;
-    padding: 2px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+
+    &--action {
+      cursor: pointer;
+
+      &:focus-visible {
+        @include focus-ring;
+
+        border-radius: 8px;
+      }
+    }
 
     &--past {
-      opacity: 0.5;
+      opacity: 0.45;
     }
   }
 
   &__cell {
+    --team: var(--color-text-muted);
+
     display: flex;
     flex: 1 1 0;
     flex-direction: column;
-    justify-content: flex-start;
-    min-height: 0;
-    padding: 2px 4px;
+    align-items: center;
+    min-width: 0;
+    padding-top: 3px;
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: 1.5px solid var(--team);
     border-radius: 6px;
-    background: var(--color-surface-muted);
+    background: color-mix(in srgb, var(--team) 18%, var(--color-surface));
     color: var(--color-text);
-    font: inherit;
-    font-size: $font-xs;
-    line-height: 1.15;
-    text-align: left;
-
-    &--free {
-      border: 2px dashed var(--color-primary);
-      background: transparent;
-      color: var(--color-text-muted);
-    }
+    line-height: 1.1;
 
     &--own {
       border-color: var(--color-primary);
@@ -666,24 +619,65 @@ $gutter: 36px;
       color: var(--color-primary-contrast);
     }
 
-    &--action {
-      cursor: pointer;
-
-      &:focus-visible {
-        @include focus-ring;
-      }
+    &--free {
+      border: 1.5px dashed color-mix(in srgb, var(--color-text-muted) 60%, transparent);
+      background: transparent;
+      color: var(--color-text-muted);
     }
   }
 
   &__part {
+    font-size: 10px;
     font-weight: 800;
-    opacity: 0.8;
+    opacity: 0.75;
   }
 
   &__team {
+    font-family: var(--font-display);
+    font-size: 11px;
     font-weight: 800;
-    hyphens: auto;
-    overflow-wrap: break-word;
+    letter-spacing: -0.02em;
+  }
+
+  &__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2 $space-4;
+    margin: 0;
+    font-size: $font-sm;
+
+    li {
+      display: inline-flex;
+      align-items: center;
+      gap: $space-2;
+    }
+  }
+
+  &__swatch {
+    --team: var(--color-text-muted);
+
+    display: inline-grid;
+    place-items: center;
+    min-width: 34px;
+    height: 22px;
+    padding: 0 4px;
+    border: 1.5px solid var(--team);
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--team) 18%, var(--color-surface));
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 800;
+
+    &--own {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+      color: var(--color-primary-contrast);
+    }
+
+    &--free {
+      border: 1.5px dashed var(--color-text-muted);
+      background: transparent;
+    }
   }
 
   &__hint {

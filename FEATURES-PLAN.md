@@ -147,3 +147,14 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
   Auskunftsanfragen (Art. 15 DSGVO) beantworten zu können. Datenschutzerklärung angepasst.
 - **Vor dem Go-live:** Migrationen `20261016000100`, `20261016000200` und `20261017000100` auch im
   Supabase-Cloud-Projekt anwenden.
+
+### Nachtrag Belegungsplan (18.10.2026)
+- Die Woche passt ohne seitliches Wischen auf den Bildschirm: sieben gleich breite Tagesspalten,
+  ein Platz zur Zeit (Umschalter oben, voreingestellt der Platz mit den meisten Zeiten der Woche),
+  Hälften A/B nebeneinander. Mannschaften als Farbblöcke mit Kürzel („U17“, „DAM“) und Legende;
+  eigene Mannschaft in der Akzentfarbe, andere in festen Farben (Blau zuletzt, weil viele
+  Akzentfarben blau sind), frei gestrichelt. Heute als Kreis in der Akzentfarbe, Tageskopf bleibt
+  beim Scrollen stehen.
+- Ein Tipp auf den ganzen Block öffnet das Reservieren (freie Hälfte, Bereich wählbar) bzw. das
+  Abgeben der eigenen Buchung – große Tippfläche statt schmaler Hälften. Der Block trägt den
+  vollständigen Namen als unsichtbaren Text (Tag, Zeit, Platz, alle Hälften).

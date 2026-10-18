@@ -116,3 +116,25 @@ export function slotBox(slot: Pick<PitchSlot, 'start_time' | 'end_time'>, fromHo
     height: (minutesOf(slot.end_time) - start) / 60,
   }
 }
+
+/** Short label of a team for small calendar blocks: "U17" stays, "Damen" becomes "DAM". */
+export function teamShortName(name: string): string {
+  const trimmed = name.trim()
+  if (trimmed.length <= 4) return trimmed
+  const first = trimmed.split(/\s+/)[0]!
+  if (first.length <= 4 && /\d/.test(first)) return first
+  return trimmed.slice(0, 3).toLocaleUpperCase('de')
+}
+
+/**
+ * Which part a tap on a whole slot block opens: an own booking (to release it) first,
+ * otherwise a free part (to book), otherwise none.
+ */
+export function blockTarget(
+  cells: SlotCell[],
+  canManage: (booking: SlotBooking) => boolean,
+): SlotCell | null {
+  return (
+    cells.find((c) => c.booking && canManage(c.booking)) ?? cells.find((c) => !c.booking) ?? null
+  )
+}

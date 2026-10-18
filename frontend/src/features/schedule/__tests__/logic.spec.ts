@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  blockTarget,
   bookingCovers,
   calendarHours,
   slotBox,
@@ -8,6 +9,7 @@ import {
   slotCells,
   slotStarted,
   slotsOn,
+  teamShortName,
   weekDates,
   type PitchSlot,
   type SlotBooking,
@@ -146,5 +148,39 @@ describe('week calendar', () => {
       top: 1.5,
       height: 1.5,
     })
+  })
+})
+
+describe('calendar labels and taps', () => {
+  it('shortens team names for small blocks', () => {
+    expect(teamShortName('U17')).toBe('U17')
+    expect(teamShortName('Damen')).toBe('DAM')
+    expect(teamShortName('U19 II')).toBe('U19')
+    expect(teamShortName('Herren 2')).toBe('HER')
+  })
+
+  it('opens an own booking first, otherwise a free part', () => {
+    const own = { team_id: 'own' } as SlotBooking
+    const other = { team_id: 'other' } as SlotBooking
+    const mine = (b: SlotBooking) => b.team_id === 'own'
+    expect(
+      blockTarget(
+        [
+          { part: 'a', booking: null },
+          { part: 'b', booking: own },
+        ],
+        mine,
+      )?.part,
+    ).toBe('b')
+    expect(
+      blockTarget(
+        [
+          { part: 'a', booking: other },
+          { part: 'b', booking: null },
+        ],
+        mine,
+      )?.part,
+    ).toBe('b')
+    expect(blockTarget([{ part: 'full', booking: other }], mine)).toBeNull()
   })
 })

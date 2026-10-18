@@ -1017,11 +1017,8 @@
     "seasonUntil": "Gültig bis",
     "swipeHint": "Wische nach links oder rechts für den nächsten oder vorigen Tag.",
     "thisWeek": "Zur aktuellen Woche",
-    "legendOwn": "Eigene Mannschaft",
-    "legendTaken": "Belegt",
     "legendFree": "Frei",
-    "calendarHint": "Seitlich wischen für weitere Tage. Tippe auf eine freie Zeit, um sie zu reservieren, oder auf eine eigene, um sie abzugeben.",
-    "allPitches": "Alle Plätze",
+    "calendarHint": "Tippe auf eine freie Zeit, um sie für deine Mannschaft zu reservieren, oder auf eine eigene, um sie abzugeben. Deine Mannschaft erscheint in deiner Akzentfarbe.",
     "pitchFilter": "Platz wählen",
     "today": "Heute"
   },
