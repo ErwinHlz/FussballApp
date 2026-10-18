@@ -138,3 +138,28 @@ export function blockTarget(
     cells.find((c) => c.booking && canManage(c.booking)) ?? cells.find((c) => !c.booking) ?? null
   )
 }
+
+/**
+ * Hours the calendar shows: every hour touched by a pitch time on the dates, nothing else
+ * (an empty afternoon between Saturday morning and the evenings disappears).
+ */
+export function relevantHours(slots: PitchSlot[], dates: string[]): number[] {
+  const hours = new Set<number>()
+  for (const slot of dates.flatMap((date) => slotsOn(slots, date))) {
+    const from = Math.floor(minutesOf(slot.start_time) / 60)
+    const to = Math.ceil(minutesOf(slot.end_time) / 60)
+    for (let h = from; h < to; h++) hours.add(h)
+  }
+  return [...hours].sort((a, b) => a - b)
+}
+
+/** Position of a time on the compressed hour axis, in rows from the top (fractions allowed). */
+export function rowOf(hours: number[], time: string): number {
+  const minutes = minutesOf(time)
+  const hour = Math.floor(minutes / 60)
+  const index = hours.indexOf(hour)
+  if (index >= 0) return index + (minutes % 60) / 60
+  // Exactly the end of the last row (e.g. 20:00 after the 19:00 row).
+  const before = hours.filter((h) => h < hour).length
+  return before
+}

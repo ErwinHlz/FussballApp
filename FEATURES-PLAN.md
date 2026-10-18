@@ -158,3 +158,7 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
 - Ein Tipp auf den ganzen Block öffnet das Reservieren (freie Hälfte, Bereich wählbar) bzw. das
   Abgeben der eigenen Buchung – große Tippfläche statt schmaler Hälften. Der Block trägt den
   vollständigen Namen als unsichtbaren Text (Tag, Zeit, Platz, alle Hälften).
+- Danach als richtiges Kalender-Raster: eine Zeile pro Stunde mit gestrichelter Halbstunde,
+  Spaltenlinien pro Tag, füllt die Bildschirmhöhe (mindestens 44 px pro Stunde). Gezeigt werden
+  nur Stunden mit Platzzeiten in der Woche (`relevantHours`, `rowOf`); übersprungene Stunden
+  markiert eine Doppellinie. Blöcke sind in Prozent der Spalte positioniert.

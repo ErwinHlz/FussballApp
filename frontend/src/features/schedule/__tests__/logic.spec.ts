@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   blockTarget,
   bookingCovers,
+  relevantHours,
+  rowOf,
   calendarHours,
   slotBox,
   defaultSeason,
@@ -182,5 +184,25 @@ describe('calendar labels and taps', () => {
       )?.part,
     ).toBe('b')
     expect(blockTarget([{ part: 'full', booking: other }], mine)).toBeNull()
+  })
+})
+
+describe('compressed hour axis', () => {
+  const week = weekDates(new Date(2026, 9, 13))
+  const slots = [
+    slot({ start_time: '17:30:00', end_time: '19:00:00' }),
+    slot({ id: 's2', weekday: 6, start_time: '10:00:00', end_time: '12:00:00' }),
+  ]
+
+  it('keeps only hours with pitch times', () => {
+    expect(relevantHours(slots, week)).toEqual([10, 11, 17, 18])
+  })
+
+  it('places times on the remaining rows', () => {
+    const hours = [10, 11, 17, 18]
+    expect(rowOf(hours, '10:00:00')).toBe(0)
+    expect(rowOf(hours, '17:30:00')).toBe(2.5)
+    expect(rowOf(hours, '19:00:00')).toBe(4)
+    expect(rowOf(hours, '12:00:00')).toBe(2)
   })
 })

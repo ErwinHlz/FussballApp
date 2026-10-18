@@ -16,9 +16,9 @@ import type { BookResult } from '../api'
 import { useBookings, useClubTeamNames, usePitches, useSlots } from '../composables/useSchedule'
 import {
   blockTarget,
-  calendarHours,
   isoDate,
-  slotBox,
+  relevantHours,
+  rowOf,
   slotCells,
   slotStarted,
   slotsOn,
@@ -45,7 +45,6 @@ const slots = useSlots(clubId)
 const teamNames = useClubTeamNames(clubId)
 const myClubs = useMyClubs()
 
-const HOUR = 44 // px per hour
 const today = isoDate(new Date())
 const weekOffset = ref(0)
 const days = computed(() => weekDates(addWeeks(new Date(), weekOffset.value)))
@@ -124,9 +123,13 @@ const pitchOptions = computed(() => allPitches.value.map((p) => ({ value: p.id, 
 const pitchSlots = computed(() =>
   (slots.data.value ?? []).filter((s) => s.pitch_id === pitch.value?.id),
 )
-const hours = computed(() => calendarHours(pitchSlots.value, days.value))
-const hourMarks = computed(() =>
-  Array.from({ length: hours.value.to - hours.value.from }, (_, i) => hours.value.from + i),
+// Only the hours with pitch times this week; a gap (skipped hours) gets a marked line.
+const hours = computed(() => relevantHours(pitchSlots.value, days.value))
+const rows = computed(() =>
+  hours.value.map((hour, i) => ({
+    hour,
+    gap: i > 0 && hours.value[i - 1] !== hour - 1,
+  })),
 )
 
 type Block = {
@@ -143,13 +146,15 @@ const columns = computed(() =>
     const current = pitch.value
     if (current) {
       for (const slot of slotsOn(pitchSlots.value, date)) {
-        const box = slotBox(slot, hours.value.from)
+        const top = rowOf(hours.value, slot.start_time)
+        const bottom = rowOf(hours.value, slot.end_time)
         const started = slotStarted(slot, date)
         const cells = slotCells(slot, current, bookings.data.value ?? [], date)
         blocks.push({
           slot,
-          top: box.top * HOUR,
-          height: box.height * HOUR,
+          // In percent of the day column, so the calendar can grow with the screen.
+          top: (top / hours.value.length) * 100,
+          height: ((bottom - top) / hours.value.length) * 100,
           started,
           cells,
           target: started || !bookableTeams.value.length ? null : blockTarget(cells, canManage),
@@ -293,7 +298,7 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
         :options="pitchOptions"
       />
 
-      <div class="schedule__calendar" :style="{ '--hour': `${HOUR}px` }">
+      <div class="schedule__calendar" :style="{ '--rows': hours.length }">
         <!-- Day header: stays below the top bar while scrolling -->
         <div class="schedule__days" aria-hidden="true">
           <span class="schedule__corner" />
@@ -308,16 +313,17 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
           </span>
         </div>
 
-        <div class="schedule__body" :style="{ height: `${(hours.to - hours.from) * HOUR}px` }">
-          <div class="schedule__hours" aria-hidden="true">
-            <span
-              v-for="(hour, i) in hourMarks"
-              :key="hour"
-              class="schedule__hour"
-              :style="{ top: `${i * HOUR}px` }"
-            >
-              {{ hour }}
-            </span>
+        <div class="schedule__body">
+          <!-- Grid: one row per relevant hour, label in the left column -->
+          <div
+            v-for="(row, i) in rows"
+            :key="row.hour"
+            class="schedule__row"
+            :class="{ 'schedule__row--gap': row.gap }"
+            :style="{ gridRow: i + 1 }"
+            aria-hidden="true"
+          >
+            <span class="schedule__hour">{{ String(row.hour).padStart(2, '0') }}</span>
           </div>
 
           <section
@@ -325,6 +331,7 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
             :key="column.date"
             class="schedule__day"
             :class="{ 'schedule__day--today': column.date === today }"
+            :style="{ gridColumn: columns.indexOf(column) + 2 }"
             :aria-label="dayLong(column.date)"
           >
             <component
@@ -338,7 +345,7 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
                 'schedule__block--past': block.started,
                 'schedule__block--action': !!block.target,
               }"
-              :style="{ top: `${block.top}px`, height: `${block.height}px` }"
+              :style="{ top: `${block.top}%`, height: `${block.height}%` }"
               :aria-label="block.target ? undefined : blockLabel(block, column.date)"
               @click="openBlock(block, column.date)"
             >
@@ -533,38 +540,61 @@ $gutter: 26px;
     color: var(--color-primary-contrast);
   }
 
+  // Fills the screen below the head; at least 44 px per hour.
   &__body {
     position: relative;
+    grid-template-rows: repeat(var(--rows), minmax(44px, 1fr));
+    height: max(
+      calc(var(--rows) * 44px),
+      calc(
+        100dvh - var(--top-bar-height, 64px) - var(--area-nav-height, 0px) - var(
+            --nav-offset,
+            0px
+          ) -
+          250px
+      )
+    );
     margin-bottom: $space-2;
   }
 
-  &__hours {
+  &__row {
     position: relative;
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--color-border);
+
+    // Half hour.
+    &::after {
+      content: '';
+      position: absolute;
+      inset-inline: $gutter 0;
+      top: 50%;
+      border-top: 1px dashed color-mix(in srgb, var(--color-border) 70%, transparent);
+    }
+
+    // Skipped hours in between: a stronger line.
+    &--gap {
+      border-top: 3px double var(--color-text-muted);
+    }
   }
 
   &__hour {
     position: absolute;
-    right: 4px;
+    top: 3px;
+    left: 0;
+    width: $gutter;
+    padding-right: 4px;
     color: var(--color-text-muted);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
     font-weight: 700;
-    transform: translateY(-50%);
-
-    &:first-child {
-      transform: translateY(2px);
-    }
+    text-align: right;
   }
 
   &__day {
     position: relative;
-    // Hour lines.
-    background-image: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--color-border) 70%, transparent) 1px,
-      transparent 1px
-    );
-    background-size: 100% var(--hour);
+    z-index: 1;
+    grid-row: 1 / -1;
+    border-left: 1px solid var(--color-border);
 
     &--today {
       background-color: color-mix(in srgb, var(--color-primary) 7%, transparent);
@@ -576,7 +606,8 @@ $gutter: 26px;
     inset-inline: 2px;
     display: flex;
     gap: 2px;
-    padding: 0;
+    // A hair of space between blocks that follow each other.
+    padding: 1px 0;
     border: 0;
     background: transparent;
     font: inherit;
