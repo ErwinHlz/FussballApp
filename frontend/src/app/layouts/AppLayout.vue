@@ -18,7 +18,7 @@ import TeamSwitcherSheet from './TeamSwitcherSheet.vue'
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const { myTeams, activeTeam } = useActiveTeam()
+const { myTeams, activeTeam, isCoach } = useActiveTeam()
 const profile = useProfile()
 
 // The app takes on the account's accent color; by default the color of the active team's club
@@ -50,7 +50,13 @@ const adminClubId = computed(() => {
 const tabs = computed<Tab[]>(() => [
   { key: 'home', to: { name: 'home' }, icon: 'home', label: t('nav.start') },
   { key: 'events', to: { name: 'events' }, icon: 'calendar', label: t('nav.events') },
-  { key: 'training', to: { name: 'training' }, icon: 'cone', label: t('nav.training') },
+  // Players have only the drills there (their trainings are under "Termine").
+  {
+    key: 'training',
+    to: { name: isCoach.value ? 'training' : 'drills' },
+    icon: 'cone',
+    label: t('nav.training'),
+  },
   { key: 'team', to: { name: 'squad' }, icon: 'users', label: t('nav.team') },
   ...(adminClubId.value
     ? [

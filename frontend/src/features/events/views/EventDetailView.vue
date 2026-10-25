@@ -415,7 +415,12 @@ async function remove() {
         </div>
       </ActionBar>
 
-      <DeclineSheet :request="declining" @decline="decline" @cancel="declining = null" />
+      <DeclineSheet
+        :request="declining"
+        offer-absence
+        @decline="decline"
+        @cancel="declining = null"
+      />
 
       <BottomSheet v-model:open="cancelOpen" :title="t('events.cancelTitle')">
         <UiInput

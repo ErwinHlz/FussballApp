@@ -115,8 +115,8 @@ const filterOpen = ref(false)
     <TrainingNav active="drills" />
 
     <header class="drills__head">
-      <!-- The area tab above names the page already: the heading is for screen readers. -->
-      <h1 class="visually-hidden">{{ t('drills.title') }}</h1>
+      <!-- Coaches have the area tab above naming the page; players see the heading. -->
+      <h1 :class="{ 'visually-hidden': isCoach }">{{ t('drills.title') }}</h1>
       <UiIconButton
         v-if="isCoach"
         icon="plus"
@@ -247,7 +247,7 @@ const filterOpen = ref(false)
   &__head {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: $space-2;
   }
 

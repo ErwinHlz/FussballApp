@@ -239,7 +239,8 @@
       "bench": "Bench",
       "reserve": "Reserve"
     },
-    "navLabel": "Event areas"
+    "navLabel": "Event areas",
+    "declineLonger": "Away for longer? Enter an absence"
   },
   "training": {
     "title": "Training",
@@ -254,7 +255,7 @@
       "label": "Training areas",
       "sessions": "Sessions",
       "drills": "Drills",
-      "boards": "Tactics board",
+      "boards": "Tactics",
       "templates": "Templates"
     }
   },
@@ -724,7 +725,8 @@
     "noEventThatDay": "No event on this day.",
     "waiting": "Waiting for your answer",
     "allEvents": "All events",
-    "ownAnswer": "Your answer"
+    "ownAnswer": "Your answer",
+    "away": "Away?"
   },
   "board": {
     "title": "Tactics board",
@@ -1052,7 +1054,8 @@
       "confirm": "Enter",
       "done": "Entered in the schedule. | {n} trainings entered in the schedule.",
       "doneSkipped": "{n} trainings entered, {skipped} were already taken."
-    }
+    },
+    "calendarHintView": "See when which team trains or plays on which pitch."
   },
   "branding": {
     "title": "Club logo",
@@ -1147,7 +1150,11 @@
     },
     "answer": {
       "question": "Are you in?",
-      "done": { "yes": "You're in", "maybe": "You might come", "no": "You declined" },
+      "done": {
+        "yes": "You're in",
+        "maybe": "You might come",
+        "no": "You declined"
+      },
       "yes": "I'm in",
       "yesDone": "You're in",
       "maybe": "Maybe",
@@ -1168,7 +1175,7 @@
       "title": "Switch team",
       "open": "Switch team",
       "manageClub": "Manage club: {name}",
-      "all": "All teams and clubs"
+      "all": "Manage teams"
     },
     "theme": {
       "label": "Appearance",

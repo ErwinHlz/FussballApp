@@ -8,7 +8,6 @@ import RondoLogo from '@/ui/RondoLogo.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import UiInput from '@/ui/UiInput.vue'
-import TeamNav from '@/features/squad/components/TeamNav.vue'
 import type { Club, MyTeam } from '../api'
 import CreateClubForm from '../components/CreateClubForm.vue'
 import { useActiveTeam } from '../composables/useActiveTeam'
@@ -41,8 +40,6 @@ const groups = computed(() => {
   }))
 })
 const isLoading = computed(() => myTeams.isPending.value || myClubs.isPending.value)
-// One club per account to manage (database rule); joining other clubs stays possible.
-const managesClub = computed(() => groups.value.some((club) => club.role === 'admin'))
 const isError = computed(() => myTeams.isError.value || myClubs.isError.value)
 
 function roleLabel(team: MyTeam) {
@@ -64,10 +61,7 @@ async function onClubCreated(club: Club) {
 
 <template>
   <section class="teams">
-    <!-- Without a team (first start) squad and statistics make no sense yet. -->
-    <TeamNav v-if="groups.length" active="teams" />
-    <!-- The area tab above names the page already: the heading is for screen readers. -->
-    <h1 class="visually-hidden">{{ t('teams.title') }}</h1>
+    <h1>{{ t('teams.title') }}</h1>
 
     <p v-if="isLoading" class="teams__muted">{{ t('common.loading') }}</p>
     <p v-else-if="isError" class="teams__error" role="alert">{{ t('teams.loadFailed') }}</p>
@@ -147,12 +141,6 @@ async function onClubCreated(club: Club) {
         </ul>
         <p v-else class="teams__muted">{{ t('clubs.noTeamsYet') }}</p>
       </article>
-
-      <UiButton v-if="!managesClub" variant="secondary" block @click="createOpen = true">
-        <template #icon><UiIcon name="plus" :size="18" /></template>
-        {{ t('clubs.createAnother') }}
-      </UiButton>
-      <p v-else class="teams__muted">{{ t('clubs.oneClubHint') }}</p>
     </template>
 
     <BottomSheet v-model:open="createOpen" :title="t('clubs.create')">

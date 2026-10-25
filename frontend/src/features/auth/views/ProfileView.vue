@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useForm } from 'vee-validate'
@@ -20,7 +21,9 @@ import { useAuthStore } from '@/stores/auth'
 import { useLocaleStore, type LocalePreference } from '@/stores/locale'
 import { useThemeStore, type ThemePreference } from '@/stores/theme'
 import { useMyClubs } from '@/features/teams/composables/useTeams'
-import AbsenceForm from '@/features/absences/components/AbsenceForm.vue'
+import AbsenceSheet from '@/features/absences/components/AbsenceSheet.vue'
+import CreateClubForm from '@/features/teams/components/CreateClubForm.vue'
+import type { Club } from '@/features/teams/api'
 import AbsenceList from '@/features/absences/components/AbsenceList.vue'
 import { fetchMyMemberIds } from '@/features/absences/api'
 import { useMyAbsences } from '@/features/absences/composables/useAbsences'
@@ -35,6 +38,7 @@ import { useSignOut } from '../composables/useAuth'
 const { t } = useI18n()
 const snackbar = useSnackbar()
 const auth = useAuthStore()
+const router = useRouter()
 const profile = useProfile()
 const updateProfile = useUpdateProfile()
 const signOut = useSignOut()
@@ -61,9 +65,13 @@ const languageOptions = computed<{ value: LocalePreference; label: string }[]>((
 ])
 
 const absenceOpen = ref(false)
-function onAbsenceCreated(declined: number) {
-  absenceOpen.value = false
-  snackbar.show({ text: t('absences.created', declined) })
+
+// Founding a club lives here (rarely needed); one club per account to manage.
+const managesClub = computed(() => myClubs.data.value?.some((c) => c.role === 'admin') ?? false)
+const createClubOpen = ref(false)
+async function onClubCreated(club: Club) {
+  createClubOpen.value = false
+  await router.push({ name: 'club', params: { clubId: club.id } })
 }
 
 const { defineField, errors, handleSubmit, resetForm, meta } = useForm({
@@ -190,6 +198,15 @@ const onSubmit = handleSubmit(async (values) => {
           </UiListRow>
         </li>
       </ul>
+      <UiButton
+        v-if="myClubs.isSuccess.value && !managesClub"
+        variant="ghost"
+        icon="plus"
+        @click="createClubOpen = true"
+      >
+        {{ myClubs.data.value?.length ? t('clubs.createAnother') : t('clubs.create') }}
+      </UiButton>
+      <p v-else-if="managesClub" class="profile__muted">{{ t('clubs.oneClubHint') }}</p>
     </UiSection>
 
     <UiSection :title="t('account.title')">
@@ -220,12 +237,10 @@ const onSubmit = handleSubmit(async (values) => {
       {{ t('auth.signOut') }}
     </UiButton>
 
-    <BottomSheet v-model:open="absenceOpen" :title="t('absences.add')">
-      <AbsenceForm
-        v-if="myMemberIds.data.value?.length"
-        :member-ids="myMemberIds.data.value"
-        @created="onAbsenceCreated"
-      />
+    <AbsenceSheet v-model:open="absenceOpen" />
+    <BottomSheet v-model:open="createClubOpen" :title="t('clubs.create')">
+      <p class="profile__muted">{{ t('clubs.createIntro') }}</p>
+      <CreateClubForm @created="onClubCreated" />
     </BottomSheet>
   </section>
 </template>

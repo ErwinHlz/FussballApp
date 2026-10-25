@@ -1,22 +1,28 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import DateBlock from '@/ui/DateBlock.vue'
 import UiBadge from '@/ui/UiBadge.vue'
 import UiEmptyState from '@/ui/UiEmptyState.vue'
 import UiIcon from '@/ui/UiIcon.vue'
-import UiListRow from '@/ui/UiListRow.vue'
 import UiSkeleton from '@/ui/UiSkeleton.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useEventFormat } from '@/features/events/format'
 import TrainingNav from '../components/TrainingNav.vue'
 import { useUpcomingTrainings } from '../composables/usePlan'
 
-/** Training tab start: the next sessions with their plan state; library and more above. */
+/** Training tab start for coaches: the next sessions with their plan state. */
 const { t } = useI18n()
 const fmt = useEventFormat()
 const { activeTeam, isCoach } = useActiveTeam()
 const trainings = useUpcomingTrainings(() => activeTeam.value?.team_id ?? null)
+
+// Players find their trainings under "Termine"; the training tab is the drills for them.
+const router = useRouter()
+watchEffect(() => {
+  if (activeTeam.value && !isCoach.value) void router.replace({ name: 'drills' })
+})
 
 const list = computed(() =>
   (trainings.data.value ?? []).map((e) => ({ ...e, drillCount: e.event_drills[0]?.count ?? 0 })),
@@ -80,16 +86,6 @@ const list = computed(() =>
         :text="t('training.emptyHint')"
       />
     </section>
-
-    <UiListRow
-      v-if="activeTeam"
-      :title="t('schedule.title')"
-      :subtitle="t('schedule.openHint')"
-      :to="{ name: 'events-schedule' }"
-      chevron
-    >
-      <template #leading><UiIcon name="calendar" :size="24" /></template>
-    </UiListRow>
   </section>
 </template>
 

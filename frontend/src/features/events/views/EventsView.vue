@@ -244,7 +244,12 @@ function scrollToFirstUnanswered() {
       />
     </Transition>
 
-    <DeclineSheet :request="declining" @decline="decline" @cancel="declining = null" />
+    <DeclineSheet
+      :request="declining"
+      offer-absence
+      @decline="decline"
+      @cancel="declining = null"
+    />
 
     <BottomSheet v-model:open="filterOpen" :title="t('events.filter.label')">
       <div class="events__filters">

@@ -156,16 +156,16 @@ Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
 **Abnahme:** Vom Start aus erreicht der Trainer die nächste offene Aufgabe mit 1 Tipp.
 
 ### X5 – Navigation entrümpeln
-- [ ] C3: Training-Tab für Spieler = Übungen (ohne Bereichsleiste); für Trainer bleibt
+- [x] C3: Training-Tab für Spieler = Übungen (ohne Bereichsleiste); für Trainer bleibt
       Trainings · Übungen · Taktik · Vorlagen
-- [ ] B6: Kürzere Reiternamen („Taktik“) und Ausblend-Verlauf am Rand, wenn wischbar
-- [ ] C4: Belegungsplan-Karte im Training-Tab entfernen; Spieler sehen den Plan nur lesend ohne
+- [x] B6: Kürzere Reiternamen („Taktik“) und Ausblend-Verlauf am Rand, wenn wischbar
+- [x] C4: Belegungsplan-Karte im Training-Tab entfernen; Spieler sehen den Plan nur lesend ohne
       „reservieren“-Text
-- [ ] C5: Reiter „Mannschaften“ entfällt; Kopf-Umschalter bekommt „Mannschaften verwalten“;
+- [x] C5: Reiter „Mannschaften“ entfällt; Kopf-Umschalter bekommt „Mannschaften verwalten“;
       „Verein anlegen“ klein im Profil
-- [ ] C6: „Abwesenheit eintragen“ auch auf Start (unter dem nächsten Termin, klein) und im
+- [x] C6: „Abwesenheit eintragen“ auch auf Start (unter dem nächsten Termin, klein) und im
       Absage-Sheet („Länger weg? Abwesenheit eintragen“)
-- [ ] Browser-Tests der Navigation anpassen
+- [x] Browser-Tests der Navigation anpassen
 
 **Abnahme:** Usability-Aufgabe S6 (Urlaub eintragen) in ≤ 3 Tipps ohne Scrollen vom Start aus.
 
@@ -287,3 +287,22 @@ Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
 - Tests: Unit-Tests für `coachTasks`/`unassignedYes`; Browser-Tests `e2e/coach-tasks.spec.ts`
   (jede Aufgabe mit einem Tipp erreichbar, Trainer ohne Erinnerung und „Alle zusagen“).
   Nachher-Bilder: `docs/ui/ux-review/x4-after/`.
+
+### X5
+- C3: Der Tab „Training“ führt Spieler zu `drills` (die Seite `/training` leitet sie dorthin um).
+  `TrainingNav` erscheint nur für Trainer, dann mit vier Reitern; Spieler sehen die Überschrift
+  „Übungen“.
+- B6: „Taktiktafel“ heißt in der Leiste „Taktik“. Passen die Reiter nicht in die Breite, blendet
+  `AreaNav` den rechten Rand aus, bis man zum Ende gewischt hat.
+- C4: Die Belegungsplan-Karte im Training-Tab ist weg. Wer nicht buchen darf, liest im Plan
+  „Hier siehst du, wann welche Mannschaft … trainiert oder spielt“ statt des Reservieren-Hinweises.
+- C5: `TeamNav` hat nur noch Kader · Statistik. „Meine Mannschaften“ (`/teams`) erreicht man über
+  den Umschalter („Mannschaften verwalten“) und hat eine sichtbare Überschrift. „Weiteren Verein
+  anlegen“ steht klein im Profil unter „Meine Vereine“, der Hinweis „Du verwaltest bereits einen
+  Verein“ ebenfalls. Der erste Start ohne Mannschaft ist unverändert.
+- C6: `AbsenceSheet` (absences/components) für alle eigenen Kader-Einträge. Erreichbar über
+  „Abwesend?“ neben „Ablauf und Details“ auf Start, über „Länger weg? Abwesenheit eintragen“
+  im Absage-Fenster (`offer-absence`, nicht wenn der Trainer für andere antwortet) und im Profil.
+- Tests: `e2e/navigation.spec.ts` (4), angepasst `boards.spec.ts` (Reiter „Taktik“) und
+  `branding.spec.ts` (Ein-Verein-Hinweis im Profil; Prettier hat die Datei dabei auch formatiert).
+  Nachher-Bilder: `docs/ui/ux-review/x5-after/`.

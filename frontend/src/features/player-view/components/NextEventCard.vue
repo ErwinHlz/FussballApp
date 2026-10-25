@@ -25,7 +25,7 @@ const props = defineProps<{
   isCoach: boolean
   playerIds: string[]
 }>()
-const emit = defineEmits<{ answer: [AttendanceStatus] }>()
+const emit = defineEmits<{ answer: [AttendanceStatus]; absence: [] }>()
 
 const { t } = useI18n()
 const fmt = useEventFormat()
@@ -135,10 +135,16 @@ const counts = computed(() => {
       {{ t('player.countOpen', { n: counts.none }) }}
     </p>
 
-    <RouterLink :to="{ name: 'event', params: { eventId: event.id } }" class="next__more">
-      {{ event.type === 'training' ? t('player.flowAndDetails') : t('player.allDetails') }}
-      <UiIcon name="arrowRight" :size="18" />
-    </RouterLink>
+    <div class="next__links">
+      <RouterLink :to="{ name: 'event', params: { eventId: event.id } }" class="next__more">
+        {{ event.type === 'training' ? t('player.flowAndDetails') : t('player.allDetails') }}
+        <UiIcon name="arrowRight" :size="18" />
+      </RouterLink>
+      <!-- Holidays and the like: one absence instead of declining date by date. -->
+      <button v-if="myMember" type="button" class="next__away" @click="emit('absence')">
+        {{ t('player.away') }}
+      </button>
+    </div>
   </ChalkCard>
 </template>
 
@@ -226,6 +232,27 @@ const counts = computed(() => {
   }
 
   &__hint,
+  &__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-2;
+  }
+
+  &__away {
+    @include focus-visible;
+
+    min-height: $touch-target;
+    padding: 0 $space-2;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
   &__own {
     display: flex;
     align-items: center;

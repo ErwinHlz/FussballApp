@@ -86,7 +86,10 @@ test('the logo gives the club color; every account can pick its own', async ({ b
     'true',
   )
   // The stored logo is compressed, so its colors may shift slightly: take the first one.
-  await accent.getByRole('button', { name: /^Farbe aus dem Vereinslogo / }).first().click()
+  await accent
+    .getByRole('button', { name: /^Farbe aus dem Vereinslogo / })
+    .first()
+    .click()
   await expect(player.getByText('Akzentfarbe gespeichert')).toBeVisible()
   await expect.poll(() => primary(player)).not.toBe(dark)
   const blue = await primary(player)
@@ -105,7 +108,8 @@ test('the logo gives the club color; every account can pick its own', async ({ b
 
 test('an account manages only one club', async ({ page }) => {
   const demo = await seedDemo()
-  await login(page, demo.coach.email, '/teams')
+  // Founding a club lives in the profile (UX-PLAN X5).
+  await login(page, demo.coach.email, '/profile')
   await expect(page.getByText('Du verwaltest bereits einen Verein.')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Weiteren Verein anlegen' })).toHaveCount(0)
   // The database refuses it, too.

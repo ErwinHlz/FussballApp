@@ -40,7 +40,7 @@ test('coach builds an animated board by drag and drop and attaches it to a drill
   await login(page, demo.coach.email, '/training')
   await page
     .getByRole('navigation', { name: 'Bereiche im Training' })
-    .getByRole('link', { name: 'Taktiktafel' })
+    .getByRole('link', { name: 'Taktik' })
     .click()
   await page.getByLabel('Name').fill('Ecke kurz')
   await page.getByRole('button', { name: 'Neue Tafel' }).click()

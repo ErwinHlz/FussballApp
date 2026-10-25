@@ -239,7 +239,8 @@
       "bench": "Bank",
       "reserve": "Reserve"
     },
-    "navLabel": "Bereiche bei Termine"
+    "navLabel": "Bereiche bei Termine",
+    "declineLonger": "Länger weg? Abwesenheit eintragen"
   },
   "training": {
     "title": "Training",
@@ -254,7 +255,7 @@
       "label": "Bereiche im Training",
       "sessions": "Trainings",
       "drills": "Übungen",
-      "boards": "Taktiktafel",
+      "boards": "Taktik",
       "templates": "Vorlagen"
     }
   },
@@ -724,7 +725,8 @@
     "noEventThatDay": "An diesem Tag ist kein Termin.",
     "waiting": "Wartet auf deine Antwort",
     "allEvents": "Alle Termine",
-    "ownAnswer": "Deine Antwort"
+    "ownAnswer": "Deine Antwort",
+    "away": "Abwesend?"
   },
   "board": {
     "title": "Taktiktafel",
@@ -1052,7 +1054,8 @@
       "confirm": "Eintragen",
       "done": "Im Belegungsplan eingetragen. | {n} Trainings im Belegungsplan eingetragen.",
       "doneSkipped": "{n} Trainings eingetragen, {skipped} waren schon belegt."
-    }
+    },
+    "calendarHintView": "Hier siehst du, wann welche Mannschaft auf welchem Platz trainiert oder spielt."
   },
   "branding": {
     "title": "Vereinslogo",
@@ -1172,7 +1175,7 @@
       "title": "Mannschaft wechseln",
       "open": "Mannschaft wechseln",
       "manageClub": "Verein verwalten: {name}",
-      "all": "Alle Mannschaften und Vereine"
+      "all": "Mannschaften verwalten"
     },
     "theme": {
       "label": "Darstellung",

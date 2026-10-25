@@ -572,7 +572,9 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
         <UiIcon name="alert" :size="18" />
         {{ t('schedule.conflictHint') }}
       </p>
-      <p class="schedule__hint">{{ t('schedule.calendarHint') }}</p>
+      <p class="schedule__hint">
+        {{ bookableTeams.length ? t('schedule.calendarHint') : t('schedule.calendarHintView') }}
+      </p>
     </template>
 
     <BookingSheet

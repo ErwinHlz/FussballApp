@@ -22,6 +22,7 @@ import {
   type AttendanceStatus,
   type TeamEvent,
 } from '@/features/events/logic'
+import AbsenceSheet from '@/features/absences/components/AbsenceSheet.vue'
 import CoachTasks from '../components/CoachTasks.vue'
 import NextEventCard from '../components/NextEventCard.vue'
 import { nextEvent, stripDays } from '../logic'
@@ -72,6 +73,7 @@ const dayEvents = computed(() =>
 )
 
 const { answer, decline, declining } = useAnswer()
+const absenceOpen = ref(false)
 function onAnswer(event: TeamEvent, status: AttendanceStatus) {
   if (!memberId.value) return
   const previous = event.attendances.find((a) => a.member_id === memberId.value) ?? null
@@ -137,6 +139,7 @@ async function confirmAttendAll() {
         :is-coach="isCoach"
         :player-ids="playerIds"
         @answer="onAnswer(next, $event)"
+        @absence="absenceOpen = true"
       />
       <UiEmptyState
         v-else
@@ -179,7 +182,13 @@ async function confirmAttendAll() {
       </UiButton>
     </template>
 
-    <DeclineSheet :request="declining" @decline="decline" @cancel="declining = null" />
+    <DeclineSheet
+      :request="declining"
+      offer-absence
+      @decline="decline"
+      @cancel="declining = null"
+    />
+    <AbsenceSheet v-model:open="absenceOpen" />
 
     <BottomSheet v-model:open="attendOpen" :title="t('events.attendAll.title')">
       <p>{{ t('events.attendAll.text', candidates.length) }}</p>

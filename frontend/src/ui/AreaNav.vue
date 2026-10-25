@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useElementSize, useScroll } from '@vueuse/core'
 import type { RouteLocationRaw } from 'vue-router'
 
 export type Area = { key: string; to: RouteLocationRaw; label: string }
@@ -22,11 +23,23 @@ defineProps<{
 const HEIGHT = '49px'
 onMounted(() => document.documentElement.style.setProperty('--area-nav-height', HEIGHT))
 onUnmounted(() => document.documentElement.style.removeProperty('--area-nav-height'))
+
+// More areas than fit: the right edge fades out until the end is reached (hint to swipe).
+const track = ref<HTMLElement | null>(null)
+const { width } = useElementSize(track)
+const { arrivedState } = useScroll(track)
+const more = computed(
+  () => !!track.value && track.value.scrollWidth > width.value + 1 && !arrivedState.right,
+)
 </script>
 
 <template>
-  <nav class="area-nav" :class="{ 'area-nav--fill': fill }" :aria-label="label">
-    <div class="area-nav__track">
+  <nav
+    class="area-nav"
+    :class="{ 'area-nav--fill': fill, 'area-nav--more': more }"
+    :aria-label="label"
+  >
+    <div ref="track" class="area-nav__track">
       <RouterLink
         v-for="area in areas"
         :key="area.key"
@@ -115,6 +128,10 @@ onUnmounted(() => document.documentElement.style.removeProperty('--area-nav-heig
         transform: scaleX(1);
       }
     }
+  }
+
+  &--more &__track {
+    mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
   }
 
   &--fill &__link {
