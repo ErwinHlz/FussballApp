@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import UiAvatar from '@/ui/UiAvatar.vue'
+import ActionBar from '@/ui/ActionBar.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import { useSnackbar } from '@/ui/useSnackbar'
@@ -81,9 +82,7 @@ async function submit() {
 </script>
 
 <template>
-  <section class="squad-editor" aria-labelledby="squad-editor-title">
-    <h2 id="squad-editor-title">{{ t('events.nomination.title') }}</h2>
-
+  <section class="squad-editor">
     <div class="squad-editor__counts">
       <span
         v-for="role in SQUAD_ROLES"
@@ -104,7 +103,7 @@ async function submit() {
       <p class="squad-editor__muted">{{ t('events.nomination.tapHint') }}</p>
       <ul class="squad-editor__list" role="list">
         <li v-for="{ member, status } in candidates" :key="member.id" class="squad-editor__row">
-          <UiAvatar :name="member.display_name" :number="member.shirt_number" :size="36" />
+          <UiAvatar :name="member.display_name" :number="member.shirt_number" :size="32" />
           <span class="squad-editor__name">
             {{ member.display_name }}
             <span v-if="status === 'maybe'" class="squad-editor__muted">
@@ -140,15 +139,18 @@ async function submit() {
           {{ unavailable.map((c) => c.member.display_name).join(', ') }}
         </span>
       </p>
-      <UiButton
-        block
-        :variant="dirty ? 'primary' : 'secondary'"
-        :disabled="!dirty"
-        :loading="save.isPending.value"
-        @click="submit"
-      >
-        {{ dirty ? t('events.nomination.save') : `✓ ${t('events.nomination.saved')}` }}
-      </UiButton>
+      <!-- Saving stays in reach below a long list. -->
+      <ActionBar :label="t('events.nomination.title')">
+        <UiButton
+          block
+          :variant="dirty ? 'primary' : 'secondary'"
+          :disabled="!dirty"
+          :loading="save.isPending.value"
+          @click="submit"
+        >
+          {{ dirty ? t('events.nomination.save') : `✓ ${t('events.nomination.saved')}` }}
+        </UiButton>
+      </ActionBar>
     </template>
   </section>
 </template>
@@ -219,8 +221,8 @@ async function submit() {
     display: flex;
     align-items: center;
     gap: $space-3;
-    min-height: 56px;
-    padding: $space-2 $space-2 $space-2 $space-3;
+    min-height: 52px;
+    padding: 4px $space-1 4px $space-2;
     border-radius: $radius-lg;
     background: var(--color-surface);
   }

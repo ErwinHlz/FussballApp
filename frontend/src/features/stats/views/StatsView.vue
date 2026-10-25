@@ -76,7 +76,8 @@ function reasonsText(reasons: unknown) {
 <template>
   <section class="stats">
     <TeamNav active="stats" />
-    <h1>{{ t('stats.title') }}</h1>
+    <!-- The area tab above names the page already: the heading is for screen readers. -->
+    <h1 class="visually-hidden">{{ t('stats.title') }}</h1>
 
     <!-- The period scopes everything below. -->
     <UiSegmented v-model="range" as="radio" :label="t('stats.range')" :options="rangeOptions" />

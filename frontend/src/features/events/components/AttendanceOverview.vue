@@ -18,8 +18,9 @@ import {
 import DeclineSheet from './DeclineSheet.vue'
 
 /**
- * "Who is coming?" for coaches: big counts, then everyone by answer. Tapping a person
- * lets the coach answer for them (players without account, phone calls, late changes).
+ * "Who is coming?" for coaches: big counts, then everyone by answer as compact chips (shirt
+ * number and name). Tapping a person lets the coach answer for them (players without account,
+ * phone calls, late changes).
  */
 const props = defineProps<{ event: TeamEvent; members: TeamMember[] }>()
 
@@ -104,7 +105,7 @@ function onAnswer(status: AttendanceStatus) {
               <UiAvatar
                 :name="entry.member.display_name"
                 :number="entry.member.shirt_number"
-                :size="36"
+                :size="32"
               />
               <span class="overview__text">
                 <span class="overview__name">
@@ -197,31 +198,32 @@ function onAnswer(status: AttendanceStatus) {
   &__group {
     display: flex;
     flex-direction: column;
-    gap: $space-2;
+    gap: $space-1;
   }
 
   &__group-title {
     font-size: $font-md;
   }
 
+  // Chips that wrap: a squad of 16 fits on a few lines instead of 16 full rows.
   &__list {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    flex-wrap: wrap;
+    gap: 6px;
     margin: 0;
   }
 
   &__person {
     @include focus-visible;
 
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: $space-3;
-    width: 100%;
-    min-height: 52px;
-    padding: $space-2 $space-3;
-    border: 0;
-    border-radius: $radius-lg;
+    gap: $space-2;
+    max-width: 100%;
+    min-height: $touch-target;
+    padding: 4px $space-3 4px 4px;
+    border: 2px solid var(--color-border);
+    border-radius: $radius-full;
     background: var(--color-surface);
     color: var(--color-text);
     text-align: left;
@@ -235,6 +237,7 @@ function onAnswer(status: AttendanceStatus) {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    line-height: 1.15;
   }
 
   &__name {

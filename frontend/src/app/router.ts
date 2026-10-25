@@ -126,6 +126,14 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/groups/views/GroupsView.vue'),
       },
       {
+        // The match squad switches with the match overview via EventCoachNav.
+        path: 'events/:eventId/squad',
+        name: 'event-squad',
+        props: true,
+        meta: { title: 'events.nomination.title', back: 'event' },
+        component: () => import('@/features/events/views/MatchSquadView.vue'),
+      },
+      {
         path: 'events/:eventId/edit',
         name: 'event-edit',
         props: true,

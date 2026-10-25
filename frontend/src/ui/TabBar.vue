@@ -4,12 +4,15 @@ import UiIcon, { type UiIconName } from './UiIcon.vue'
 
 export type Tab = { key: string; to: RouteLocationRaw; icon: UiIconName; label: string }
 
-/** Floating bottom navigation; the active tab sits on an accent pill. */
-defineProps<{ tabs: Tab[]; active: string | null; label: string }>()
+/**
+ * Floating bottom navigation; the active tab sits on an accent pill. `hidden` slides it out
+ * of view (while scrolling down); keyboard focus brings it back.
+ */
+defineProps<{ tabs: Tab[]; active: string | null; label: string; hidden?: boolean }>()
 </script>
 
 <template>
-  <nav class="tab-bar" :aria-label="label">
+  <nav class="tab-bar" :class="{ 'tab-bar--hidden': hidden }" :aria-label="label">
     <ul class="tab-bar__list" role="list">
       <li v-for="tab in tabs" :key="tab.key">
         <RouterLink
@@ -37,6 +40,24 @@ defineProps<{ tabs: Tab[]; active: string | null; label: string }>()
   border-radius: 26px;
   background: var(--color-nav);
   box-shadow: var(--shadow-float);
+  transition:
+    transform var(--duration-medium) var(--ease-out),
+    opacity var(--duration-medium) var(--ease-out);
+
+  &--hidden:not(:focus-within) {
+    transform: translateY(calc(100% + #{$space-3} + env(safe-area-inset-bottom, 0px)));
+    pointer-events: none;
+  }
+
+  // Without motion: fade instead of sliding.
+  @media (prefers-reduced-motion: reduce) {
+    transition: opacity var(--duration-medium) linear;
+
+    &--hidden:not(:focus-within) {
+      transform: none;
+      opacity: 0;
+    }
+  }
 
   &__list {
     display: grid;

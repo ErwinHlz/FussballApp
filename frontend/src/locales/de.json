@@ -93,6 +93,7 @@
     "nomination": {
       "title": "Spieltagskader",
       "counts": "Startelf {starter} · Bank {bench} · Reserve {reserve}",
+      "coachOnly": "Nur Trainer können den Spieltagskader nominieren.",
       "noCandidates": "Noch keine Zusagen.",
       "save": "Kader speichern",
       "saved": "Kader gespeichert",
@@ -207,7 +208,9 @@
       "label": "Bereiche des Trainings",
       "overview": "Übersicht",
       "plan": "Plan",
-      "groups": "Gruppen"
+      "groups": "Gruppen",
+      "squad": "Kader",
+      "matchLabel": "Bereiche des Spiels"
     },
     "quick": {
       "duration": "Dauer",
@@ -1143,6 +1146,11 @@
     },
     "answer": {
       "question": "Bist du dabei?",
+      "done": {
+        "yes": "Du bist dabei",
+        "maybe": "Du bist vielleicht dabei",
+        "no": "Du hast abgesagt"
+      },
       "yes": "Ich bin dabei",
       "yesDone": "Du bist dabei",
       "maybe": "Vielleicht",

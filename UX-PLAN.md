@@ -134,13 +134,13 @@ Heimspiel ohne Platz und ein Auswärtsspiel erscheinen nicht. Ein Training läss
 Zeit eines Heimspiels auf demselben Platz buchen.
 
 ### X3 – Platz auf Detailseiten
-- [ ] B1: Tab-Leiste blendet sich beim Runterscrollen aus (nicht bei `prefers-reduced-motion`
+- [x] B1: Tab-Leiste blendet sich beim Runterscrollen aus (nicht bei `prefers-reduced-motion`
       ruckartig, Fokus/Tastatur holt sie zurück); Antwortleiste nach einer Antwort schmal
-- [ ] B2: Spiel-Detail für Trainer mit Reitern **Übersicht · Kader** (wie Übersicht · Plan · Gruppen
+- [x] B2: Spiel-Detail für Trainer mit Reitern **Übersicht · Kader** (wie Übersicht · Plan · Gruppen
       beim Training); „Spieltagskader“ nur einmal
-- [ ] B3: „Wer kommt?“ kompakt: Zähler bleiben, Namen als Trikotnummer-Chips je Status, Antippen
+- [x] B3: „Wer kommt?“ kompakt: Zähler bleiben, Namen als Trikotnummer-Chips je Status, Antippen
       öffnet wie bisher die Antwort für Spieler ohne Konto
-- [ ] B9: Bei Seiten mit Bereichsleiste ist die H1 nur für Screenreader sichtbar (bleibt für
+- [x] B9: Bei Seiten mit Bereichsleiste ist die H1 nur für Screenreader sichtbar (bleibt für
       Fokus und Seitentitel)
 
 **Abnahme:** Termin-Detail: ≥ 60 % des Bildschirms zeigen Inhalt. Spiel-Detail (Trainer) ≤ 2
@@ -244,3 +244,25 @@ Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
 - Tests: pgTAP `match_pitch.test.sql` (12), Unit-Tests (Woche, Buchbarkeit, Zeitachse, Spiele,
   Überschneidung), Browser-Tests `e2e/schedule-matches.spec.ts` (3). Nachher-Bilder:
   `docs/ui/ux-review/x2-after/`.
+
+### X3
+- B1: Die Tab-Leiste gleitet beim Runterscrollen weg (ab 80 px, Schwelle 8 px) und kommt beim
+  Hochscrollen, oben, bei jedem Seitenwechsel und bei Tastaturfokus (`:focus-within`) zurück; mit
+  `prefers-reduced-motion` blendet sie nur aus. `--nav-offset` folgt, damit Aktionsleisten und
+  Snackbar nachrutschen. Der Platzhalter unter `ActionBar` ist jetzt so hoch wie die Leiste
+  (vorher fest 96 px).
+- Antwortleiste: Öffnet man einen Termin mit schon gegebener Antwort, zeigt sie nur den Status
+  („Du bist dabei“) und die drei kleinen Antwortknöpfe. Ändern bleibt ein Tipp, statt
+  „Ändern“ + Antwort. Antwortet man auf der Seite, bleibt die volle Leiste stehen (nichts springt).
+- B2: Neue Seite `MatchSquadView` (`/events/:id/squad`, `event-squad`), `EventCoachNav` mit
+  `type="match"` (Übersicht · Kader). Speichern in fester Leiste; in der Übersicht steht der
+  Kader für Trainer nicht mehr (Spieler sehen ihre Nominierung wie bisher).
+- B3: „Wer kommt?“ als umbrechende Chips (Nummer, Name, ggf. Grund); Antippen wie bisher. Die
+  Kachel „Zusagen x von y“ entfällt für Trainer (steht in „Wer kommt?“).
+- B9: Auf neun Bereichsseiten ist die H1 nur für Screenreader da (Fokus nach Seitenwechsel
+  bleibt), die Kopf-Knöpfe stehen rechts.
+- Gemessen (375 × 740, Testdaten): Termin-Detail eines Spielers 72 % Inhalt oben, 82 %
+  gescrollt (vorher ≈ 55 %); Spiel für Trainer: Übersicht 2,00, Kader 2,00 Bildschirmhöhen
+  (vorher 4,6 auf einer Seite) – knapp an der Grenze, mit mehr als 16 Spielern darüber.
+- Tests angepasst: `ux-fixes.spec.ts` (Nominierung auf dem Reiter Kader). Nachher-Bilder:
+  `docs/ui/ux-review/x3-after/`.

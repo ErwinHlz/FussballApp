@@ -26,7 +26,8 @@ const list = computed(() =>
 <template>
   <section class="training">
     <TrainingNav active="training" />
-    <h1>{{ t('training.title') }}</h1>
+    <!-- The area tab above names the page already: the heading is for screen readers. -->
+    <h1 class="visually-hidden">{{ t('training.title') }}</h1>
 
     <section class="training__section" aria-labelledby="training-upcoming">
       <h2 id="training-upcoming">{{ t('training.upcoming') }}</h2>

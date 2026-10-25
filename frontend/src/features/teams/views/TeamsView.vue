@@ -66,7 +66,8 @@ async function onClubCreated(club: Club) {
   <section class="teams">
     <!-- Without a team (first start) squad and statistics make no sense yet. -->
     <TeamNav v-if="groups.length" active="teams" />
-    <h1>{{ t('teams.title') }}</h1>
+    <!-- The area tab above names the page already: the heading is for screen readers. -->
+    <h1 class="visually-hidden">{{ t('teams.title') }}</h1>
 
     <p v-if="isLoading" class="teams__muted">{{ t('common.loading') }}</p>
     <p v-else-if="isError" class="teams__error" role="alert">{{ t('teams.loadFailed') }}</p>

@@ -79,18 +79,37 @@ const activeTab = computed(() => {
 // Without any team (first start) every tab would lead back to the team setup: no tab bar.
 const hasNoTeam = computed(() => myTeams.isSuccess.value && myTeams.data.value?.length === 0)
 const showNav = computed(() => !hasNoTeam.value)
-// Fixed elements (snackbar, action bars, floating buttons) keep clear of the tab bar.
-watchEffect(() => {
-  const root = document.documentElement.style
-  if (showNav.value)
-    root.setProperty('--nav-offset', `calc(76px + env(safe-area-inset-bottom, 0px))`)
-  else root.removeProperty('--nav-offset')
-})
-onUnmounted(() => document.documentElement.style.removeProperty('--nav-offset'))
 
 // The header gets smaller once the page scrolls.
 const { y } = useWindowScroll()
 const compact = computed(() => y.value > 12)
+
+// The tab bar slides away while scrolling down (room for the content) and comes back when
+// scrolling up, near the top, on a new page or when it gets keyboard focus (TabBar).
+const NAV_THRESHOLD = 8
+const navHidden = ref(false)
+let lastY = 0
+watch(y, (now) => {
+  const delta = now - lastY
+  if (now < 80) navHidden.value = false
+  else if (delta > NAV_THRESHOLD) navHidden.value = true
+  else if (delta < -NAV_THRESHOLD) navHidden.value = false
+  if (Math.abs(delta) > NAV_THRESHOLD || now < 80) lastY = now
+})
+watch(
+  () => route.path,
+  () => (navHidden.value = false),
+)
+
+// Fixed elements (snackbar, action bars, floating buttons) keep clear of the tab bar.
+watchEffect(() => {
+  const root = document.documentElement.style
+  if (showNav.value && !navHidden.value)
+    root.setProperty('--nav-offset', `calc(76px + env(safe-area-inset-bottom, 0px))`)
+  else if (showNav.value) root.setProperty('--nav-offset', 'env(safe-area-inset-bottom, 0px)')
+  else root.removeProperty('--nav-offset')
+})
+onUnmounted(() => document.documentElement.style.removeProperty('--nav-offset'))
 
 const switcherOpen = ref(false)
 const displayName = computed(() => profile.data.value?.display_name ?? '')
@@ -180,7 +199,14 @@ watchEffect(() => {
       <RouterView />
     </main>
 
-    <TabBar v-if="showNav" :tabs="tabs" :active="activeTab" :label="t('nav.label')" />
+    <TabBar
+      v-if="showNav"
+      :tabs="tabs"
+      :active="activeTab"
+      :label="t('nav.label')"
+      :hidden="navHidden"
+      @focusin="navHidden = false"
+    />
     <TeamSwitcherSheet v-model:open="switcherOpen" />
     <SnackbarHost />
   </div>

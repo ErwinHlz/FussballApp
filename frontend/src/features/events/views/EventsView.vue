@@ -132,7 +132,8 @@ function scrollToFirstUnanswered() {
     <EventsNav active="events" />
 
     <header class="events__head">
-      <h1>{{ t('events.title') }}</h1>
+      <!-- The area tab above names the page already: the heading is for screen readers. -->
+      <h1 class="visually-hidden">{{ t('events.title') }}</h1>
       <UiIconButton
         icon="filter"
         :label="
@@ -306,6 +307,7 @@ function scrollToFirstUnanswered() {
   &__head {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: $space-2;
 
     h1 {

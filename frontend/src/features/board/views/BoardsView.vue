@@ -55,7 +55,8 @@ async function onCreate() {
   <section class="boards">
     <TrainingNav active="tactic-boards" />
     <header>
-      <h1>{{ t('boards.title') }}</h1>
+      <!-- The area tab above names the page already: the heading is for screen readers. -->
+      <h1 class="visually-hidden">{{ t('boards.title') }}</h1>
       <p class="boards__muted">{{ t('boards.intro') }}</p>
     </header>
 

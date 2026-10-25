@@ -69,7 +69,8 @@ function positionsLabel(member: TeamMember) {
     <TeamNav active="squad" />
 
     <header class="squad__head">
-      <h1>{{ t('squad.title') }}</h1>
+      <!-- The area tab above names the page already: the heading is for screen readers. -->
+      <h1 class="visually-hidden">{{ t('squad.title') }}</h1>
       <template v-if="isCoach && activeTeam">
         <UiIconButton
           icon="link"
@@ -244,6 +245,7 @@ function positionsLabel(member: TeamMember) {
   &__head {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: $space-2;
 
     h1 {

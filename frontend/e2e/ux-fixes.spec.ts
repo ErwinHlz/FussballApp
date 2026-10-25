@@ -37,6 +37,9 @@ test('match: the coach gets no player nomination sentence and sees unavailable n
   await page.goto(`/events/${demo.match.id}`)
   await expect(page.getByRole('heading', { name: 'vs. FC Nachbarort' })).toBeVisible()
   await expect(page.getByText('Du bist für dieses Spiel nicht nominiert.')).toHaveCount(0)
+  // The squad is its own view next to the overview (X3).
+  await page.getByRole('link', { name: 'Kader' }).click()
+  await expect(page.getByRole('heading', { name: 'Spieltagskader', level: 1 })).toBeVisible()
   await expect(page.getByText('1 Nominierter hat abgesagt oder nicht geantwortet:')).toBeVisible()
   await expect(page.getByText('(Absage)')).toBeVisible()
 })

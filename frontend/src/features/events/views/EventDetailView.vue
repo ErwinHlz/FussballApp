@@ -23,7 +23,6 @@ import AttachToSchedule from '@/features/schedule/components/AttachToSchedule.vu
 import AttendanceOverview from '../components/AttendanceOverview.vue'
 import DeclineSheet from '../components/DeclineSheet.vue'
 import EventCoachNav from '../components/EventCoachNav.vue'
-import MatchSquadEditor from '../components/MatchSquadEditor.vue'
 import { useAnswer } from '../composables/useAnswer'
 import { useDeleteWithUndo } from '../composables/useDeleteWithUndo'
 import { useEvent, useMyMember, useUpdateEvent } from '../composables/useEvents'
@@ -122,8 +121,20 @@ const prefilledInjured = computed(
     !myAttendance.value.updated_by,
 )
 
+// Opened with an answer given: a slim line (status and three small answer buttons) leaves
+// room for the content. Answering here keeps the full bar for this visit (nothing jumps under
+// the finger).
+const answerOpen = ref(false)
+const answerSlim = computed(() => !!myAttendance.value && !answerOpen.value)
+const answeredIcon: Record<AttendanceStatus, 'check' | 'maybe' | 'x'> = {
+  yes: 'check',
+  maybe: 'maybe',
+  no: 'x',
+}
+
 const { answer, decline, declining } = useAnswer()
 function onAnswer(status: AttendanceStatus) {
+  answerOpen.value = true
   if (!e.value || !myMember.value) return
   const label = `${fmt.title(e.value)} · ${fmt.weekdayShort(e.value.starts_at)} ${fmt.dayMonth(e.value.starts_at)}`
   answer(e.value, myMember.value.id, myAttendance.value, status, label)
@@ -200,7 +211,12 @@ async function remove() {
     />
 
     <template v-else>
-      <EventCoachNav v-if="isCoach && e.type === 'training'" :event-id="e.id" active="event" />
+      <EventCoachNav
+        v-if="isCoach && (e.type === 'training' || e.type === 'match')"
+        :event-id="e.id"
+        :type="e.type"
+        active="event"
+      />
 
       <header class="detail__head">
         <OverflowMenu
@@ -309,7 +325,8 @@ async function remove() {
           <dt>{{ t('events.form.deadline') }}</dt>
           <dd>{{ fmt.weekdayShort(e.response_deadline) }} {{ fmt.time(e.response_deadline) }}</dd>
         </div>
-        <div v-if="players.length && !e.is_cancelled" class="detail__fact">
+        <!-- Coaches see the counts in "Who is coming?" right below. -->
+        <div v-if="players.length && !e.is_cancelled && !isCoach" class="detail__fact">
           <dt>{{ t('events.overview.yes') }}</dt>
           <dd>{{ t('events.ofPlayers', { n: yesCount, total: players.length }) }}</dd>
         </div>
@@ -339,9 +356,9 @@ async function remove() {
         <p v-else class="detail__muted">{{ t('player.planNotYet') }}</p>
       </template>
 
-      <!-- Nomination (visible to everyone) -->
+      <!-- Nomination for players; coaches have the squad as its own view (EventCoachNav). -->
       <section
-        v-if="e.type === 'match' && (myNomination || squadByRole.length)"
+        v-if="e.type === 'match' && !isCoach && (myNomination || squadByRole.length)"
         class="detail__squad"
         aria-labelledby="squad-title"
       >
@@ -362,16 +379,27 @@ async function remove() {
       <!-- Coach -->
       <template v-if="isCoach && members.data.value">
         <AttendanceOverview :event="e" :members="members.data.value" />
-        <MatchSquadEditor
-          v-if="e.type === 'match' && !e.is_cancelled"
-          :event="e"
-          :members="members.data.value"
-        />
       </template>
 
       <!-- My answer: always in reach at the bottom. -->
       <ActionBar v-if="myMember && !e.is_cancelled" :label="t('ui.answer.question')">
-        <div class="detail__answer">
+        <div v-if="answerSlim && myAttendance" class="detail__answered">
+          <span
+            class="detail__answered-status"
+            :class="`detail__answered-status--${myAttendance.status}`"
+          >
+            <UiIcon :name="answeredIcon[myAttendance.status]" :size="22" :stroke-width="2.6" />
+            {{ t(`ui.answer.done.${myAttendance.status}`) }}
+          </span>
+          <AnswerControl
+            v-if="canAnswer"
+            variant="compact"
+            :status="myAttendance.status"
+            @answer="onAnswer"
+          />
+          <p v-else-if="lockedHint" class="detail__hint">{{ lockedHint }}</p>
+        </div>
+        <div v-else class="detail__answer">
           <AnswerControl
             variant="bar"
             :status="myAttendance?.status ?? null"
@@ -581,6 +609,27 @@ async function remove() {
     flex: 1;
     flex-direction: column;
     gap: $space-1;
+  }
+
+  &__answered {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-3;
+  }
+
+  &__answered-status {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2;
+    font-weight: 800;
+
+    @each $answer in yes, maybe, no {
+      &--#{$answer} {
+        color: var(--color-#{$answer}-text);
+      }
+    }
   }
 }
 </style>

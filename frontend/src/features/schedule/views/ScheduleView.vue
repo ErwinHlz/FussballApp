@@ -335,7 +335,8 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
     <EventsNav active="events-schedule" />
 
     <header class="schedule__head">
-      <h1>{{ t('schedule.title') }}</h1>
+      <!-- The area tab above names the page already: the heading is for screen readers. -->
+      <h1 class="visually-hidden">{{ t('schedule.title') }}</h1>
       <RouterLink
         v-if="isAdmin && clubId"
         class="schedule__setup"
@@ -603,7 +604,7 @@ $gutter: 40px;
   &__head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: $space-2;
   }
 

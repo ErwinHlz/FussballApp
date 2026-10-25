@@ -31,7 +31,8 @@ onUnmounted(() => document.documentElement.style.removeProperty('--action-bar-he
 
 <style scoped lang="scss">
 .action-bar-spacer {
-  height: 96px;
+  // As high as the bar (measured below); the page keeps its own room for the tab bar.
+  height: var(--action-bar-height, 96px);
 }
 
 .action-bar {
@@ -51,9 +52,14 @@ onUnmounted(() => document.documentElement.style.removeProperty('--action-bar-he
     padding: $space-3 $space-4;
   }
 
-  // Room for the tab bar (or the home indicator when there is none).
+  // Room for the tab bar (or the home indicator when there is none or it is hidden).
   &__under-nav {
     height: var(--nav-offset, env(safe-area-inset-bottom, 0px));
+    transition: height var(--duration-medium) var(--ease-out);
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
   }
 }
 </style>

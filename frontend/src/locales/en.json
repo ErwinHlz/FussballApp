@@ -93,6 +93,7 @@
     "nomination": {
       "title": "Match squad",
       "counts": "Starting {starter} · Bench {bench} · Reserve {reserve}",
+      "coachOnly": "Only coaches can pick the match squad.",
       "noCandidates": "Nobody has said yes yet.",
       "save": "Save squad",
       "saved": "Squad saved",
@@ -207,7 +208,9 @@
       "label": "Training views",
       "overview": "Overview",
       "plan": "Plan",
-      "groups": "Groups"
+      "groups": "Groups",
+      "squad": "Squad",
+      "matchLabel": "Match views"
     },
     "quick": {
       "duration": "Length",
@@ -1143,6 +1146,7 @@
     },
     "answer": {
       "question": "Are you in?",
+      "done": { "yes": "You're in", "maybe": "You might come", "no": "You declined" },
       "yes": "I'm in",
       "yesDone": "You're in",
       "maybe": "Maybe",

@@ -115,7 +115,8 @@ const filterOpen = ref(false)
     <TrainingNav active="drills" />
 
     <header class="drills__head">
-      <h1>{{ t('drills.title') }}</h1>
+      <!-- The area tab above names the page already: the heading is for screen readers. -->
+      <h1 class="visually-hidden">{{ t('drills.title') }}</h1>
       <UiIconButton
         v-if="isCoach"
         icon="plus"
@@ -246,7 +247,7 @@ const filterOpen = ref(false)
   &__head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: $space-2;
   }
 
