@@ -61,9 +61,11 @@ export default defineConfig<BrowserOptions>({
     ...phone,
   },
   projects: [
-    { name: 'phone', testIgnore: [/screens\.spec\.ts/, crossBrowser] },
+    { name: 'phone', testIgnore: [/screens\.spec\.ts/, /ux-tour\.spec\.ts/, crossBrowser] },
     // Screenshot tour for visual review: `npm run test:screens`.
     { name: 'screens', testMatch: /screens\.spec\.ts/ },
+    // UX tour with report (UX-PLAN.md, X7): `npm run test:tour`.
+    { name: 'tour', testMatch: /ux-tour\.spec\.ts/ },
 
     // Cross-browser UI and accessibility suite.
     { name: 'chromium', testMatch: crossBrowser, use: { browserName: 'chromium' } },

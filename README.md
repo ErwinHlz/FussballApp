@@ -77,6 +77,7 @@ enthalten.
 | `npm run test`      | Vitest (einmalig), `test:watch` für Watch-Modus |
 | `npm run test:e2e`  | Browser-Tests (Playwright, Handy-Ansicht 375 px) |
 | `npm run test:screens` | Screenshots aller Hauptseiten nach `e2e/__screens__/` |
+| `npm run test:tour` | UX-Tour: alle Seiten je Rolle, hell und dunkel, mit Bericht nach `e2e/__tour__/` |
 | `npm run test:browsers` | UI- und Barrierefreiheitstests in Chromium, Firefox und Opera |
 | `npm run lighthouse` | Lighthouse (mobil) für Start, Termine und Termin-Detail |
 | `npm run seed:dev` | Lokale Testdaten mit Testkonten neu anlegen |
@@ -94,6 +95,14 @@ enthalten.
   Opera ist Chromium-basiert und wird über die installierte `opera.exe` gestartet: Sie wird
   automatisch gesucht, sonst `OPERA_PATH` auf die Datei setzen. Ohne Opera werden diese Tests
   übersprungen.
+- **UX-Tour:** `npm run test:tour` (Backend muss laufen, die Tour legt sich ihren Demo-Verein
+  selbst an). Sie besucht alle Hauptseiten als Spieler und als Trainer, hell und dunkel, bei
+  375 × 740 px, und schreibt Screenshots sowie `report.md`/`report.json` nach
+  `frontend/e2e/__tour__/` (nicht versioniert): Seitenhöhe in Bildschirmhöhen, Bedienelemente
+  unter dem Falz, Touch-Ziele unter 44 px. Rot wird sie bei seitlichem Scrollen oder
+  Konsolenfehlern. Ein zweiter Test stellt die Uhr auf einen Sonntag (`page.clock`) und prüft
+  Wochenleiste und Belegungsplan. Die Tipp-Budgets der Kernaufgaben aus
+  `docs/ui/usability-test.md` stehen in `e2e/tap-budget.spec.ts` und laufen mit `test:e2e`.
 - **Lighthouse:** `npm run build`, dann `npx vite preview --port 4173 --strictPort` und in einem
   zweiten Terminal `npm run lighthouse`. Berichte landen in `frontend/lighthouse/`.
 - **Design-System:** alle Bausteine aus `src/ui/` hell und dunkel auf http://localhost:5173/dev/ui

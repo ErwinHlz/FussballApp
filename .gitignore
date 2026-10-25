@@ -12,6 +12,7 @@ coverage/
 
 # Playwright
 e2e/__screens__/
+frontend/e2e/__tour__/
 test-results/
 playwright-report/
 

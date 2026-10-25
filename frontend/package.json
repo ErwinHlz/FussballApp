@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test --project=phone",
     "test:screens": "playwright test --project=screens",
+    "test:tour": "playwright test --project=tour",
     "test:browsers": "playwright test --project=chromium --project=firefox --project=opera",
     "lighthouse": "node --experimental-strip-types scripts/lighthouse.mjs",
     "seed:dev": "node --experimental-strip-types scripts/seed-dev.mjs"

@@ -180,12 +180,12 @@ Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
 **Abnahme:** Vereinsseite ≤ 2 Bildschirmhöhen bis „Admins“. Übungen: ≥ 5 Einträge pro Bildschirm.
 
 ### X7 – UX-Tour als dauerhafte Prüfung
-- [ ] Die Tour aus dieser Durchsicht als `e2e/ux-tour.spec.ts` (`npm run test:tour`): alle Seiten
+- [x] Die Tour aus dieser Durchsicht als `e2e/ux-tour.spec.ts` (`npm run test:tour`): alle Seiten
       je Rolle, Screenshots hell/dunkel nach `e2e/__tour__/`, Bericht mit Seitenhöhe,
       Bedienelementen unter dem Falz und Touch-Zielen < 44 px
-- [ ] Feste Datumsangabe per `page.clock`, damit Wochenend-Fälle (A1, X2) reproduzierbar sind
-- [ ] Tipp-Zähler-Tests für die Kernaufgaben aus `docs/ui/usability-test.md` (S1–S6 und Trainer)
-- [ ] README-Abschnitt
+- [x] Feste Datumsangabe per `page.clock`, damit Wochenend-Fälle (A1, X2) reproduzierbar sind
+- [x] Tipp-Zähler-Tests für die Kernaufgaben aus `docs/ui/usability-test.md` (S1–S6 und Trainer)
+- [x] README-Abschnitt
 
 **Abnahme:** `npm run test:tour` läuft ohne Supabase-Seed-Handarbeit und erzeugt den Bericht.
 
@@ -328,3 +328,26 @@ Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
 - Tests: `e2e/club-lists.spec.ts` (4), angepasst `branding.spec.ts` (Logo erst aufklappen) und
   `SquadView.spec.ts` (Filter im Fenster, Spieler nur Positionen). Nachher-Bilder:
   `docs/ui/ux-review/x6-after/`.
+
+### X7
+- `e2e/ux-tour.spec.ts`, Projekt `tour` (`npm run test:tour`): Die Tour legt sich ihren
+  Demo-Verein selbst an (`seedDemo`). Sie besucht 11 Seiten als Spieler und 20 als Trainer
+  (zugleich Vereins-Admin), hell und dunkel, und schreibt Screenshots plus
+  `report.md`/`report.json` nach `frontend/e2e/__tour__/` (in `.gitignore`). Rot wird sie bei
+  seitlichem Scrollen und Konsolenfehlern; Touch-Ziele < 44 px werden nur berichtet. Derzeit sind
+  das ausschließlich Textlinks im Fließtext (Ort → Karte, Übungen im Plan), die WCAG ausnimmt.
+- Wochenend-Test mit `page.clock.setFixedTime` auf den letzten Sonntag 10:00. Absichtlich in
+  der Vergangenheit: Die Anmelde-Tokens bleiben gültig, und die relativ zu „jetzt“ angelegten
+  Termine liegen in der Zukunft.
+- `e2e/tap-budget.spec.ts`: Tipp-Budgets für S1–S5 und T1–T4, T6 aus
+  `docs/ui/usability-test.md` (S6 steht in `navigation.spec.ts`, T5 in `core.spec.ts`). Läuft
+  mit `test:e2e`.
+- Mitgefunden und behoben: Der Login-Helfer der Browser-Tests (`e2e/support/app.ts`) hielt
+  `/login?redirect=%2F` schon für „angekommen“ (der Ausdruck `/` passt überall). Ein direkt
+  folgendes `goto` brach die Anmeldung ab. Er wartet jetzt, bis die Login-Seite verlassen ist.
+- Hinweis: Der `.gitignore`-Eintrag `e2e/__screens__/` greift nicht für
+  `frontend/e2e/__screens__/` (Pfad relativ zum Hauptordner). Darum sind diese Screenshots
+  versioniert und erscheinen nach `test:e2e` als geändert. Nicht geändert, weil die Bilder
+  absichtlich im Repo liegen könnten.
+- Erste Tour-Werte (Demo-Verein): Das Profil ist mit ≈ 3 Bildschirmhöhen die längste Seite
+  (Spieler 3,02, Trainer 3,08). Kandidat für eine nächste Runde.
