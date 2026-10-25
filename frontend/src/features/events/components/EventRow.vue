@@ -9,7 +9,10 @@ import type { TeamMember } from '@/features/teams/api'
 import { useEventFormat } from '../format'
 import { canRespond, responseState, type AttendanceStatus, type TeamEvent } from '../logic'
 
-/** One event in a list: date block and title link to the detail, the answer right below. */
+/**
+ * One event in a list: date block and title link to the detail, below the own answer (players)
+ * or the team's counts (coaches).
+ */
 const props = defineProps<{
   event: TeamEvent
   myMember: TeamMember | null
@@ -90,7 +93,8 @@ const nominated = computed(
     </RouterLink>
 
     <div v-if="!event.is_cancelled && (myMember || isCoach)" class="event-row__foot">
-      <template v-if="myMember">
+      <!-- Coaches see the team's counts; they answer for themselves on the event page. -->
+      <template v-if="myMember && !isCoach">
         <AnswerControl
           variant="compact"
           :status="myAttendance?.status ?? null"

@@ -147,10 +147,10 @@ Zeit eines Heimspiels auf demselben Platz buchen.
 Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
 
 ### X4 – Trainer-Start mit Aufgaben
-- [ ] C1: Karte „Zu erledigen“ für Trainer auf Start: Training in < 3 Tagen ohne veröffentlichten
+- [x] C1: Karte „Zu erledigen“ für Trainer auf Start: Training in < 3 Tagen ohne veröffentlichten
       Plan, Spiel ohne Kader, Zusagen nicht in Gruppen, Termine mit vielen fehlenden Antworten –
       jede Zeile führt direkt an die Stelle
-- [ ] C2: Trainer-Antwort als Nebenaktion (siehe Annahmen); „noch nicht beantwortet“ und
+- [x] C2: Trainer-Antwort als Nebenaktion (siehe Annahmen); „noch nicht beantwortet“ und
       „Alle zusagen“ zählen für Trainer nicht
 
 **Abnahme:** Vom Start aus erreicht der Trainer die nächste offene Aufgabe mit 1 Tipp.
@@ -266,3 +266,24 @@ Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
   (vorher 4,6 auf einer Seite) – knapp an der Grenze, mit mehr als 16 Spielern darüber.
 - Tests angepasst: `ux-fixes.spec.ts` (Nominierung auf dem Reiter Kader). Nachher-Bilder:
   `docs/ui/ux-review/x3-after/`.
+
+### X4
+- C1: `CoachTasks` steht beim Trainer ganz oben auf Start. Die Aufgaben kommen aus `coachTasks()`
+  (player-view/logic):
+  - Plan nicht veröffentlicht (Training in < 3 Tagen) → Plan
+  - Kader fehlt (Spiel in < 7 Tagen) → Reiter Kader
+  - ≥ 3 Spieler ohne Antwort (in < 7 Tagen, solange die Anmeldung offen ist) → Übersicht
+  - Zusagen ohne Gruppe (`unassignedYes()`, nur das nächste veröffentlichte Training, eine
+    Abfrage) → Gruppen
+
+  Ohne Aufgaben steht dort „Alles erledigt für die nächsten Tage“.
+- C2: Trainer antworten weiter, aber nebenbei:
+  - Start: „Deine Antwort“ mit drei kleinen Knöpfen, die Zahlen der Mannschaft stehen darunter.
+  - Termin-Detail: immer die schmale Leiste.
+  - Terminliste: nur noch die Zahlen der Mannschaft, keine eigenen Antwortknöpfe.
+  - „Wartet auf deine Antwort“, der Hinweis „noch nicht beantwortet“ und „Alle zusagen“
+    entfallen für Trainer.
+  - Push-Erinnerungen gingen schon vorher nur an Spieler.
+- Tests: Unit-Tests für `coachTasks`/`unassignedYes`; Browser-Tests `e2e/coach-tasks.spec.ts`
+  (jede Aufgabe mit einem Tipp erreichbar, Trainer ohne Erinnerung und „Alle zusagen“).
+  Nachher-Bilder: `docs/ui/ux-review/x4-after/`.

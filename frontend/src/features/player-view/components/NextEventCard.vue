@@ -109,7 +109,17 @@ const counts = computed(() => {
 
     <MyBibs v-if="showBibs" :event-id="event.id" :member-id="myMember?.id ?? null" />
 
-    <template v-if="myMember">
+    <!-- Coaches answer on the side: the team's counts come first. -->
+    <div v-if="myMember && isCoach" class="next__own">
+      <span class="next__own-label">{{ t('player.ownAnswer') }}</span>
+      <AnswerControl
+        variant="compact"
+        :status="myAttendance?.status ?? null"
+        :disabled="!canAnswer"
+        @answer="emit('answer', $event)"
+      />
+    </div>
+    <template v-else-if="myMember">
       <AnswerControl
         :status="myAttendance?.status ?? null"
         :disabled="!canAnswer"
@@ -216,6 +226,19 @@ const counts = computed(() => {
   }
 
   &__hint,
+  &__own {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-3;
+  }
+
+  &__own-label {
+    color: var(--color-text-muted);
+    font-size: $font-sm;
+    font-weight: 700;
+  }
+
   &__counts {
     color: var(--color-text-muted);
     font-size: $font-sm;

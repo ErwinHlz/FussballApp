@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import type { TeamEvent } from '@/features/events/logic'
 import type { DrillGroups } from '@/features/groups/api'
-import { myGroupsByDrill, nextEvent, relativeDay, stripDays } from '../logic'
+import {
+  coachTasks,
+  myGroupsByDrill,
+  nextEvent,
+  relativeDay,
+  stripDays,
+  unassignedYes,
+} from '../logic'
 
 const local = (d: number, h = 19) => new Date(2030, 0, d, h, 0)
 
@@ -100,5 +107,76 @@ describe('stripDays', () => {
       '2026-11-05',
       '2026-11-06',
     ])
+  })
+})
+
+describe('coachTasks', () => {
+  // Saturday 10 January 2030, noon.
+  const now = local(10, 12)
+  const players = ['p1', 'p2', 'p3', 'p4']
+  const yes = (id: string) => ({ member_id: id, status: 'yes' }) as TeamEvent['attendances'][number]
+
+  it('lists the plan of a training soon, a match without squad and missing answers', () => {
+    const tasks = coachTasks(
+      [
+        event('match', local(14), { type: 'match', match_squad: [] }),
+        event('training', local(11), { type: 'training', plan_status: 'draft' }),
+        event('later', local(20), { type: 'training', plan_status: 'draft' }),
+        event('done', local(12, 19), {
+          type: 'training',
+          plan_status: 'published',
+          attendances: players.map(yes),
+        }),
+      ],
+      players,
+      now,
+    )
+    expect(tasks.map((t) => `${t.kind}:${t.event.id}`)).toEqual([
+      'plan:training',
+      'answers:training',
+      'squad:match',
+      'answers:match',
+    ])
+    expect(tasks.find((t) => t.kind === 'answers')).toMatchObject({ count: 4 })
+  })
+
+  it('skips cancelled events, picked squads and events past the deadline', () => {
+    const tasks = coachTasks(
+      [
+        event('cancelled', local(11), {
+          type: 'training',
+          plan_status: 'draft',
+          is_cancelled: true,
+        }),
+        event('picked', local(13), {
+          type: 'match',
+          match_squad: [{ member_id: 'p1' }] as TeamEvent['match_squad'],
+          response_deadline: local(10, 11).toISOString(),
+        }),
+      ],
+      players,
+      now,
+    )
+    expect(tasks).toEqual([])
+  })
+})
+
+describe('unassignedYes', () => {
+  it('finds players who said yes but miss in a drill with groups', () => {
+    const drills = [
+      { id: 'd1', position: 1, drill: { id: 'x', title: 'Warm-up' }, groups: [] },
+      {
+        id: 'd2',
+        position: 2,
+        drill: { id: 'y', title: 'Rondo' },
+        groups: [{ id: 'g', name: 'Rot', color: 'red', created_at: '', member_ids: ['p1'] }],
+      },
+    ] as DrillGroups[]
+    const attendances = [
+      { member_id: 'p1', status: 'yes' },
+      { member_id: 'p2', status: 'yes' },
+      { member_id: 'p3', status: 'maybe' },
+    ] as TeamEvent['attendances']
+    expect(unassignedYes(drills, attendances)).toEqual(['p2'])
   })
 })

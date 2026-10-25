@@ -22,6 +22,7 @@ import {
   type AttendanceStatus,
   type TeamEvent,
 } from '@/features/events/logic'
+import CoachTasks from '../components/CoachTasks.vue'
 import NextEventCard from '../components/NextEventCard.vue'
 import { nextEvent, stripDays } from '../logic'
 
@@ -45,8 +46,11 @@ const seenWaiting = ref(new Set<string>())
 watchEffect(() => {
   for (const e of unansweredEvents(upcoming.value, memberId.value)) seenWaiting.value.add(e.id)
 })
+// Coaches answer on the side; their start page is about the team (CoachTasks).
 const waiting = computed(() =>
-  upcoming.value.filter((e) => seenWaiting.value.has(e.id) && e.id !== next.value?.id),
+  isCoach.value
+    ? []
+    : upcoming.value.filter((e) => seenWaiting.value.has(e.id) && e.id !== next.value?.id),
 )
 
 // The next seven days from today, with a mark per event type.
@@ -125,6 +129,7 @@ async function confirmAttendAll() {
     </p>
 
     <template v-else>
+      <CoachTasks v-if="isCoach" :events="upcoming" :player-ids="playerIds" />
       <NextEventCard
         v-if="next"
         :event="next"

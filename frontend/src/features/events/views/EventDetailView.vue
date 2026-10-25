@@ -125,7 +125,7 @@ const prefilledInjured = computed(
 // room for the content. Answering here keeps the full bar for this visit (nothing jumps under
 // the finger).
 const answerOpen = ref(false)
-const answerSlim = computed(() => !!myAttendance.value && !answerOpen.value)
+const answerSlim = computed(() => (!!myAttendance.value && !answerOpen.value) || isCoach.value)
 const answeredIcon: Record<AttendanceStatus, 'check' | 'maybe' | 'x'> = {
   yes: 'check',
   maybe: 'maybe',
@@ -383,18 +383,20 @@ async function remove() {
 
       <!-- My answer: always in reach at the bottom. -->
       <ActionBar v-if="myMember && !e.is_cancelled" :label="t('ui.answer.question')">
-        <div v-if="answerSlim && myAttendance" class="detail__answered">
+        <div v-if="answerSlim" class="detail__answered">
           <span
+            v-if="myAttendance"
             class="detail__answered-status"
             :class="`detail__answered-status--${myAttendance.status}`"
           >
             <UiIcon :name="answeredIcon[myAttendance.status]" :size="22" :stroke-width="2.6" />
             {{ t(`ui.answer.done.${myAttendance.status}`) }}
           </span>
+          <span v-else class="detail__hint">{{ t('player.ownAnswer') }}</span>
           <AnswerControl
             v-if="canAnswer"
             variant="compact"
-            :status="myAttendance.status"
+            :status="myAttendance?.status ?? null"
             @answer="onAnswer"
           />
           <p v-else-if="lockedHint" class="detail__hint">{{ lockedHint }}</p>

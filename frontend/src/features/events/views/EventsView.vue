@@ -157,7 +157,8 @@ function scrollToFirstUnanswered() {
       />
     </header>
 
-    <div v-if="memberId" class="events__tools">
+    <!-- Players only: coaches answer on the side and are not reminded. -->
+    <div v-if="memberId && !isCoach" class="events__tools">
       <button
         v-if="unanswered.length"
         type="button"

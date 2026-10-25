@@ -723,7 +723,8 @@
     "dayEvents": "Termine an diesem Tag",
     "noEventThatDay": "An diesem Tag ist kein Termin.",
     "waiting": "Wartet auf deine Antwort",
-    "allEvents": "Alle Termine"
+    "allEvents": "Alle Termine",
+    "ownAnswer": "Deine Antwort"
   },
   "board": {
     "title": "Taktiktafel",
@@ -1205,5 +1206,13 @@
     "toBoards": "Zu den Tafeln",
     "toTemplates": "Zu den Vorlagen",
     "toTeams": "Zu meinen Mannschaften"
+  },
+  "coachTasks": {
+    "title": "Zu erledigen",
+    "plan": "Plan veröffentlichen",
+    "squad": "Kader nominieren",
+    "answers": "{n} Antwort fehlt | {n} Antworten fehlen",
+    "groups": "{n} Zusage ohne Gruppe | {n} Zusagen ohne Gruppe",
+    "allDone": "Alles erledigt für die nächsten Tage"
   }
 }

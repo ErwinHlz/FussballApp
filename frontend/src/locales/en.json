@@ -723,7 +723,8 @@
     "dayEvents": "Events on this day",
     "noEventThatDay": "No event on this day.",
     "waiting": "Waiting for your answer",
-    "allEvents": "All events"
+    "allEvents": "All events",
+    "ownAnswer": "Your answer"
   },
   "board": {
     "title": "Tactics board",
@@ -1201,5 +1202,13 @@
     "toBoards": "To the boards",
     "toTemplates": "To the templates",
     "toTeams": "To my teams"
+  },
+  "coachTasks": {
+    "title": "To do",
+    "plan": "Publish the plan",
+    "squad": "Pick the squad",
+    "answers": "{n} answer missing | {n} answers missing",
+    "groups": "{n} player without a group | {n} players without a group",
+    "allDone": "All done for the coming days"
   }
 }
