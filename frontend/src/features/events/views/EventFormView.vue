@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { addDays, addMonths, differenceInHours, format } from 'date-fns'
+import ActionBar from '@/ui/ActionBar.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiCard from '@/ui/UiCard.vue'
 import UiChipGroup from '@/ui/UiChipGroup.vue'
@@ -562,20 +563,23 @@ const onSubmit = handleSubmit(async (raw) => {
         {{ t('events.form.saveFailed') }}
       </p>
 
-      <div class="event-form__actions">
-        <UiButton variant="secondary" @click="router.back()">{{ t('common.cancel') }}</UiButton>
-        <UiButton
-          type="submit"
-          :loading="isSaving"
-          :disabled="kind === 'series' && seriesCount === 0"
-        >
-          {{
-            kind === 'series' && !isEdit
-              ? t('events.form.createSeries', seriesCount)
-              : t('common.save')
-          }}
-        </UiButton>
-      </div>
+      <!-- Saving stays in reach on long forms (as in the drill form). -->
+      <ActionBar :label="title">
+        <div class="event-form__actions">
+          <UiButton variant="secondary" @click="router.back()">{{ t('common.cancel') }}</UiButton>
+          <UiButton
+            type="submit"
+            :loading="isSaving"
+            :disabled="kind === 'series' && seriesCount === 0"
+          >
+            {{
+              kind === 'series' && !isEdit
+                ? t('events.form.createSeries', seriesCount)
+                : t('common.save')
+            }}
+          </UiButton>
+        </div>
+      </ActionBar>
     </form>
   </section>
 </template>
@@ -606,6 +610,7 @@ const onSubmit = handleSubmit(async (raw) => {
 
   &__actions {
     display: grid;
+    flex: 1;
     grid-template-columns: 1fr 2fr;
     gap: $space-2;
   }

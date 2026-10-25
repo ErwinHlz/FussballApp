@@ -39,6 +39,34 @@ const players = computed(() => all.value.filter((m) => m.role === 'player'))
 const visiblePlayers = computed(() => filterSquad(players.value, filter))
 const isFiltered = computed(() => filter.status !== 'all' || filter.position !== 'all')
 
+// Filters behind one button (as in the drills); active ones as removable pills. Players
+// filter by position only (the status is the coach's business).
+const filterOpen = ref(false)
+const pills = computed(() => [
+  ...(filter.status !== 'all'
+    ? [
+        {
+          key: 'status',
+          label: t(`squad.status.${filter.status}`),
+          clear: () => (filter.status = 'all'),
+        },
+      ]
+    : []),
+  ...(filter.position !== 'all'
+    ? [
+        {
+          key: 'position',
+          label: t(`squad.positionsShort.${filter.position}`),
+          clear: () => (filter.position = 'all'),
+        },
+      ]
+    : []),
+])
+function resetFilter() {
+  filter.status = 'all'
+  filter.position = 'all'
+}
+
 const statusOptions = computed(() => [
   { value: 'all' as const, label: t('squad.filterAll') },
   ...MEMBER_STATUSES.map((s) => ({ value: s, label: t(`squad.status.${s}`) })),
@@ -135,35 +163,82 @@ function positionsLabel(member: TeamMember) {
       </section>
 
       <section class="squad__group" aria-labelledby="squad-players">
-        <h2 id="squad-players" class="squad__subtitle">
-          {{ t('squad.players') }}
-          <span class="squad__count">
-            {{ isFiltered ? `${visiblePlayers.length}/` : '' }}{{ players.length }}
-          </span>
-        </h2>
-
-        <div v-if="players.length" class="squad__filters">
-          <div class="squad__chips" role="group" :aria-label="t('squad.statusLabel')">
-            <UiChip
-              v-for="option in statusOptions"
-              :key="option.value"
-              :model-value="filter.status === option.value"
-              @update:model-value="filter.status = option.value"
-            >
-              {{ option.label }}
-            </UiChip>
-          </div>
-          <div class="squad__chips" role="group" :aria-label="t('squad.positionsLabel')">
-            <UiChip
-              v-for="option in positionOptions"
-              :key="option.value"
-              :model-value="filter.position === option.value"
-              @update:model-value="filter.position = option.value"
-            >
-              {{ option.label }}
-            </UiChip>
-          </div>
+        <div class="squad__group-head">
+          <h2 id="squad-players" class="squad__subtitle">
+            {{ t('squad.players') }}
+            <span class="squad__count">
+              {{ isFiltered ? `${visiblePlayers.length}/` : '' }}{{ players.length }}
+            </span>
+          </h2>
+          <UiIconButton
+            v-if="players.length"
+            icon="filter"
+            :label="
+              pills.length
+                ? t('squad.filter.labelActive', { n: pills.length })
+                : t('squad.filter.label')
+            "
+            aria-haspopup="dialog"
+            @click="filterOpen = true"
+          />
         </div>
+        <div v-if="pills.length" class="squad__pills">
+          <button
+            v-for="pill in pills"
+            :key="pill.key"
+            type="button"
+            class="squad__pill"
+            :aria-label="t('squad.filter.remove', { name: pill.label })"
+            @click="pill.clear"
+          >
+            {{ pill.label }}
+            <UiIcon name="x" :size="16" />
+          </button>
+        </div>
+
+        <BottomSheet v-model:open="filterOpen" :title="t('squad.filter.title')">
+          <div class="squad__filters">
+            <p v-if="isCoach" id="squad-filter-status" class="squad__filter-label">
+              {{ t('squad.statusLabel') }}
+            </p>
+            <div
+              v-if="isCoach"
+              class="squad__chips"
+              role="group"
+              aria-labelledby="squad-filter-status"
+            >
+              <UiChip
+                v-for="option in statusOptions"
+                :key="option.value"
+                :model-value="filter.status === option.value"
+                @update:model-value="filter.status = option.value"
+              >
+                {{ option.label }}
+              </UiChip>
+            </div>
+            <p id="squad-filter-position" class="squad__filter-label">
+              {{ t('squad.positionsLabel') }}
+            </p>
+            <div class="squad__chips" role="group" aria-labelledby="squad-filter-position">
+              <UiChip
+                v-for="option in positionOptions"
+                :key="option.value"
+                :model-value="filter.position === option.value"
+                @update:model-value="filter.position = option.value"
+              >
+                {{ option.label }}
+              </UiChip>
+            </div>
+          </div>
+          <template #footer>
+            <UiButton variant="secondary" :disabled="!isFiltered" @click="resetFilter">
+              {{ t('squad.filter.reset') }}
+            </UiButton>
+            <UiButton @click="filterOpen = false">
+              {{ t('squad.filter.show', { n: visiblePlayers.length }) }}
+            </UiButton>
+          </template>
+        </BottomSheet>
 
         <ul v-if="visiblePlayers.length" class="squad__list" role="list">
           <li v-for="member in visiblePlayers" :key="member.id">
@@ -276,13 +351,46 @@ function positionsLabel(member: TeamMember) {
     gap: $space-2;
   }
 
+  &__group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-2;
+  }
+
+  &__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+  }
+
+  &__pill {
+    @include focus-visible;
+
+    display: inline-flex;
+    align-items: center;
+    gap: $space-1;
+    min-height: 36px;
+    padding: 0 $space-2 0 $space-3;
+    border: 0;
+    border-radius: $radius-full;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-size: $font-sm;
+    font-weight: 800;
+  }
+
+  &__filter-label {
+    color: var(--color-text-muted);
+    font-size: $font-sm;
+    font-weight: 700;
+  }
+
+  // In the filter sheet: the chips wrap instead of scrolling sideways.
   &__chips {
     display: flex;
+    flex-wrap: wrap;
     gap: $space-2;
-    margin-inline: -$space-4;
-    padding-inline: $space-4;
-    overflow-x: auto;
-    scrollbar-width: none;
 
     > * {
       flex-shrink: 0;

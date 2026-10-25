@@ -40,6 +40,13 @@ const saved = useLocalStorage<Omit<DrillFilter, 'query'>>(
   { ...DEFAULT_DRILL_FILTER },
   { mergeDefaults: true },
 )
+// List (default: many drills per screen) or tiles; remembered per device.
+const view = useLocalStorage<'list' | 'tiles'>('rondo.drills.view', 'list')
+const viewOptions = computed(() => [
+  { value: 'list', label: t('drills.view.list') },
+  { value: 'tiles', label: t('drills.view.tiles') },
+])
+
 const query = ref('')
 const debouncedQuery = refDebounced(query, 150)
 const filterCount = computed(() => activeDrillFilters(saved.value))
@@ -114,17 +121,8 @@ const filterOpen = ref(false)
   <section class="drills">
     <TrainingNav active="drills" />
 
-    <header class="drills__head">
-      <!-- Coaches have the area tab above naming the page; players see the heading. -->
-      <h1 :class="{ 'visually-hidden': isCoach }">{{ t('drills.title') }}</h1>
-      <UiIconButton
-        v-if="isCoach"
-        icon="plus"
-        variant="primary"
-        :label="t('drills.new')"
-        :to="{ name: 'drill-new' }"
-      />
-    </header>
+    <!-- Coaches have the area tab above naming the page; players see the heading. -->
+    <h1 :class="{ 'visually-hidden': isCoach }">{{ t('drills.title') }}</h1>
 
     <div class="drills__filters">
       <div class="drills__search-row">
@@ -147,6 +145,14 @@ const filterOpen = ref(false)
           <UiIcon name="filter" :size="22" />
           <span v-if="filterCount" class="drills__badge" aria-hidden="true">{{ filterCount }}</span>
         </UiIconButton>
+        <!-- New drill next to search and filter: no row of its own. -->
+        <UiIconButton
+          v-if="isCoach"
+          icon="plus"
+          variant="primary"
+          :label="t('drills.new')"
+          :to="{ name: 'drill-new' }"
+        />
       </div>
       <div ref="tabsEl" class="drills__tabs" role="group" :aria-label="t('drills.category')">
         <button
@@ -184,29 +190,50 @@ const filterOpen = ref(false)
     </p>
 
     <template v-else>
-      <p class="drills__count" role="status">{{ t('drills.count', visible.length) }}</p>
-      <ul v-if="visible.length" class="drills__grid" role="list">
+      <div class="drills__count-row">
+        <p class="drills__count" role="status">{{ t('drills.count', visible.length) }}</p>
+        <UiSegmented
+          v-model="view"
+          as="radio"
+          :label="t('drills.view.label')"
+          :options="viewOptions"
+          class="drills__view"
+        />
+      </div>
+      <ul
+        v-if="visible.length"
+        :class="view === 'tiles' ? 'drills__grid' : 'drills__list'"
+        role="list"
+      >
         <li v-for="drill in visible" :key="drill.id">
-          <RouterLink :to="{ name: 'drill', params: { drillId: drill.id } }" class="drill-tile">
-            <DrillThumb :drill="drill" />
-            <span class="drill-tile__title">{{ drill.title }}</span>
-            <span class="drill-tile__meta">
-              {{ t(`drills.categories.${drill.category}`) }}
-              <template v-if="drill.duration_min">
-                · {{ t('drills.minutes', { n: drill.duration_min }) }}</template
-              >
-              <template v-if="playersLabel(drill)">
-                · {{ t('drills.players', { n: playersLabel(drill) }) }}</template
-              >
-            </span>
-            <span class="drill-tile__tags">
-              <span v-if="drill.team_id" class="drill-tile__tag">{{
-                t('drills.scope.teamShort')
-              }}</span>
-              <span v-if="drill.animation" class="drill-tile__tag">{{ t('board.animation') }}</span>
-              <span v-if="drill.video_url || drill.video_path" class="drill-tile__tag">{{
-                t('drills.hasVideo')
-              }}</span>
+          <RouterLink
+            :to="{ name: 'drill', params: { drillId: drill.id } }"
+            class="drill-tile"
+            :class="{ 'drill-tile--row': view === 'list' }"
+          >
+            <DrillThumb :drill="drill" :size="view === 'list' ? 'small' : 'tile'" />
+            <span class="drill-tile__text">
+              <span class="drill-tile__title">{{ drill.title }}</span>
+              <span class="drill-tile__meta">
+                {{ t(`drills.categories.${drill.category}`) }}
+                <template v-if="drill.duration_min">
+                  · {{ t('drills.minutes', { n: drill.duration_min }) }}</template
+                >
+                <template v-if="playersLabel(drill)">
+                  · {{ t('drills.players', { n: playersLabel(drill) }) }}</template
+                >
+              </span>
+              <span class="drill-tile__tags">
+                <span v-if="drill.team_id" class="drill-tile__tag">{{
+                  t('drills.scope.teamShort')
+                }}</span>
+                <span v-if="drill.animation" class="drill-tile__tag">{{
+                  t('board.animation')
+                }}</span>
+                <span v-if="drill.video_url || drill.video_path" class="drill-tile__tag">{{
+                  t('drills.hasVideo')
+                }}</span>
+              </span>
             </span>
           </RouterLink>
         </li>
@@ -243,13 +270,6 @@ const filterOpen = ref(false)
   display: flex;
   flex-direction: column;
   gap: $space-3;
-
-  &__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: $space-2;
-  }
 
   // Search and chips stay in reach while browsing the tiles.
   &__filters {
@@ -404,6 +424,25 @@ const filterOpen = ref(false)
     font-size: $font-sm;
   }
 
+  &__count-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-2;
+  }
+
+  &__view {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+    margin: 0;
+  }
+
   &__grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -433,10 +472,46 @@ const filterOpen = ref(false)
   color: var(--color-text);
   text-decoration: none;
 
+  &__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
   &__title {
     margin-top: $space-1;
     font-weight: 800;
     line-height: 1.2;
+  }
+
+  // List: small preview left, text right; about twice as many drills per screen.
+  &--row {
+    flex-direction: row;
+    align-items: center;
+    gap: $space-3;
+    height: auto;
+    padding: $space-2;
+  }
+
+  &--row &__title {
+    margin-top: 0;
+  }
+
+  &--row &__text {
+    flex-flow: row wrap;
+    align-items: baseline;
+    gap: 2px $space-2;
+  }
+
+  &--row &__title {
+    flex-basis: 100%;
+  }
+
+  &--row &__tags {
+    margin-top: 0;
+    padding-top: 0;
   }
 
   &__meta {

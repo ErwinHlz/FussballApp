@@ -308,6 +308,14 @@
     "errors": {
       "shirtNumberTaken": "This shirt number is already taken.",
       "unknown": "That did not work. Please try again."
+    },
+    "filter": {
+      "label": "Filter players",
+      "labelActive": "Filter players ({n} active)",
+      "title": "Filter players",
+      "reset": "Reset",
+      "show": "Show {n} players",
+      "remove": "Remove filter {name}"
     }
   },
   "profile": {
@@ -432,14 +440,17 @@
     "teamNamePlaceholder": "e.g. U17 or First team",
     "season": "Season (optional)",
     "seasonPlaceholder": "e.g. 2026/27",
-    "members": "Members and admins",
     "adminsHint": "Admins register teams and invite coaches. A club needs at least one admin.",
     "makeAdmin": "Make admin",
     "removeAdmin": "Remove admin",
     "roleChangeFailed": "Role could not be changed.",
     "oneClubHint": "You already manage a club. Each account can manage one club – you can still join teams of other clubs by invitation.",
     "alreadyAdmin": "You already manage a club. Each account can manage only one.",
-    "otherClubAdmin": "This person already manages another club and cannot become an admin here."
+    "otherClubAdmin": "This person already manages another club and cannot become an admin here.",
+    "admins": "Admins",
+    "appointAdmin": "Appoint admin",
+    "searchMember": "Search member",
+    "noMemberFound": "No member found."
   },
   "invites": {
     "createCoachLink": "Create coach link",
@@ -591,6 +602,11 @@
       "reset": "Reset",
       "resetAll": "Reset all filters",
       "show": "Show {n}"
+    },
+    "view": {
+      "label": "View",
+      "list": "List",
+      "tiles": "Tiles"
     }
   },
   "plan": {

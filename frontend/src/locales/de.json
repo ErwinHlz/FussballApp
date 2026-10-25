@@ -308,6 +308,14 @@
     "errors": {
       "shirtNumberTaken": "Diese Rückennummer ist schon vergeben.",
       "unknown": "Das hat nicht geklappt. Bitte versuche es erneut."
+    },
+    "filter": {
+      "label": "Spieler filtern",
+      "labelActive": "Spieler filtern ({n} aktiv)",
+      "title": "Spieler filtern",
+      "reset": "Zurücksetzen",
+      "show": "{n} Spieler anzeigen",
+      "remove": "Filter {name} entfernen"
     }
   },
   "profile": {
@@ -432,14 +440,17 @@
     "teamNamePlaceholder": "z. B. U17 oder Herren 1",
     "season": "Saison (optional)",
     "seasonPlaceholder": "z. B. 2026/27",
-    "members": "Mitglieder und Admins",
     "adminsHint": "Admins melden Mannschaften an und laden Trainer ein. Ein Verein braucht mindestens einen Admin.",
     "makeAdmin": "Zum Admin machen",
     "removeAdmin": "Admin entfernen",
     "roleChangeFailed": "Rolle konnte nicht geändert werden.",
     "oneClubHint": "Du verwaltest bereits einen Verein. Pro Konto kann man einen Verein verwalten – Mannschaften anderer Vereine kannst du per Einladung beitreten.",
     "alreadyAdmin": "Du verwaltest bereits einen Verein. Pro Konto ist nur ein Verein möglich.",
-    "otherClubAdmin": "Diese Person verwaltet schon einen anderen Verein und kann hier nicht Admin werden."
+    "otherClubAdmin": "Diese Person verwaltet schon einen anderen Verein und kann hier nicht Admin werden.",
+    "admins": "Admins",
+    "appointAdmin": "Admin ernennen",
+    "searchMember": "Mitglied suchen",
+    "noMemberFound": "Kein Mitglied gefunden."
   },
   "invites": {
     "createCoachLink": "Trainer-Link erstellen",
@@ -591,6 +602,11 @@
       "reset": "Zurücksetzen",
       "resetAll": "Alle Filter zurücksetzen",
       "show": "{n} anzeigen"
+    },
+    "view": {
+      "label": "Ansicht",
+      "list": "Liste",
+      "tiles": "Kacheln"
     }
   },
   "plan": {

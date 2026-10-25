@@ -52,6 +52,8 @@ test('the logo gives the club color; every account can pick its own', async ({ b
   // No color picker for the club any more.
   await expect(admin.getByRole('button', { name: /Farbe aus dem Logo/ })).toHaveCount(0)
 
+  // Logo and color are folded away on the club page (UX-PLAN X6).
+  await admin.getByText('Vereinslogo', { exact: true }).click()
   await admin.getByLabel('Logo hochladen').setInputFiles({
     name: 'logo.png',
     mimeType: 'image/png',

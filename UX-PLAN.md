@@ -170,12 +170,12 @@ Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
 **Abnahme:** Usability-Aufgabe S6 (Urlaub eintragen) in ≤ 3 Tipps ohne Scrollen vom Start aus.
 
 ### X6 – Verein und Listen
-- [ ] B4: Vereinsseite neu ordnen: Mannschaften (mit Trainer einladen) → Belegungsplan/Plätze →
+- [x] B4: Vereinsseite neu ordnen: Mannschaften (mit Trainer einladen) → Belegungsplan/Plätze →
       Admins (kurze Liste + „Admin ernennen“ mit Suche im Sheet) → Erscheinungsbild (Logo, eingeklappt)
-- [ ] B5: Übungen als kompakte Liste mit kleiner Vorschau; Kachelansicht nur, wenn es echte
+- [x] B5: Übungen als kompakte Liste mit kleiner Vorschau; Kachelansicht nur, wenn es echte
       Vorschauen gibt (oder Umschalter, pro Gerät gemerkt)
-- [ ] B7: Termin-Formulare mit fester Speichern-Leiste wie das Übungsformular
-- [ ] B8: Kader-Filter hinter einem Filter-Knopf wie bei Übungen; Spieler sehen nur Positionen
+- [x] B7: Termin-Formulare mit fester Speichern-Leiste wie das Übungsformular
+- [x] B8: Kader-Filter hinter einem Filter-Knopf wie bei Übungen; Spieler sehen nur Positionen
 
 **Abnahme:** Vereinsseite ≤ 2 Bildschirmhöhen bis „Admins“. Übungen: ≥ 5 Einträge pro Bildschirm.
 
@@ -306,3 +306,25 @@ Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
 - Tests: `e2e/navigation.spec.ts` (4), angepasst `boards.spec.ts` (Reiter „Taktik“) und
   `branding.spec.ts` (Ein-Verein-Hinweis im Profil; Prettier hat die Datei dabei auch formatiert).
   Nachher-Bilder: `docs/ui/ux-review/x5-after/`.
+
+### X6
+- B4: Die Vereinsseite ist neu geordnet:
+  1. Mannschaften als kompakte Karten mit „Trainer einladen“; „Mannschaft anmelden“ öffnet
+     ein Fenster.
+  2. Belegungsplan und Plätze & Zeiten als zwei Knöpfe untereinander.
+  3. Admins als kurze Liste. „Admin ernennen“ sucht im Fenster über die Mitglieder (statt
+     eines Knopfs pro Mitglied).
+  4. Vereinslogo eingeklappt (`<details>`).
+
+  Gemessen (375 × 740): bis „Admins“ 0,82 Bildschirmhöhen bei 2 Mannschaften, 1,34 bei 6
+  (vorher ≈ 5,5 Bildschirmhöhen Gesamtlänge).
+- B5: Übungen standardmäßig als Liste (kleine Vorschau, Marken in der Infozeile), Umschalter
+  Liste/Kacheln pro Gerät gemerkt (`rondo.drills.view`). „Neue Übung“ steht neben Suche und
+  Filter statt in einer eigenen Zeile. Gemessen: 5 Übungen vollständig pro Bildschirm (vorher 2).
+- B7: Das Termin-Formular hat Abbrechen/Speichern in der festen `ActionBar` (im `<form>`, damit
+  „Speichern“ weiter absendet).
+- B8: Kader-Filter hinter dem Knopf „Spieler filtern“ neben der Überschrift. Im Fenster stehen
+  Status (nur Trainer) und Positionen, aktive Filter erscheinen als entfernbare Marken.
+- Tests: `e2e/club-lists.spec.ts` (4), angepasst `branding.spec.ts` (Logo erst aufklappen) und
+  `SquadView.spec.ts` (Filter im Fenster, Spieler nur Positionen). Nachher-Bilder:
+  `docs/ui/ux-review/x6-after/`.
