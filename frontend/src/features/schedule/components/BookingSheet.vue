@@ -18,6 +18,7 @@ import {
   type Lane,
   type Pitch,
   type PitchPart,
+  type Occupancy,
   type SlotBooking,
 } from '../logic'
 
@@ -33,8 +34,8 @@ const props = defineProps<{
   start: string
   /** Lane that was tapped: preferred part. */
   lane: Lane
-  /** All bookings of the pitch on that date. */
-  day: SlotBooking[]
+  /** Everything that holds the pitch on that date: bookings and home matches. */
+  day: Occupancy[]
   /** Booking that was tapped (release), or null (book). */
   booking: SlotBooking | null
   /** Teams the user may book for (coach or club admin). */

@@ -17,7 +17,12 @@ import LocationField from '../components/LocationField.vue'
 import PitchPicker from '@/features/schedule/components/PitchPicker.vue'
 import { firstEventOfBooking, scheduleErrorHint } from '@/features/schedule/api'
 import { useBookPitch, usePitches } from '@/features/schedule/composables/useSchedule'
-import { bookingProblem, pitchFromLocation, type PitchChoice } from '@/features/schedule/logic'
+import {
+  bookingProblem,
+  pitchFromLocation,
+  placeLabel,
+  type PitchChoice,
+} from '@/features/schedule/logic'
 import {
   COMPETITIONS,
   DEADLINE_HOURS,
@@ -220,6 +225,16 @@ const canUsePitch = computed(
 )
 const pitchChoice = ref<PitchChoice>({ pitchId: null, part: 'full' })
 let pitchTouched = false
+// Editing a home match: its pitch.
+watch(
+  () => existing?.data.value,
+  (event) => {
+    if (!event?.pitch_id) return
+    pitchChoice.value = { pitchId: event.pitch_id, part: event.pitch_part ?? 'full' }
+    pitchTouched = true
+  },
+  { immediate: true },
+)
 function onPitchPicked() {
   pitchTouched = true
 }
@@ -236,6 +251,13 @@ watch(
   { immediate: true },
 )
 const onPitch = computed(() => canUsePitch.value && !!pitchChoice.value.pitchId)
+// A home match can name the club pitch it is played on: it then shows in the schedule there.
+const homeMatch = computed(() => kind.value === 'match' && venue.value === 'home')
+const matchPitch = computed(() =>
+  homeMatch.value
+    ? (clubPitches.value.find((p) => p.id === pitchChoice.value.pitchId) ?? null)
+    : null,
+)
 const pitchProblem = computed(() => {
   if (!onPitch.value) return null
   const v = values as Record<string, string | string[] | undefined>
@@ -352,12 +374,16 @@ const onSubmit = handleSubmit(async (raw) => {
         ? combineDateTime(String(v.date), String(v.meetTime)).toISOString()
         : null,
       meet_location: text('meetLocation'),
-      location: text('location'),
+      location: matchPitch.value
+        ? placeLabel(matchPitch.value, pitchChoice.value.part)
+        : text('location'),
       notes: text('notes'),
       response_deadline: deadlineFromHours(startsAt, deadlineHours)?.toISOString() ?? null,
       opponent: String(v.opponent).trim(),
       is_home: v.venue === 'home',
       competition: v.competition as Competition,
+      pitch_id: matchPitch.value?.id ?? null,
+      pitch_part: matchPitch.value ? pitchChoice.value.part : null,
     }
   } else {
     const startsAt = combineDateTime(String(v.date), String(v.startTime))
@@ -496,7 +522,7 @@ const onSubmit = handleSubmit(async (raw) => {
         :error="err('meetLocation')"
       />
       <PitchPicker
-        v-if="canUsePitch && clubPitches.length"
+        v-if="(canUsePitch || homeMatch) && clubPitches.length"
         v-model="pitchChoice"
         :pitches="clubPitches"
         allow-other
@@ -506,7 +532,7 @@ const onSubmit = handleSubmit(async (raw) => {
         {{ t(`schedule.problems.${pitchProblem}`) }}
       </p>
       <LocationField
-        v-if="!onPitch"
+        v-if="!onPitch && !matchPitch"
         v-model="location"
         :label="kind === 'match' ? t('events.form.venueLocation') : t('events.form.location')"
         :suggestions="places"

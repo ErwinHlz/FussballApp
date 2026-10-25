@@ -104,27 +104,27 @@ Es gelten die Arbeitsanweisungen aus [PLAN.md](PLAN.md), Abschnitt 0, und aus
 **Abnahme:** Jede Zeile der Tabelle A ist mit einem Browser-Test oder Unit-Test abgedeckt.
 
 ### X2 – Belegungsplan: ganze Woche und Heimspiele
-- [ ] Migration: `events.pitch_id` (→ `pitches`, nur bei `type = 'match'` und `is_home = true`, Platz
+- [x] Migration: `events.pitch_id` (→ `pitches`, nur bei `type = 'match'` und `is_home = true`, Platz
       aus dem Verein der Mannschaft) und `events.pitch_part` (`full`/`a`/`b`, nur bei teilbarem
       Platz); Check-Constraints, RLS unverändert (Lesen wie der Termin)
-- [ ] Spiel-Formular und Schnell-Anlegen: bei „Heim“ Auswahl „Platz (optional)“ mit den Plätzen des
+- [x] Spiel-Formular und Schnell-Anlegen: bei „Heim“ Auswahl „Platz (optional)“ mit den Plätzen des
       Vereins (+ Hälfte, wenn teilbar); Ort wird mit dem Platznamen vorbelegt; bei „Auswärts“
       ausgeblendet und geleert
-- [ ] Belegungsplan zeigt **Mo–So**; die Wochenansicht startet in der Woche von heute (Sonntag
+- [x] Belegungsplan zeigt **Mo–So**; die Wochenansicht startet in der Woche von heute (Sonntag
       eingeschlossen). Sa/So sind nicht buchbar und so gekennzeichnet (nicht schraffiert wie
       „vergangen“). Platzbedarf auf 375 px: 7 Tagesspalten wischbar wie heute die Spalten, Start
       bei heute
-- [ ] Zeitachse: Stunden ergeben sich aus Platzzeiten **und** Heimspielen der Woche (z. B. 10:00
+- [x] Zeitachse: Stunden ergeben sich aus Platzzeiten **und** Heimspielen der Woche (z. B. 10:00
       am Samstag), weiter nur relevante Stunden
-- [ ] Heimspiele mit Platz als eigener Block auf genau diesem Platz (und dieser Hälfte): Spiel-Farbe
+- [x] Heimspiele mit Platz als eigener Block auf genau diesem Platz (und dieser Hälfte): Spiel-Farbe
       und Spiel-Icon (nicht nur Farbe), Text „U17 – FC Nachbarort“, Antippen öffnet das Spiel.
       Abgesagte Spiele erscheinen nicht
-- [ ] Datenbank: Buchen/Eintragen eines Trainings (`book_pitch`, `attach_events_to_pitch`) lehnt
+- [x] Datenbank: Buchen/Eintragen eines Trainings (`book_pitch`, `attach_events_to_pitch`) lehnt
       Zeiten ab, in denen ein Heimspiel den Platz(-teil) belegt (Hinweis `match_on_pitch`);
       überlappende bestehende Trainings bekommen im Kalender und im Termin einen Konflikt-Hinweis
-- [ ] Spiel-Detail: „Platz“ statt nur Ort, mit Link in den Belegungsplan dieses Tages
-- [ ] Seed-Daten: ein Heimspiel am Samstag auf einem Platz, eins ohne Platz, ein Auswärtsspiel
-- [ ] Tests: pgTAP (Constraint, Platz eines fremden Vereins abgelehnt, Buchung gegen Spiel
+- [x] Spiel-Detail: „Platz“ statt nur Ort, mit Link in den Belegungsplan dieses Tages
+- [x] Seed-Daten: ein Heimspiel am Samstag auf einem Platz, eins ohne Platz, ein Auswärtsspiel
+- [x] Tests: pgTAP (Constraint, Platz eines fremden Vereins abgelehnt, Buchung gegen Spiel
       abgelehnt), Unit-Tests für Wochentage/Zeitachse, Browser-Test „Heimspiel erscheint nur auf
       seinem Platz, Auswärtsspiel nicht“
 
@@ -213,3 +213,34 @@ Bildschirmhöhen pro Reiter. Nominieren ohne Scrollen über „Wer kommt?“.
   ihre Anfrage erreicht den Test-Server auf dem Rechner (`host.docker.internal`) nicht –
   vermutlich die Windows-Firewall. `private.push_config` war leer und wurde mit
   `npm run setup:push` neu befüllt.
+
+### X2
+- Migration `20261025000100_match_pitch.sql`: `events.pitch_id`/`pitch_part`. Ein Trigger räumt auf
+  statt abzulehnen: Auswärtsspiele und andere Termine verlieren den Platz, ohne Hälfte gilt der
+  ganze Platz. Ein Platz eines fremden Vereins und Hälften eines nicht teilbaren Platzes werden
+  abgelehnt. Wird ein Platz gelöscht, bleibt das Spiel ohne Platz bestehen.
+- Belegt wird ab Treffzeit (sonst Anstoß) bis Ende (sonst Anstoß + 2 Std.):
+  `private.match_occupied_from/until`. `private.range_taken` berücksichtigt Heimspiele, damit
+  sperren `book_pitch` und `attach_events_to_pitch` die Zeit ohne eigene Änderung. Der Hinweis
+  bleibt `slot_taken` (kein eigenes `match_on_pitch`); im Kalender sieht man den Grund.
+- `public.club_pitch_matches(club, von, bis)`: Vereinsmitglieder sehen Heimspiele aller
+  Mannschaften auf Vereinsplätzen (nur Kalender-Angaben, die Termine selbst bleiben teamintern).
+- Kalender: Mo–So passt auf 375 px ohne Wischen. In Halb-Spuren (≈ 20 px) steht der
+  Mannschaftsname senkrecht und ohne Uhrzeit. Sa/So sind schlicht grau („nicht buchbar“), nicht
+  schraffiert wie „vergangen“. Heimspiele sind schraffiert mit Rahmen in Spielfarbe und Wappen
+  (`shield`), damit sie auch bei blauer Vereinsfarbe nicht wie eigene Buchungen aussehen. Spiele
+  der eigenen Mannschaften sind Links zum Spiel. `?date=yyyy-MM-dd` öffnet die Woche des Datums
+  (Link aus dem Spiel-Detail).
+- Konflikt: Ein Training über einem Heimspiel bekommt roten gestrichelten Rahmen und Warnsymbol.
+  Ein Training auf dem ganzen Platz rückt auf die freie Hälfte, sonst teilen sich beide die Spur.
+  Darunter steht ein Hinweis, und im Termin-Detail sehen Trainer
+  „Überschneidung mit einem Heimspiel …“ (`useTrainingMatchConflicts`).
+- Formulare: Spiel und Schnell-Anlegen zeigen bei „Heim“ die Platzauswahl (`PitchPicker`,
+  „Anderer Ort“ = ohne Platz). Mit Platz entfällt das Feld Spielort, der Ort ist der Platzname
+  („Rasen · B“).
+- Testdaten: Damen-Heimspiel am Sonntag auf dem Rasen, ein Nachholspiel Do 19:00 auf Kunstrasen A
+  (Konflikt mit dem U17-Training); das U17-Pokal-Heimspiel bleibt ohne Platz, das U17-Spiel ist
+  auswärts.
+- Tests: pgTAP `match_pitch.test.sql` (12), Unit-Tests (Woche, Buchbarkeit, Zeitachse, Spiele,
+  Überschneidung), Browser-Tests `e2e/schedule-matches.spec.ts` (3). Nachher-Bilder:
+  `docs/ui/ux-review/x2-after/`.

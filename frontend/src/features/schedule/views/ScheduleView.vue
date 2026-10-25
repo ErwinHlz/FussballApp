@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { addWeeks, getISOWeek, parseISO } from 'date-fns'
+import { addWeeks, differenceInCalendarWeeks, getISOWeek, parseISO } from 'date-fns'
 import UiEmptyState from '@/ui/UiEmptyState.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import UiIconButton from '@/ui/UiIconButton.vue'
@@ -13,28 +14,39 @@ import { useMyClubs } from '@/features/teams/composables/useTeams'
 import EventsNav from '@/features/events/components/EventsNav.vue'
 import BookingSheet from '../components/BookingSheet.vue'
 import type { BookResult } from '../api'
-import { useBookings, useClubTeamNames, usePitches } from '../composables/useSchedule'
 import {
+  useBookings,
+  useClubTeamNames,
+  usePitchMatches,
+  usePitches,
+} from '../composables/useSchedule'
+import {
+  bookableTime,
   bookingsOn,
   halfHours,
   isoDate,
+  matchesOn,
   minutesOf,
-  OPEN_FROM,
   occupant,
-  openDates,
+  overlaps,
   STEP_MIN,
   teamShortName,
   timeLabel,
   timeStarted,
+  weekDates,
   type Lane,
+  type Occupancy,
   type Pitch,
+  type PitchMatch,
   type SlotBooking,
 } from '../logic'
 
 /**
- * The club's pitch schedule as a calendar: Monday to Friday, 15:00–20:30 in half hours, one
- * pitch at a time with halves A and B as lanes. Booked times are blocks (own team in the accent
- * color); every free half hour can be tapped to book from there. Club of the active team.
+ * The club's pitch schedule as a calendar: Monday to Sunday in half hours, one pitch at a time
+ * with halves A and B as lanes. Booked times are blocks (own team in the accent color), home
+ * matches on the pitch are blocks of their own. Trainings are booked Monday to Friday,
+ * 15:00–20:30: every free half hour there can be tapped to book from there. Club of the
+ * active team; `?date=yyyy-MM-dd` opens the week of that date.
  */
 const { t, locale } = useI18n()
 const { myTeams, activeTeam } = useActiveTeam()
@@ -43,19 +55,29 @@ const pitches = usePitches(clubId)
 const teamNames = useClubTeamNames(clubId)
 const myClubs = useMyClubs()
 
-const rows = halfHours()
+const route = useRoute()
 const today = isoDate(new Date())
-const weekOffset = ref(0)
-const days = computed(() => openDates(addWeeks(new Date(), weekOffset.value)))
+const startDate = typeof route.query.date === 'string' ? parseISO(route.query.date) : null
+const weekOffset = ref(
+  startDate && !Number.isNaN(startDate.getTime())
+    ? differenceInCalendarWeeks(startDate, new Date(), { weekStartsOn: 1 })
+    : 0,
+)
+const days = computed(() => weekDates(addWeeks(new Date(), weekOffset.value)))
 const bookings = useBookings(
   clubId,
   () => days.value[0]!,
-  () => days.value[4]!,
+  () => days.value[6]!,
+)
+const matches = usePitchMatches(
+  clubId,
+  () => days.value[0]!,
+  () => days.value[6]!,
 )
 
 const weekLabel = computed(() => {
   const first = parseISO(days.value[0]!)
-  const last = parseISO(days.value[4]!)
+  const last = parseISO(days.value[6]!)
   const pattern = t('events.dayMonthPattern')
   return t('schedule.weekLabel', {
     week: getISOWeek(first),
@@ -111,42 +133,111 @@ const pitchId = computed({
 const pitchOptions = computed(() => allPitches.value.map((p) => ({ value: p.id, label: p.name })))
 const lanes = computed<Lane[]>(() => (pitch.value?.splittable ? ['a', 'b'] : ['full']))
 
+// Home matches of the week on this pitch, by day.
+const weekMatches = computed(() =>
+  days.value.map((date) =>
+    pitch.value ? matchesOn(matches.data.value ?? [], pitch.value.id, date) : [],
+  ),
+)
+// Rows: 15:00–20:30, widened for matches earlier or later in the week.
+const rows = computed(() => halfHours(weekMatches.value.flat()))
 /** Grid row (1-based) of a time; the end of the day is one past the last row. */
-const rowOf = (time: string) => (minutesOf(time) - minutesOf(OPEN_FROM)) / STEP_MIN + 1
+const rowOf = (time: string) => (minutesOf(time) - minutesOf(rows.value[0]!)) / STEP_MIN + 1
+const laneColumn = (part: Lane) =>
+  part === 'full' || lanes.value.length === 1 ? '1 / -1' : String(lanes.value.indexOf(part) + 1)
 
-type Cell = { lane: Lane; time: string; row: number; bookable: boolean }
-type Block = { booking: SlotBooking; rowStart: number; rowEnd: number; lanes: string }
+/** open: bookable now; closed: outside the booking times (e.g. weekend); past: started. */
+type CellState = 'open' | 'closed' | 'past'
+type Cell = { lane: Lane; time: string; row: number; state: CellState; bookable: boolean }
+type Block = {
+  booking: SlotBooking
+  rowStart: number
+  rowEnd: number
+  lanes: string
+  /** Overlaps a home match on the same part of the pitch. */
+  conflict: boolean
+  /** Shares its lane with a match: drawn in the right half of the lane. */
+  shared: boolean
+}
+type MatchBlock = {
+  match: PitchMatch
+  rowStart: number
+  rowEnd: number
+  lanes: string
+  /** Shares its lane with a training: drawn in the left half of the lane. */
+  shared: boolean
+}
 const columns = computed(() =>
-  days.value.map((date) => {
+  days.value.map((date, index) => {
     const day = pitch.value ? bookingsOn(bookings.data.value ?? [], pitch.value.id, date) : []
+    const dayMatches = weekMatches.value[index] ?? []
+    // Everything that holds the pitch: the booking sheet offers only what is left.
+    const occupied: Occupancy[] = [...day, ...dayMatches]
     const cells: Cell[] = []
     for (const lane of lanes.value) {
-      for (const time of rows) {
-        if (occupant(day, lane, time)) continue
+      for (const time of rows.value) {
+        if (occupant(occupied, lane, time)) continue
+        const state: CellState = timeStarted(time, date)
+          ? 'past'
+          : bookableTime(date, time)
+            ? 'open'
+            : 'closed'
         cells.push({
           lane,
           time,
           row: rowOf(time),
-          bookable: bookableTeams.value.length > 0 && !timeStarted(time, date),
+          state,
+          bookable: state === 'open' && bookableTeams.value.length > 0,
         })
       }
     }
-    const blocks: Block[] = day.map((booking) => ({
-      booking,
-      rowStart: rowOf(booking.start_time),
-      rowEnd: rowOf(booking.end_time),
-      lanes:
-        booking.part === 'full' || lanes.value.length === 1
-          ? '1 / -1'
-          : String(lanes.value.indexOf(booking.part) + 1),
+    // A training over a match: both stay visible. A whole-pitch training moves to the half
+    // the match leaves free; otherwise the two share the lane side by side.
+    const sharedMatches = new Set<string>()
+    const blocks: Block[] = day.map((booking) => {
+      const clashes = dayMatches.filter((m) => overlaps(m, booking))
+      let lane: Lane = booking.part
+      let shared = false
+      if (clashes.length) {
+        const free = lanes.value.filter(
+          (l) => l !== 'full' && clashes.every((m) => m.part !== 'full' && m.part !== l),
+        )
+        if (booking.part === 'full' && free.length === 1) lane = free[0]!
+        else {
+          shared = true
+          clashes.forEach((m) => sharedMatches.add(m.match.id))
+        }
+      }
+      return {
+        booking,
+        rowStart: rowOf(booking.start_time),
+        rowEnd: rowOf(booking.end_time),
+        lanes: laneColumn(lane),
+        conflict: clashes.length > 0,
+        shared,
+      }
+    })
+    const matchBlocks: MatchBlock[] = dayMatches.map((m) => ({
+      match: m.match,
+      rowStart: rowOf(m.start_time),
+      rowEnd: rowOf(m.end_time),
+      lanes: laneColumn(m.part),
+      shared: sharedMatches.has(m.match.id),
     }))
-    return { date, day, cells, blocks }
+    return { date, day: occupied, cells, blocks, matchBlocks }
   }),
 )
+const hasConflict = computed(() => columns.value.some((c) => c.blocks.some((b) => b.conflict)))
+const hasMatches = computed(() => columns.value.some((c) => c.matchBlocks.length))
 
 /** Teams that appear this week (for the legend). */
 const legendTeams = computed(() => {
-  const ids = new Set(columns.value.flatMap((c) => c.blocks.map((b) => b.booking.team_id)))
+  const ids = new Set(
+    columns.value.flatMap((c) => [
+      ...c.blocks.map((b) => b.booking.team_id),
+      ...c.matchBlocks.map((b) => b.match.team_id),
+    ]),
+  )
   return [...ids].map((id) => ({
     id,
     name: teamName(id),
@@ -155,27 +246,31 @@ const legendTeams = computed(() => {
   }))
 })
 
-const isLoading = computed(() => pitches.isPending.value || bookings.isPending.value)
-const loadFailed = computed(() => pitches.isError.value || bookings.isError.value)
+const isLoading = computed(
+  () => pitches.isPending.value || bookings.isPending.value || matches.isPending.value,
+)
+const loadFailed = computed(
+  () => pitches.isError.value || bookings.isError.value || matches.isError.value,
+)
 
 // Sheet
 const sheet = ref<{
   date: string
   start: string
   lane: Lane
-  day: SlotBooking[]
+  day: Occupancy[]
   booking: SlotBooking | null
 } | null>(null)
 const sheetOpen = ref(false)
 const notice = ref<string | null>(null)
 watch(weekOffset, () => (notice.value = null))
 
-function openCell(date: string, day: SlotBooking[], cell: Cell) {
+function openCell(date: string, day: Occupancy[], cell: Cell) {
   notice.value = null
   sheet.value = { date, start: cell.time, lane: cell.lane, day, booking: null }
   sheetOpen.value = true
 }
-function openBooking(date: string, day: SlotBooking[], booking: SlotBooking) {
+function openBooking(date: string, day: Occupancy[], booking: SlotBooking) {
   notice.value = null
   sheet.value = {
     date,
@@ -207,8 +302,29 @@ function cellLabel(date: string, cell: Cell) {
 }
 function blockLabel(date: string, block: Block) {
   const b = block.booking
-  return `${dayShort(date)}, ${timeLabel(b.start_time)}–${timeLabel(b.end_time)}, ${partLabel(b.part)}: ${teamName(b.team_id)}`
+  const label = `${dayShort(date)}, ${timeLabel(b.start_time)}–${timeLabel(b.end_time)}, ${partLabel(b.part)}: ${teamName(b.team_id)}`
+  return block.conflict ? `${label}. ${t('schedule.conflict')}` : label
 }
+const clock = (iso: string) => formatDate(new Date(iso), locale.value, 'HH:mm')
+function matchLabel(date: string, block: MatchBlock) {
+  const m = block.match
+  return t('schedule.matchLabel', {
+    day: dayShort(date),
+    kickoff: clock(m.starts_at),
+    part: partLabel(m.pitch_part),
+    team: teamName(m.team_id),
+    opponent: m.opponent ?? '',
+  })
+}
+// Own teams' matches open the match; other teams' events are not readable.
+const matchLink = (block: MatchBlock) =>
+  ownTeamIds.value.has(block.match.team_id)
+    ? { name: 'event', params: { eventId: block.match.id } }
+    : null
+// Seven days with two halves leave about 20 px per lane: names stand upright there.
+const narrow = (block: { lanes: string; shared: boolean }) =>
+  block.shared || (lanes.value.length > 1 && block.lanes !== '1 / -1')
+const isWeekend = (date: string) => [0, 6].includes(parseISO(date).getDay())
 const dayName = (date: string) => formatDate(parseISO(date), locale.value, 'EEEEEE')
 const dayNumber = (date: string) => formatDate(parseISO(date), locale.value, 'd')
 const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE, d. MMMM')
@@ -296,7 +412,10 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
             v-for="column in columns"
             :key="`h-${column.date}`"
             class="schedule__day-head"
-            :class="{ 'schedule__day-head--today': column.date === today }"
+            :class="{
+              'schedule__day-head--today': column.date === today,
+              'schedule__day-head--weekend': isWeekend(column.date),
+            }"
           >
             <span class="schedule__day-name">{{ dayName(column.date) }}</span>
             <span class="schedule__day-number">{{ dayNumber(column.date) }}</span>
@@ -334,7 +453,11 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
               :key="`${cell.lane}-${cell.time}`"
               :type="cell.bookable ? 'button' : undefined"
               class="schedule__free"
-              :class="{ 'schedule__free--past': !cell.bookable }"
+              :class="{
+                'schedule__free--past': cell.state === 'past',
+                'schedule__free--closed': cell.state === 'closed',
+                'schedule__free--view': cell.state === 'open' && !cell.bookable,
+              }"
               :style="{ gridRow: cell.row, gridColumn: lanes.indexOf(cell.lane) + 1 }"
               :aria-label="cell.bookable ? cellLabel(column.date, cell) : undefined"
               :aria-hidden="cell.bookable ? undefined : 'true'"
@@ -354,6 +477,9 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
               :class="{
                 'schedule__block--own': ownTeamIds.has(block.booking.team_id),
                 'schedule__block--past': timeStarted(block.booking.start_time, column.date),
+                'schedule__block--conflict': block.conflict,
+                'schedule__block--narrow': narrow(block),
+                'schedule__block--shared-right': block.shared,
               }"
               :style="{
                 gridRow: `${block.rowStart} / ${block.rowEnd}`,
@@ -372,14 +498,47 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
                 blockLabel(column.date, block)
               }}</span>
               <span class="schedule__team" aria-hidden="true">
+                <UiIcon v-if="block.conflict" name="alert" :size="12" />
                 {{ teamShortName(teamName(block.booking.team_id)) }}
               </span>
               <span
-                v-if="block.rowEnd - block.rowStart >= 2"
+                v-if="block.rowEnd - block.rowStart >= 2 && !narrow(block)"
                 class="schedule__time"
                 aria-hidden="true"
               >
                 {{ timeLabel(block.booking.start_time) }}
+              </span>
+            </component>
+
+            <!-- Home matches on this pitch -->
+            <component
+              :is="matchLink(block) ? 'RouterLink' : 'div'"
+              v-for="block in column.matchBlocks"
+              :key="block.match.id"
+              :to="matchLink(block) ?? undefined"
+              :role="matchLink(block) ? undefined : 'img'"
+              class="schedule__block schedule__block--match"
+              :class="{
+                'schedule__block--past': timeStarted(clock(block.match.starts_at), column.date),
+                'schedule__block--narrow': narrow(block),
+                'schedule__block--shared-left': block.shared,
+              }"
+              :style="{
+                gridRow: `${block.rowStart} / ${block.rowEnd}`,
+                gridColumn: block.lanes,
+              }"
+              :aria-label="matchLabel(column.date, block)"
+            >
+              <UiIcon name="shield" :size="14" />
+              <span class="schedule__team" aria-hidden="true">
+                {{ teamShortName(teamName(block.match.team_id)) }}
+              </span>
+              <span
+                v-if="block.rowEnd - block.rowStart >= 2 && !narrow(block)"
+                class="schedule__time"
+                aria-hidden="true"
+              >
+                {{ clock(block.match.starts_at) }}
               </span>
             </component>
           </section>
@@ -397,11 +556,21 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
           >
           {{ team.name }}
         </li>
+        <li v-if="hasMatches">
+          <span class="schedule__swatch schedule__swatch--match" aria-hidden="true">
+            <UiIcon name="shield" :size="14" />
+          </span>
+          {{ t('schedule.legendMatch') }}
+        </li>
         <li>
           <span class="schedule__swatch schedule__swatch--free" aria-hidden="true">+</span>
           {{ t('schedule.legendFree') }}
         </li>
       </ul>
+      <p v-if="hasConflict" class="schedule__conflict" role="status">
+        <UiIcon name="alert" :size="18" />
+        {{ t('schedule.conflictHint') }}
+      </p>
       <p class="schedule__hint">{{ t('schedule.calendarHint') }}</p>
     </template>
 
@@ -491,7 +660,7 @@ $gutter: 40px;
     color: var(--color-danger);
   }
 
-  // A calendar over the whole width: time column and five day columns.
+  // A calendar over the whole width: time column and seven day columns.
   &__calendar {
     margin-inline: -$space-2;
     border-radius: $radius-xl;
@@ -502,7 +671,7 @@ $gutter: 40px;
   &__days,
   &__body {
     display: grid;
-    grid-template-columns: $gutter repeat(5, minmax(0, 1fr));
+    grid-template-columns: $gutter repeat(7, minmax(0, 1fr));
   }
 
   &__days {
@@ -544,6 +713,10 @@ $gutter: 40px;
 
   &__day-head--today &__day-name {
     color: var(--color-text);
+  }
+
+  &__day-head--weekend &__day-name {
+    font-style: italic;
   }
 
   &__day-head--today &__day-number {
@@ -647,6 +820,17 @@ $gutter: 40px;
         color-mix(in srgb, var(--color-border) 40%, transparent) 4px 5px
       );
     }
+
+    // Outside the booking times (weekend, early or late): plain, unlike "past".
+    &--closed {
+      cursor: default;
+      background: color-mix(in srgb, var(--color-surface-muted) 70%, transparent);
+    }
+
+    // Free, but the viewer cannot book (players).
+    &--view {
+      cursor: default;
+    }
   }
 
   &__plus {
@@ -690,9 +874,54 @@ $gutter: 40px;
     &--past {
       opacity: 0.5;
     }
+
+    // Training over a home match on the same part: dashed red frame and warning icon.
+    &--conflict {
+      outline: 2px dashed var(--color-danger);
+      outline-offset: -2px;
+    }
+
+    // Hatched in the match color: never mistaken for a booking, also when the club color
+    // is blue like the match color.
+    &--match {
+      z-index: 2;
+      gap: 1px;
+      border: 2px solid var(--color-match);
+      background: repeating-linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-match) 22%, var(--color-surface)) 0 5px,
+        var(--color-surface) 5px 9px
+      );
+      color: var(--color-match-text);
+      text-decoration: none;
+
+      &:is(a):focus-visible {
+        @include focus-ring;
+      }
+    }
+
+    &--narrow {
+      padding-inline: 0;
+    }
+
+    &--narrow .schedule__team {
+      writing-mode: vertical-rl;
+      font-size: 11px;
+    }
+
+    &--shared-left {
+      margin-right: 50%;
+    }
+
+    &--shared-right {
+      margin-left: 50%;
+    }
   }
 
   &__team {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
     font-family: var(--font-display);
     font-size: 12px;
     font-weight: 800;
@@ -747,6 +976,25 @@ $gutter: 40px;
       background: transparent;
       color: var(--color-text-muted);
     }
+
+    &--match {
+      border: 2px solid var(--color-match);
+      background: repeating-linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-match) 22%, var(--color-surface)) 0 5px,
+        var(--color-surface) 5px 9px
+      );
+      color: var(--color-match-text);
+    }
+  }
+
+  &__conflict {
+    display: flex;
+    gap: $space-2;
+    align-items: center;
+    color: var(--color-danger);
+    font-size: $font-sm;
+    font-weight: 700;
   }
 
   &__hint {

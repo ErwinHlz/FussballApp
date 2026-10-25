@@ -233,14 +233,14 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "booking_id": string | null,"cancel_reason": string | null,"competition": string | null,"created_at": string,"created_by": string | null,"ends_at": string | null,"id": string,"is_cancelled": boolean,"is_home": boolean | null,"location": string | null,"meet_at": string | null,"meet_location": string | null,"notes": string | null,"opponent": string | null,"plan_published_at": string | null,"plan_status": Database["public"]['Enums']["plan_status"],"reminder_sent_at": string | null,"response_deadline": string | null,"series_id": string | null,"starts_at": string,"team_id": string,"title": string | null,"type": Database["public"]['Enums']["event_type"]
+                    "booking_id": string | null,"cancel_reason": string | null,"competition": string | null,"created_at": string,"created_by": string | null,"ends_at": string | null,"id": string,"is_cancelled": boolean,"is_home": boolean | null,"location": string | null,"meet_at": string | null,"meet_location": string | null,"notes": string | null,"opponent": string | null,"pitch_id": string | null,"pitch_part": Database["public"]['Enums']["pitch_part"] | null,"plan_published_at": string | null,"plan_status": Database["public"]['Enums']["plan_status"],"reminder_sent_at": string | null,"response_deadline": string | null,"series_id": string | null,"starts_at": string,"team_id": string,"title": string | null,"type": Database["public"]['Enums']["event_type"]
                   }
                   ComputedFields: never
                   Insert: {
-                    "booking_id"?: string | null,"cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at": string,"team_id": string,"title"?: string | null,"type": Database["public"]['Enums']["event_type"]
+                    "booking_id"?: string | null,"cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"pitch_id"?: string | null,"pitch_part"?: Database["public"]['Enums']["pitch_part"] | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at": string,"team_id": string,"title"?: string | null,"type": Database["public"]['Enums']["event_type"]
                   }
                   Update: {
-                    "booking_id"?: string | null,"cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at"?: string,"team_id"?: string,"title"?: string | null,"type"?: Database["public"]['Enums']["event_type"]
+                    "booking_id"?: string | null,"cancel_reason"?: string | null,"competition"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_cancelled"?: boolean,"is_home"?: boolean | null,"location"?: string | null,"meet_at"?: string | null,"meet_location"?: string | null,"notes"?: string | null,"opponent"?: string | null,"pitch_id"?: string | null,"pitch_part"?: Database["public"]['Enums']["pitch_part"] | null,"plan_published_at"?: string | null,"plan_status"?: Database["public"]['Enums']["plan_status"],"reminder_sent_at"?: string | null,"response_deadline"?: string | null,"series_id"?: string | null,"starts_at"?: string,"team_id"?: string,"title"?: string | null,"type"?: Database["public"]['Enums']["event_type"]
                   }
                   Relationships: [
                     {
@@ -254,6 +254,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_pitch_id_fkey"
+      columns: ["pitch_id"]
+isOneToOne: false
+      referencedRelation: "pitches"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "events_series_id_fkey"
@@ -643,6 +649,11 @@ isOneToOne: false
                            },
 "club_logo_club_id":
 { Args: { "p_name": string }; Returns: string
+                           },
+"club_pitch_matches":
+{ Args: { "p_club_id": string,"p_from": string,"p_until": string }; Returns: {
+              "id": string,"occupied_from": string,"occupied_until": string,"opponent": string,"pitch_id": string,"pitch_part": Database["public"]['Enums']["pitch_part"],"starts_at": string,"team_id": string
+            }[]
                            },
 "club_team_names":
 { Args: { "p_club_id": string }; Returns: {

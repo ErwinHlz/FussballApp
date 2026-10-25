@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { format } from 'date-fns'
 import { mapsUrl } from '@/lib/maps'
+import { useTrainingMatchConflicts } from '@/features/schedule/composables/useSchedule'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -53,6 +55,10 @@ const e = computed(() => event.data.value)
 const clubId = computed(
   () => myTeams.data.value?.find((t) => t.team_id === teamId.value)?.club_id ?? '',
 )
+// A booked training that overlaps a home match on the same pitch: warn the coach.
+const matchConflicts = useTrainingMatchConflicts(clubId, () =>
+  e.value?.type === 'training' && !e.value.is_cancelled ? e.value : null,
+)
 const canAttach = computed(
   () =>
     isCoach.value &&
@@ -102,6 +108,7 @@ const yesCount = computed(() => {
   return (e.value?.attendances ?? []).filter((a) => a.status === 'yes' && ids.has(a.member_id))
     .length
 })
+const localDate = (iso: string) => format(new Date(iso), 'yyyy-MM-dd')
 const canAnswer = computed(() => !!e.value && canRespond(e.value, isCoach.value))
 const lockedHint = computed(() => {
   if (!e.value || canAnswer.value) return null
@@ -229,6 +236,22 @@ async function remove() {
         </div>
       </header>
 
+      <p v-if="isCoach && matchConflicts.length" class="detail__conflict" role="status">
+        <UiIcon name="alert" :size="20" />
+        <span>
+          <strong>{{ t('schedule.conflictTitle') }}</strong>
+          {{
+            matchConflicts
+              .map((m) =>
+                t('schedule.conflictWith', {
+                  opponent: m.opponent ?? '',
+                  kickoff: format(new Date(m.starts_at), 'HH:mm'),
+                }),
+              )
+              .join(', ')
+          }}
+        </span>
+      </p>
       <p v-if="e.is_cancelled" class="detail__cancelled" role="status">
         <UiIcon name="alert" :size="20" />
         <span>
@@ -239,11 +262,27 @@ async function remove() {
 
       <dl class="detail__facts">
         <div v-if="e.location" class="detail__fact">
-          <dt>
+          <dt v-if="e.pitch_id">{{ t('schedule.pitch') }}</dt>
+          <dt v-else>
             {{ e.type === 'match' ? t('events.form.venueLocation') : t('events.form.location') }}
           </dt>
           <dd>
-            <a :href="mapsUrl(e.location)" target="_blank" rel="noopener" class="detail__map">
+            <!-- A club pitch: the schedule of that day instead of a map. -->
+            <RouterLink
+              v-if="e.pitch_id"
+              :to="{ name: 'events-schedule', query: { date: localDate(e.starts_at) } }"
+              class="detail__map"
+            >
+              {{ e.location }}
+              <span class="visually-hidden">({{ t('schedule.openInSchedule') }})</span>
+            </RouterLink>
+            <a
+              v-else
+              :href="mapsUrl(e.location)"
+              target="_blank"
+              rel="noopener"
+              class="detail__map"
+            >
               {{ e.location }}
               <span class="visually-hidden">({{ t('events.openMap') }})</span>
             </a>
@@ -448,6 +487,15 @@ async function remove() {
     &:empty {
       display: none;
     }
+  }
+
+  &__conflict {
+    display: flex;
+    gap: $space-2;
+    padding: $space-3 $space-4;
+    border: 2px dashed var(--color-danger);
+    border-radius: $radius-lg;
+    color: var(--color-danger);
   }
 
   &__cancelled {

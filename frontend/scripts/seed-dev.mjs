@@ -242,10 +242,25 @@ await insertEvent('Damen', {
   starts_at: damenKickoff.toISOString(),
   meet_at: new Date(damenKickoff.getTime() - 60 * 60_000).toISOString(),
   meet_location: 'Sportpark Rondo',
-  location: 'Sportpark Rondo, Rasen',
+  location: 'Rasen',
   opponent: 'TSV Bergdorf',
   is_home: true,
   competition: 'league',
+  pitch_id: grass.id,
+  pitch_part: 'full',
+})
+// A rescheduled match on Thursday evening on half A: overlaps the U17 training (conflict hint).
+const thursdayKickoff = at(nextWeekday(4, 1), 19)
+await insertEvent('Damen', {
+  type: 'match',
+  starts_at: thursdayKickoff.toISOString(),
+  meet_at: new Date(thursdayKickoff.getTime() - 30 * 60_000).toISOString(),
+  location: 'Kunstrasen · A',
+  opponent: 'SV Nachholheim',
+  is_home: true,
+  competition: 'league',
+  pitch_id: turf.id,
+  pitch_part: 'a',
 })
 const evening = at(nextWeekday(5, 8), 19)
 await insertEvent('U17', {

@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  bookableTime,
   bookingCovers,
   bookingProblem,
   bookingsOn,
   freeParts,
   halfHours,
+  matchesOn,
   occupant,
-  openDates,
+  overlaps,
   pitchFromLocation,
   placeLabel,
   possibleDurations,
@@ -15,6 +17,7 @@ import {
   teamShortName,
   timeStarted,
   weekDates,
+  type PitchMatch,
   type SlotBooking,
 } from '../logic'
 
@@ -37,15 +40,26 @@ const booking = (patch: Partial<SlotBooking> = {}): SlotBooking => ({
 })
 
 describe('week and rows', () => {
-  it('weeks start on Monday; only Monday to Friday can be booked', () => {
-    expect(weekDates(new Date(2026, 9, 15))[0]).toBe('2026-10-12')
-    expect(openDates(new Date(2026, 9, 15))).toEqual([
+  it('shows Monday to Sunday; on a Sunday that is the running week', () => {
+    expect(weekDates(new Date(2026, 9, 15))).toEqual([
       '2026-10-12',
       '2026-10-13',
       '2026-10-14',
       '2026-10-15',
       '2026-10-16',
+      '2026-10-17',
+      '2026-10-18',
     ])
+    expect(weekDates(new Date(2026, 9, 25))[6]).toBe('2026-10-25')
+  })
+
+  it('books only Monday to Friday between 15:00 and 20:30', () => {
+    expect(bookableTime('2026-10-16', '15:00')).toBe(true)
+    expect(bookableTime('2026-10-16', '20:00')).toBe(true)
+    expect(bookableTime('2026-10-16', '20:30')).toBe(false)
+    expect(bookableTime('2026-10-16', '14:30')).toBe(false)
+    expect(bookableTime('2026-10-17', '16:00')).toBe(false)
+    expect(bookableTime('2026-10-18', '16:00')).toBe(false)
   })
 
   it('has half-hour rows from 15:00 to 20:30', () => {
@@ -53,6 +67,15 @@ describe('week and rows', () => {
     expect(rows).toHaveLength(11)
     expect(rows[0]).toBe('15:00')
     expect(rows.at(-1)).toBe('20:00')
+  })
+
+  it('widens the rows for a match in the morning or late evening', () => {
+    const rows = halfHours([
+      { part: 'full', start_time: '10:30', end_time: '13:00' },
+      { part: 'a', start_time: '20:00', end_time: '22:00' },
+    ])
+    expect(rows[0]).toBe('10:30')
+    expect(rows.at(-1)).toBe('21:30')
   })
 })
 
@@ -132,5 +155,38 @@ describe('pitch for a training', () => {
     expect(bookingProblem(2, '14:30', 60)).toBe('time')
     expect(bookingProblem(2, '17:15', 60)).toBe('step')
     expect(bookingProblem(2, '17:00', 75)).toBe('step')
+  })
+})
+
+describe('home matches', () => {
+  const local = (d: number, h: number, m = 0) => new Date(2026, 9, d, h, m).toISOString()
+  const match = (patch: Partial<PitchMatch> = {}): PitchMatch => ({
+    id: 'm1',
+    team_id: 't1',
+    pitch_id: 'p',
+    pitch_part: 'a',
+    opponent: 'FC Gast',
+    starts_at: local(17, 11),
+    occupied_from: local(17, 10, 15),
+    occupied_until: local(17, 13),
+    ...patch,
+  })
+
+  it('places a match on its pitch and day in whole half hours', () => {
+    const day = matchesOn([match(), match({ id: 'm2', pitch_id: 'q' })], 'p', '2026-10-17')
+    expect(day.map((m) => [m.match.id, m.part, m.start_time, m.end_time])).toEqual([
+      ['m1', 'a', '10:00', '13:00'],
+    ])
+    expect(matchesOn([match()], 'p', '2026-10-18')).toEqual([])
+  })
+
+  it('holds the lane like a booking and clashes with trainings on the same part', () => {
+    const [m] = matchesOn([match()], 'p', '2026-10-17')
+    expect(occupant([m!], 'a', '12:30')?.match.id).toBe('m1')
+    expect(occupant([m!], 'b', '12:30')).toBeNull()
+    const training = { part: 'full' as const, start_time: '12:30', end_time: '14:00' }
+    expect(overlaps(m!, training)).toBe(true)
+    expect(overlaps(m!, { ...training, start_time: '13:00' })).toBe(false)
+    expect(possibleDurations([m!], 'full', '09:00')).toEqual([30, 60])
   })
 })

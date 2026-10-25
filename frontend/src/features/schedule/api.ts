@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { Pitch, PitchPart, SlotBooking } from './logic'
+import type { Pitch, PitchMatch, PitchPart, SlotBooking } from './logic'
 
 export type ClubTeamName = { id: string; name: string }
 export type BookResult = { booking_id: string; booked: number; skipped: number }
@@ -27,6 +27,32 @@ export async function fetchBookings(
     .eq('club_id', clubId)
     .lte('valid_from', until)
     .gte('valid_until', from)
+  if (error) throw error
+  return data
+}
+
+/** One booking (pitch, part and times of a booked training). */
+export async function fetchBooking(bookingId: string): Promise<SlotBooking> {
+  const { data, error } = await supabase
+    .from('slot_bookings')
+    .select('*, exceptions:slot_booking_exceptions(date)')
+    .eq('id', bookingId)
+    .single()
+  if (error) throw error
+  return data
+}
+
+/** Home matches on the club's pitches with the kick-off between the dates (also other teams). */
+export async function fetchPitchMatches(
+  clubId: string,
+  from: string,
+  until: string,
+): Promise<PitchMatch[]> {
+  const { data, error } = await supabase.rpc('club_pitch_matches', {
+    p_club_id: clubId,
+    p_from: from,
+    p_until: until,
+  })
   if (error) throw error
   return data
 }

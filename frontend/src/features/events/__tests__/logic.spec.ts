@@ -49,6 +49,8 @@ function event(overrides: Partial<TeamEvent>): TeamEvent {
     created_by: null,
     reminder_sent_at: null,
     booking_id: null,
+    pitch_id: null,
+    pitch_part: null,
     title: null,
     opponent: null,
     is_home: null,

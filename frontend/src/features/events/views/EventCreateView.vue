@@ -63,13 +63,19 @@ let pitchTouched = false
 function onPitchPicked() {
   pitchTouched = true
 }
-/** Pitch of the last training (from its place), unless the coach already picked one. */
+/** Pitch of the last training or match (from its place), unless the coach already picked one. */
 function suggestPitch() {
-  if (pitchTouched || kind.value !== 'training') return
+  if (pitchTouched || (kind.value !== 'training' && kind.value !== 'match')) return
   const choice = pitchFromLocation(clubPitches.value, defaults.value?.location)
   pitchChoice.value = choice ?? { pitchId: null, part: 'full' }
 }
 const onPitch = computed(() => kind.value === 'training' && !!pitchChoice.value.pitchId)
+// A home match on a club pitch shows in the schedule there (optional).
+const matchPitch = computed(() =>
+  kind.value === 'match' && isHome.value
+    ? (clubPitches.value.find((p) => p.id === pitchChoice.value.pitchId) ?? null)
+    : null,
+)
 const durationMin = computed(() => defaults.value?.durationMin ?? 90)
 const pitchProblem = computed(() =>
   onPitch.value && date.value && time.value
@@ -255,12 +261,16 @@ function input(): EventInput {
       ends_at: null,
       meet_at: meetAt?.toISOString() ?? null,
       meet_location: text(meetLocation.value),
-      location: text(location.value),
+      location: matchPitch.value
+        ? placeLabel(matchPitch.value, pitchChoice.value.part)
+        : text(location.value),
       notes: null,
       response_deadline: deadline,
       opponent: opponent.value.trim(),
       is_home: isHome.value,
       competition: 'league',
+      pitch_id: matchPitch.value?.id ?? null,
+      pitch_part: matchPitch.value ? pitchChoice.value.part : null,
     }
   }
   return {
@@ -314,7 +324,8 @@ function customize() {
   const d = defaults.value!
   const query: Record<string, string> = { date: date.value, time: time.value }
   const pitch = clubPitches.value.find((p) => p.id === pitchChoice.value.pitchId)
-  if (onPitch.value && pitch) query.location = placeLabel(pitch, pitchChoice.value.part)
+  if ((onPitch.value || matchPitch.value) && pitch)
+    query.location = placeLabel(pitch, pitchChoice.value.part)
   else if (location.value.trim()) query.location = location.value.trim()
   if (kind.value !== 'match') query.duration = String(d.durationMin)
   if (d.deadlineHours !== null) query.deadline = String(d.deadlineHours)
@@ -425,9 +436,9 @@ const heading = computed(() =>
         />
       </fieldset>
 
-      <!-- Trainings: a pitch of the club (goes into the schedule) or another place -->
+      <!-- Trainings and home matches: a pitch of the club (shows in the schedule) or another place -->
       <PitchPicker
-        v-if="kind === 'training' && clubPitches.length"
+        v-if="(kind === 'training' || (kind === 'match' && isHome)) && clubPitches.length"
         v-model="pitchChoice"
         :pitches="clubPitches"
         allow-other
@@ -437,7 +448,7 @@ const heading = computed(() =>
         {{ t(`schedule.problems.${pitchProblem}`) }}
       </p>
       <LocationField
-        v-if="!onPitch"
+        v-if="!onPitch && !matchPitch"
         v-model="location"
         :label="kind === 'match' ? t('events.form.venueLocation') : t('events.form.location')"
         :suggestions="places"
