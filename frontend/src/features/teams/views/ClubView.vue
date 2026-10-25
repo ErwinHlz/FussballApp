@@ -20,6 +20,7 @@ import {
   useCreateTeam,
   useSetClubMemberRole,
 } from '../composables/useTeams'
+import PageProblem from '@/ui/PageProblem.vue'
 
 const props = defineProps<{ clubId: string }>()
 
@@ -65,9 +66,13 @@ function toggleAdmin(member: ClubMember) {
 <template>
   <section class="club">
     <p v-if="club.isPending.value" class="club__muted">{{ t('common.loading') }}</p>
-    <p v-else-if="club.isError.value" class="club__error" role="alert">
-      {{ t('clubs.loadFailed') }}
-    </p>
+    <PageProblem
+      v-else-if="club.isError.value"
+      :title="t('clubs.loadFailed')"
+      :text="t('problem.hint')"
+      :to="{ name: 'teams' }"
+      :action="t('problem.toTeams')"
+    />
 
     <template v-else>
       <header>

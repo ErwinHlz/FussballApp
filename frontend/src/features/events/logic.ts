@@ -146,6 +146,37 @@ export function summarizeAttendance(
   return summary
 }
 
+export type SquadCandidate = { member: TeamMember; status: AttendanceStatus | null }
+
+/**
+ * Players for the match squad: everyone who said yes or maybe, plus anyone already nominated.
+ * Nominated players who declined or did not answer go to the end, so they stand out.
+ */
+export function squadCandidates(
+  members: TeamMember[],
+  attendances: Attendance[],
+  nominated: Set<string>,
+): SquadCandidate[] {
+  const status = new Map(attendances.map((a) => [a.member_id, a.status]))
+  const available = (s: AttendanceStatus | null) => s === 'yes' || s === 'maybe'
+  return members
+    .filter((m) => m.role === 'player')
+    .map((m) => ({ member: m, status: status.get(m.id) ?? null }))
+    .filter((c) => available(c.status) || nominated.has(c.member.id))
+    .sort(
+      (a, b) =>
+        Number(!available(a.status)) - Number(!available(b.status)) ||
+        (a.member.shirt_number ?? 999) - (b.member.shirt_number ?? 999),
+    )
+}
+
+/** Nominated players who declined or have not answered (warning for the coach). */
+export function unavailableNominees(candidates: SquadCandidate[], nominated: Set<string>) {
+  return candidates.filter(
+    (c) => nominated.has(c.member.id) && c.status !== 'yes' && c.status !== 'maybe',
+  )
+}
+
 /** Only events within this many days trigger the in-app reminder. */
 export const REMINDER_DAYS = 7
 

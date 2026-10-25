@@ -25,6 +25,7 @@ import {
   nextColor,
   type DraftGroup,
 } from '../logic'
+import PageProblem from '@/ui/PageProblem.vue'
 
 const props = defineProps<{ eventId: string }>()
 
@@ -249,10 +250,20 @@ function names(ids: string[]) {
       <UiSkeleton shape="block" height="48px" />
       <UiSkeleton shape="block" height="160px" />
     </div>
-    <p v-else-if="event.isError.value || !event.data.value" class="groups__error" role="alert">
-      {{ t('events.loadFailedOne') }}
-    </p>
-    <p v-else-if="!isCoach" role="alert">{{ t('plan.coachOnly') }}</p>
+    <PageProblem
+      v-else-if="event.isError.value || !event.data.value"
+      :title="t('events.loadFailedOne')"
+      :text="t('problem.hint')"
+      :to="{ name: 'events' }"
+      :action="t('problem.toEvents')"
+    />
+    <PageProblem
+      v-else-if="!isCoach"
+      icon="lock"
+      :title="t('plan.coachOnly')"
+      :to="{ name: 'event' }"
+      :action="t('problem.toEvent')"
+    />
 
     <template v-else>
       <EventCoachNav :event-id="eventId" active="event-groups" />
@@ -317,7 +328,10 @@ function names(ids: string[]) {
         <!-- Pool -->
         <section class="groups__box groups__box--pool" :aria-label="t('groups.pool')">
           <header class="groups__box-header">
-            <h2 class="groups__box-title">{{ t('groups.pool') }} ({{ current.pool.length }})</h2>
+            <h2 class="groups__box-title">
+              {{ current.groups.length ? t('groups.pool') : t('groups.poolNoGroups') }}
+              ({{ current.pool.length }})
+            </h2>
             <button
               v-if="selected && !containsSelected(current.pool)"
               type="button"
@@ -440,6 +454,9 @@ function names(ids: string[]) {
             <strong v-if="warnings?.unassigned.length" class="groups__status-warn">
               {{ t('groups.warnUnassigned', warnings.unassigned.length) }}
             </strong>
+            <span v-else-if="!current.groups.length" class="groups__muted">
+              {{ t('groups.noGroupsHere') }}
+            </span>
             <span v-else class="groups__status-ok">{{ t('groups.allAssigned') }}</span>
           </span>
           <UiButton

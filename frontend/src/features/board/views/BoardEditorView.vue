@@ -4,11 +4,16 @@ import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import UiButton from '@/ui/UiButton.vue'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
-import { useDrill, useSaveDrillAnimation } from '@/features/drills/composables/useDrills'
+import {
+  useCopyDrill,
+  useDrill,
+  useSaveDrillAnimation,
+} from '@/features/drills/composables/useDrills'
 import type { Json } from '@/types/database'
 import BoardEditor from '../components/BoardEditor.vue'
 import { useSquadNames } from '../composables/useSquadNames'
 import { animationSchema, emptyAnimation, parseAnimation, type Animation } from '../schema'
+import PageProblem from '@/ui/PageProblem.vue'
 
 /** Animation of a drill (stored in drills.animation). */
 const props = defineProps<{ drillId: string }>()
@@ -17,13 +22,29 @@ const { t } = useI18n()
 const router = useRouter()
 const drill = useDrill(() => props.drillId)
 const save = useSaveDrillAnimation()
-const { myTeams } = useActiveTeam()
+const { activeTeam, myTeams } = useActiveTeam()
 const squadNames = useSquadNames(() => drill.data.value?.team_id ?? null)
 
 const canEdit = computed(() => {
   const team = myTeams.data.value?.find((x) => x.team_id === drill.data.value?.team_id)
   return !!team && (team.team_role === 'coach' || team.is_club_admin)
 })
+// A library drill belongs to no team: coaches copy it first and then edit the copy.
+const canCopy = computed(
+  () =>
+    drill.data.value?.team_id === null &&
+    !!activeTeam.value &&
+    (activeTeam.value.team_role === 'coach' || activeTeam.value.is_club_admin),
+)
+const copyDrill = useCopyDrill()
+async function copyAndEdit() {
+  if (!activeTeam.value) return
+  const created = await copyDrill.mutateAsync({
+    drillId: props.drillId,
+    teamId: activeTeam.value.team_id,
+  })
+  await router.replace({ name: 'drill-animation', params: { drillId: created.id } })
+}
 
 const draft = ref<Animation>(emptyAnimation())
 const savedJson = ref(JSON.stringify(draft.value))
@@ -67,16 +88,27 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
 <template>
   <section class="editor">
     <p v-if="drill.isPending.value">{{ t('common.loading') }}</p>
-    <p v-else-if="drill.isError.value || !drill.data.value" class="editor__error" role="alert">
-      {{ t('drills.loadFailedOne') }}
-    </p>
-    <p v-else-if="!canEdit" role="alert">{{ t('board.coachOnly') }}</p>
+    <PageProblem
+      v-else-if="drill.isError.value || !drill.data.value"
+      :title="t('drills.loadFailedOne')"
+      :text="t('problem.hint')"
+      :to="{ name: 'drills' }"
+      :action="t('problem.toDrills')"
+    />
+    <template v-else-if="!canEdit">
+      <h1>{{ t('board.title') }}</h1>
+      <p>{{ canCopy ? t('board.copyFirst') : t('board.coachOnly') }}</p>
+      <UiButton v-if="canCopy" block :loading="copyDrill.isPending.value" @click="copyAndEdit">
+        {{ t('board.copyAndEdit', { team: activeTeam?.team_name }) }}
+      </UiButton>
+      <p v-if="copyDrill.isError.value" class="editor__error" role="alert">
+        {{ t('squad.errors.unknown') }}
+      </p>
+    </template>
 
     <template v-else>
       <header>
-        <RouterLink :to="{ name: 'drill', params: { drillId } }" class="editor__back">
-          ‹ {{ drill.data.value.title }}
-        </RouterLink>
+        <p class="editor__eyebrow">{{ drill.data.value.title }}</p>
         <h1>{{ t('board.title') }}</h1>
       </header>
 
@@ -118,14 +150,10 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
   flex-direction: column;
   gap: $space-3;
 
-  &__back {
-    @include focus-visible;
-
-    display: inline-flex;
-    align-items: center;
-    min-height: $touch-target;
+  &__eyebrow {
+    margin: 0;
+    color: var(--color-text-muted);
     font-weight: 600;
-    text-decoration: none;
   }
 
   &__savebar {

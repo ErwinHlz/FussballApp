@@ -3,9 +3,16 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import UiAvatar from '@/ui/UiAvatar.vue'
 import UiButton from '@/ui/UiButton.vue'
+import UiIcon from '@/ui/UiIcon.vue'
 import { useSnackbar } from '@/ui/useSnackbar'
 import type { TeamMember } from '@/features/teams/api'
-import { SQUAD_ROLES, type SquadRole, type TeamEvent } from '../logic'
+import {
+  SQUAD_ROLES,
+  squadCandidates,
+  unavailableNominees,
+  type SquadRole,
+  type TeamEvent,
+} from '../logic'
 import { useSetMatchSquad } from '../composables/useEvents'
 
 /**
@@ -30,14 +37,18 @@ function reset() {
 watch(() => props.event.match_squad, reset, { immediate: true })
 
 // Players who said yes (or maybe) can be nominated; already nominated ones stay visible.
-const candidates = computed(() => {
-  const status = new Map(props.event.attendances.map((a) => [a.member_id, a.status]))
-  return props.members
-    .filter((m) => m.role === 'player')
-    .filter((m) => ['yes', 'maybe'].includes(status.get(m.id) ?? '') || choices.value[m.id])
-    .map((m) => ({ member: m, status: status.get(m.id) ?? null }))
-    .sort((a, b) => (a.member.shirt_number ?? 999) - (b.member.shirt_number ?? 999))
-})
+const nominated = computed(
+  () =>
+    new Set(
+      Object.entries(choices.value)
+        .filter(([, role]) => role !== 'none')
+        .map(([id]) => id),
+    ),
+)
+const candidates = computed(() =>
+  squadCandidates(props.members, props.event.attendances, nominated.value),
+)
+const unavailable = computed(() => unavailableNominees(candidates.value, nominated.value))
 
 const counts = computed(() => {
   const c: Record<SquadRole, number> = { starter: 0, bench: 0, reserve: 0 }
@@ -99,6 +110,12 @@ async function submit() {
             <span v-if="status === 'maybe'" class="squad-editor__muted">
               ({{ t('events.answer.maybe') }})
             </span>
+            <span v-else-if="status === 'no'" class="squad-editor__flag">
+              ({{ t('events.answer.no') }})
+            </span>
+            <span v-else-if="!status" class="squad-editor__flag">
+              ({{ t('events.nomination.noAnswer') }})
+            </span>
           </span>
           <button
             type="button"
@@ -116,6 +133,13 @@ async function submit() {
           </button>
         </li>
       </ul>
+      <p v-if="unavailable.length" class="squad-editor__warning" role="status">
+        <UiIcon name="alert" :size="20" />
+        <span>
+          <strong>{{ t('events.nomination.unavailable', unavailable.length) }}</strong>
+          {{ unavailable.map((c) => c.member.display_name).join(', ') }}
+        </span>
+      </p>
       <UiButton
         block
         :variant="dirty ? 'primary' : 'secondary'"
@@ -167,6 +191,21 @@ async function submit() {
     color: var(--color-text-muted);
     font-size: $font-sm;
     font-weight: 600;
+  }
+
+  &__flag {
+    color: var(--color-no-text);
+    font-size: $font-sm;
+    font-weight: 700;
+  }
+
+  &__warning {
+    display: flex;
+    gap: $space-2;
+    margin: 0;
+    padding: $space-3;
+    border: 2px dashed var(--color-maybe);
+    border-radius: $radius-lg;
   }
 
   &__list {

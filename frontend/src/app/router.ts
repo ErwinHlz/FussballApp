@@ -155,7 +155,7 @@ export const routes: RouteRecordRaw[] = [
         path: 'drills/:drillId/animation',
         name: 'drill-animation',
         props: true,
-        meta: { title: 'board.title' },
+        meta: { title: 'board.title', back: 'drill' },
         component: () => import('@/features/board/views/BoardEditorView.vue'),
       },
       {
@@ -206,7 +206,7 @@ export const routes: RouteRecordRaw[] = [
       {
         path: 'stats',
         name: 'stats',
-        meta: { requiresTeam: true, title: 'stats.title', back: 'squad' },
+        meta: { requiresTeam: true, title: 'stats.title' },
         component: () => import('@/features/stats/views/StatsView.vue'),
       },
       {

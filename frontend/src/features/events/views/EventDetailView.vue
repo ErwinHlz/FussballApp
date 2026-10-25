@@ -27,6 +27,7 @@ import { useDeleteWithUndo } from '../composables/useDeleteWithUndo'
 import { useEvent, useMyMember, useUpdateEvent } from '../composables/useEvents'
 import { useEventFormat } from '../format'
 import { canRespond, responseState, SQUAD_ROLES, type AttendanceStatus } from '../logic'
+import PageProblem from '@/ui/PageProblem.vue'
 
 const props = defineProps<{ eventId: string }>()
 
@@ -183,9 +184,13 @@ async function remove() {
       <UiSkeleton :lines="2" />
       <UiSkeleton shape="block" height="160px" />
     </div>
-    <p v-else-if="event.isError.value || !e" class="detail__error" role="alert">
-      {{ t('events.loadFailedOne') }}
-    </p>
+    <PageProblem
+      v-else-if="event.isError.value || !e"
+      :title="t('events.loadFailedOne')"
+      :text="t('problem.hint')"
+      :to="{ name: 'events' }"
+      :action="t('problem.toEvents')"
+    />
 
     <template v-else>
       <EventCoachNav v-if="isCoach && e.type === 'training'" :event-id="e.id" active="event" />
@@ -302,7 +307,7 @@ async function remove() {
         aria-labelledby="squad-title"
       >
         <h2 id="squad-title">{{ t('events.nomination.title') }}</h2>
-        <p v-if="myMember" class="detail__nomination" role="status">
+        <p v-if="myMember?.role === 'player'" class="detail__nomination" role="status">
           {{
             myNomination
               ? t('events.nomination.you', { role: t(`events.squadRole.${myNomination.role}`) })
@@ -528,10 +533,6 @@ async function remove() {
     flex: 1;
     flex-direction: column;
     gap: $space-1;
-  }
-
-  &__error {
-    color: var(--color-danger);
   }
 }
 </style>

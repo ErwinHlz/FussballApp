@@ -38,6 +38,7 @@ import {
   useSetPlanStatus,
   useUpdatePlanItem,
 } from '../composables/usePlan'
+import PageProblem from '@/ui/PageProblem.vue'
 
 /**
  * Plan editor (layout "A" in the tactics board look): total time with bar on top, compact
@@ -261,10 +262,20 @@ function togglePublish() {
       <UiSkeleton shape="block" height="48px" />
       <UiSkeleton v-for="n in 3" :key="n" shape="block" height="72px" />
     </div>
-    <p v-else-if="event.isError.value || !e" class="plan__error" role="alert">
-      {{ t('events.loadFailedOne') }}
-    </p>
-    <p v-else-if="!isCoach" role="alert">{{ t('plan.coachOnly') }}</p>
+    <PageProblem
+      v-else-if="event.isError.value || !e"
+      :title="t('events.loadFailedOne')"
+      :text="t('problem.hint')"
+      :to="{ name: 'events' }"
+      :action="t('problem.toEvents')"
+    />
+    <PageProblem
+      v-else-if="!isCoach"
+      icon="lock"
+      :title="t('plan.coachOnly')"
+      :to="{ name: 'event' }"
+      :action="t('problem.toEvent')"
+    />
 
     <template v-else>
       <EventCoachNav :event-id="eventId" active="event-plan" />
@@ -615,10 +626,6 @@ function togglePublish() {
     &:focus-visible {
       @include focus-ring;
     }
-  }
-
-  &__error {
-    color: var(--color-danger);
   }
 }
 

@@ -24,6 +24,7 @@ import {
   useUpdateTemplate,
   useUpdateTemplateItem,
 } from '../composables/useTemplates'
+import PageProblem from '@/ui/PageProblem.vue'
 
 const props = defineProps<{ templateId: string }>()
 
@@ -177,9 +178,13 @@ async function onApplied(eventId: string) {
 <template>
   <section class="template">
     <p v-if="template.isPending.value">{{ t('common.loading') }}</p>
-    <p v-else-if="template.isError.value || !tpl" class="template__error" role="alert">
-      {{ t('templates.loadFailedOne') }}
-    </p>
+    <PageProblem
+      v-else-if="template.isError.value || !tpl"
+      :title="t('templates.loadFailedOne')"
+      :text="t('problem.hint')"
+      :to="{ name: 'templates' }"
+      :action="t('problem.toTemplates')"
+    />
 
     <template v-else>
       <header>

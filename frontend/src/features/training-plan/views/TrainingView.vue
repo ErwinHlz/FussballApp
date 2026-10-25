@@ -54,15 +54,20 @@ const list = computed(() =>
             <span class="training__main">
               <span class="training__time">{{ fmt.timeRange(training) }}</span>
               <span v-if="training.location" class="training__muted">{{ training.location }}</span>
+              <!-- Below the time, so the time never wraps next to a long badge. -->
+              <span class="training__badge">
+                <UiBadge v-if="training.is_cancelled" tone="no">{{
+                  t('events.cancelled')
+                }}</UiBadge>
+                <UiBadge v-else-if="training.plan_status === 'published'" tone="yes">
+                  {{ isCoach ? t('plan.published') : t('plan.available') }}
+                </UiBadge>
+                <UiBadge v-else-if="isCoach && training.drillCount" tone="maybe">
+                  {{ t('plan.draftCount', training.drillCount) }}
+                </UiBadge>
+                <UiBadge v-else-if="isCoach">{{ t('plan.none') }}</UiBadge>
+              </span>
             </span>
-            <UiBadge v-if="training.is_cancelled" tone="no">{{ t('events.cancelled') }}</UiBadge>
-            <UiBadge v-else-if="training.plan_status === 'published'" tone="yes">
-              {{ isCoach ? t('plan.published') : t('plan.available') }}
-            </UiBadge>
-            <UiBadge v-else-if="isCoach && training.drillCount" tone="maybe">
-              {{ t('plan.draftCount', training.drillCount) }}
-            </UiBadge>
-            <UiBadge v-else-if="isCoach">{{ t('plan.none') }}</UiBadge>
             <UiIcon name="chevronRight" :size="20" class="training__chevron" />
           </RouterLink>
         </li>
@@ -133,6 +138,16 @@ const list = computed(() =>
 
   &__time {
     font-weight: 800;
+    white-space: nowrap;
+  }
+
+  &__badge {
+    display: flex;
+    margin-top: $space-1;
+
+    &:empty {
+      display: none;
+    }
   }
 
   &__muted {

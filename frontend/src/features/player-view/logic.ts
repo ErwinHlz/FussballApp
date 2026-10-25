@@ -1,4 +1,4 @@
-import { differenceInCalendarDays } from 'date-fns'
+import { addDays, differenceInCalendarDays, format } from 'date-fns'
 import type { TeamEvent } from '@/features/events/logic'
 import { eventEnd } from '@/features/events/logic'
 import type { DrillGroups, SavedGroup } from '@/features/groups/api'
@@ -10,6 +10,14 @@ export function nextEvent(events: TeamEvent[], now: Date = new Date()): TeamEven
       .filter((e) => !e.is_cancelled && eventEnd(e) > now)
       .sort((a, b) => a.starts_at.localeCompare(b.starts_at))[0] ?? null
   )
+}
+
+/**
+ * Local dates (yyyy-MM-dd) of the week strip: today and the six days after it. A rolling week
+ * keeps the next event in view on weekends, when the calendar week is almost over.
+ */
+export function stripDays(now: Date = new Date()): string[] {
+  return Array.from({ length: 7 }, (_, i) => format(addDays(now, i), 'yyyy-MM-dd'))
 }
 
 export type RelativeDay = 'today' | 'tomorrow' | 'inDays' | 'date'

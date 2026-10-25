@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { addDays, format, startOfWeek } from 'date-fns'
+import { format } from 'date-fns'
 import BottomSheet from '@/ui/BottomSheet.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiEmptyState from '@/ui/UiEmptyState.vue'
@@ -23,7 +23,7 @@ import {
   type TeamEvent,
 } from '@/features/events/logic'
 import NextEventCard from '../components/NextEventCard.vue'
-import { nextEvent } from '../logic'
+import { nextEvent, stripDays } from '../logic'
 
 const { t } = useI18n()
 const fmt = useEventFormat()
@@ -49,19 +49,17 @@ const waiting = computed(() =>
   upcoming.value.filter((e) => seenWaiting.value.has(e.id) && e.id !== next.value?.id),
 )
 
-// This week, Monday to Sunday, with a mark per event type.
+// The next seven days from today, with a mark per event type.
 const isoDay = (d: Date) => format(d, 'yyyy-MM-dd')
 const today = isoDay(new Date())
-const week = computed<WeekDay[]>(() => {
-  const monday = startOfWeek(new Date(), { weekStartsOn: 1 })
-  return Array.from({ length: 7 }, (_, i) => {
-    const date = isoDay(addDays(monday, i))
+const week = computed<WeekDay[]>(() =>
+  stripDays().map((date) => {
     const marks = (events.data.value ?? [])
       .filter((e) => !e.is_cancelled && isoDay(new Date(e.starts_at)) === date)
       .map((e) => e.type)
     return { date, marks }
-  })
-})
+  }),
+)
 const selectedDay = ref<string | null>(null)
 const dayEvents = computed(() =>
   selectedDay.value
@@ -104,7 +102,7 @@ async function confirmAttendAll() {
   <div class="home">
     <h1 class="visually-hidden">{{ t('nav.start') }}</h1>
 
-    <WeekStrip v-model="selectedDay" :days="week" :today="today" :label="t('player.thisWeek')" />
+    <WeekStrip v-model="selectedDay" :days="week" :today="today" :label="t('player.nextDays')" />
     <section v-if="selectedDay" class="home__day" :aria-label="t('player.dayEvents')">
       <EventRow
         v-for="event in dayEvents"

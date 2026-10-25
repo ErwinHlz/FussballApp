@@ -76,7 +76,15 @@ const isDisabled = computed(() => props.disabled || props.loading)
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.55;
+  }
+
+  // Disabled is neutral grey in every variant and theme: a faded accent looked like the light
+  // accent of the dark theme, so an active main button could pass for a disabled one.
+  // A loading button (aria-busy) keeps its color.
+  &:disabled:not([aria-busy]) {
+    border-color: var(--color-border);
+    background: var(--color-surface-muted);
+    color: var(--color-text-muted);
   }
 
   &--lg {

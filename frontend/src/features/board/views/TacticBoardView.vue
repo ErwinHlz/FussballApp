@@ -12,6 +12,7 @@ import BoardEditor from '../components/BoardEditor.vue'
 import { useSquadNames } from '../composables/useSquadNames'
 import { useBoard, useDeleteBoard, useSaveBoard } from '../boards'
 import { animationSchema, emptyAnimation, parseAnimation, type Animation } from '../schema'
+import PageProblem from '@/ui/PageProblem.vue'
 
 /** A standalone tactics board (set plays, ideas) that can be attached to drills. */
 const props = defineProps<{ boardId: string }>()
@@ -104,10 +105,20 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
 <template>
   <section class="tactic">
     <p v-if="board.isPending.value">{{ t('common.loading') }}</p>
-    <p v-else-if="board.isError.value || !board.data.value" class="tactic__error" role="alert">
-      {{ t('boards.loadFailedOne') }}
-    </p>
-    <p v-else-if="!canEdit" role="alert">{{ t('plan.coachOnly') }}</p>
+    <PageProblem
+      v-else-if="board.isError.value || !board.data.value"
+      :title="t('boards.loadFailedOne')"
+      :text="t('problem.hint')"
+      :to="{ name: 'tactic-boards' }"
+      :action="t('problem.toBoards')"
+    />
+    <PageProblem
+      v-else-if="!canEdit"
+      icon="lock"
+      :title="t('plan.coachOnly')"
+      :to="{ name: 'tactic-boards' }"
+      :action="t('problem.toBoards')"
+    />
 
     <template v-else>
       <header>

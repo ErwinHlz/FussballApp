@@ -10,7 +10,7 @@ export type WeekDay = {
 }
 
 /**
- * Monday-to-Sunday strip with a mark per event type. Marks differ in shape (round training,
+ * Strip of seven days with a mark per event type. Marks differ in shape (round training,
  * square match, diamond event), not only in color.
  */
 const props = defineProps<{ days: WeekDay[]; today: string; label: string }>()

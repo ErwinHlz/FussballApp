@@ -100,7 +100,9 @@
       "you": "You are nominated: {role}",
       "notYou": "You are not nominated for this match.",
       "tapHint": "Tap the role to switch it.",
-      "roleOf": "{name}: {role} – tap to switch"
+      "roleOf": "{name}: {role} – tap to switch",
+      "noAnswer": "no answer",
+      "unavailable": "{n} nominee declined or has not answered: | {n} nominees declined or have not answered:"
     },
     "coachActions": "Coach actions",
     "edit": "Edit",
@@ -690,7 +692,9 @@
       "white": "White"
     },
     "quickTitle": "Quick assign",
-    "allAssigned": "Everyone who said yes is assigned"
+    "allAssigned": "Everyone who said yes is assigned",
+    "poolNoGroups": "Available",
+    "noGroupsHere": "No groups – everyone together"
   },
   "player": {
     "upNext": "Up next",
@@ -712,7 +716,7 @@
     "allDetails": "All details",
     "yourBibs": "Your bibs",
     "allDrills": "all drills",
-    "thisWeek": "This week",
+    "nextDays": "The next 7 days",
     "dayEvents": "Events on this day",
     "noEventThatDay": "No event on this day.",
     "waiting": "Waiting for your answer",
@@ -724,7 +728,9 @@
     "animationOf": "Animation: {title}",
     "createAnimation": "Create animation",
     "editAnimation": "Edit animation",
-    "coachOnly": "Only coaches can edit animations of their own drills. Copy a library drill to your team to adapt it.",
+    "coachOnly": "Only the team's coaches can edit the animation.",
+    "copyFirst": "This drill is from the library. Copy it to your team, then you can adapt the animation.",
+    "copyAndEdit": "Copy to {team} and edit",
     "mode": "Mode",
     "edit": "Edit",
     "preview": "Preview",
@@ -1175,5 +1181,14 @@
         "player": "Player"
       }
     }
+  },
+  "problem": {
+    "hint": "It may have been deleted, or you no longer have access. Otherwise please check your internet connection.",
+    "toEvents": "To the events",
+    "toEvent": "To the event",
+    "toDrills": "To the drills",
+    "toBoards": "To the boards",
+    "toTemplates": "To the templates",
+    "toTeams": "To my teams"
   }
 }

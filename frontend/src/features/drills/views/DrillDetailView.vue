@@ -15,6 +15,7 @@ import { useEventGroups } from '@/features/groups/composables/useGroups'
 import { useMyMember } from '@/features/events/composables/useEvents'
 import { playersLabel } from '../logic'
 import { useCopyDrill, useDeleteDrill, useDrill } from '../composables/useDrills'
+import PageProblem from '@/ui/PageProblem.vue'
 
 const props = defineProps<{ drillId: string }>()
 
@@ -76,9 +77,13 @@ async function remove() {
 <template>
   <article class="drill">
     <p v-if="drill.isPending.value">{{ t('common.loading') }}</p>
-    <p v-else-if="drill.isError.value || !d" class="drill__error" role="alert">
-      {{ t('drills.loadFailedOne') }}
-    </p>
+    <PageProblem
+      v-else-if="drill.isError.value || !d"
+      :title="t('drills.loadFailedOne')"
+      :text="t('problem.hint')"
+      :to="{ name: 'drills' }"
+      :action="t('problem.toDrills')"
+    />
 
     <template v-else>
       <!-- Media first and full width: players open a drill to see how it works. -->

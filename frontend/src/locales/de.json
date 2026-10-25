@@ -100,7 +100,9 @@
       "you": "Du bist nominiert: {role}",
       "notYou": "Du bist für dieses Spiel nicht nominiert.",
       "tapHint": "Tipp auf die Rolle, um sie zu wechseln.",
-      "roleOf": "{name}: {role} – tippen zum Wechseln"
+      "roleOf": "{name}: {role} – tippen zum Wechseln",
+      "noAnswer": "keine Antwort",
+      "unavailable": "{n} Nominierter hat abgesagt oder nicht geantwortet: | {n} Nominierte haben abgesagt oder nicht geantwortet:"
     },
     "coachActions": "Trainer-Aktionen",
     "edit": "Bearbeiten",
@@ -690,7 +692,9 @@
       "white": "Weiß"
     },
     "quickTitle": "Schnell einteilen",
-    "allAssigned": "Alle Zusagen sind eingeteilt"
+    "allAssigned": "Alle Zusagen sind eingeteilt",
+    "poolNoGroups": "Verfügbar",
+    "noGroupsHere": "Ohne Gruppen – alle zusammen"
   },
   "player": {
     "upNext": "Als Nächstes",
@@ -712,7 +716,7 @@
     "allDetails": "Alle Details",
     "yourBibs": "Deine Leibchen",
     "allDrills": "alle Übungen",
-    "thisWeek": "Diese Woche",
+    "nextDays": "Die nächsten 7 Tage",
     "dayEvents": "Termine an diesem Tag",
     "noEventThatDay": "An diesem Tag ist kein Termin.",
     "waiting": "Wartet auf deine Antwort",
@@ -724,7 +728,9 @@
     "animationOf": "Animation: {title}",
     "createAnimation": "Animation erstellen",
     "editAnimation": "Animation bearbeiten",
-    "coachOnly": "Nur Trainer können Animationen für eigene Übungen bearbeiten. Kopiere eine Bibliotheksübung in deine Mannschaft, um sie anzupassen.",
+    "coachOnly": "Nur Trainer der Mannschaft können die Animation bearbeiten.",
+    "copyFirst": "Diese Übung stammt aus der Bibliothek. Kopiere sie in deine Mannschaft, dann kannst du die Animation anpassen.",
+    "copyAndEdit": "In {team} kopieren und bearbeiten",
     "mode": "Modus",
     "edit": "Bearbeiten",
     "preview": "Vorschau",
@@ -1175,5 +1181,14 @@
         "player": "Spieler"
       }
     }
+  },
+  "problem": {
+    "hint": "Vielleicht wurde es gelöscht, oder du hast keinen Zugriff mehr. Sonst prüf bitte deine Internetverbindung.",
+    "toEvents": "Zu den Terminen",
+    "toEvent": "Zum Termin",
+    "toDrills": "Zu den Übungen",
+    "toBoards": "Zu den Tafeln",
+    "toTemplates": "Zu den Vorlagen",
+    "toTeams": "Zu meinen Mannschaften"
   }
 }

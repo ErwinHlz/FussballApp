@@ -14,7 +14,9 @@ import {
   generateSeriesOccurrences,
   responseState,
   splitEvents,
+  squadCandidates,
   summarizeAttendance,
+  unavailableNominees,
   unansweredEvents,
   type Attendance,
   type TeamEvent,
@@ -377,5 +379,34 @@ describe('deadlineOffset', () => {
     expect(deadlineOffset(24)).toEqual({ unit: 'days', n: 1 })
     expect(deadlineOffset(6)).toEqual({ unit: 'hours', n: 6 })
     expect(deadlineOffset(30)).toEqual({ unit: 'hours', n: 30 })
+  })
+})
+
+describe('squadCandidates', () => {
+  const players = [
+    member({ id: 'p1', shirt_number: 1 }),
+    member({ id: 'p2', shirt_number: 2 }),
+    member({ id: 'p3', shirt_number: 3 }),
+    member({ id: 'p4', shirt_number: 4 }),
+    member({ id: 'p5', shirt_number: 5 }),
+    member({ id: 'c', role: 'coach', shirt_number: null }),
+  ]
+  const answers = [attendance('p2', 'yes'), attendance('p3', 'no'), attendance('p4', 'maybe')]
+
+  it('offers yes and maybe, keeps nominated players and puts unavailable ones last', () => {
+    const nominated = new Set(['p1', 'p3'])
+    const result = squadCandidates(players, answers, nominated)
+    expect(result.map((c) => [c.member.id, c.status])).toEqual([
+      ['p2', 'yes'],
+      ['p4', 'maybe'],
+      ['p1', null],
+      ['p3', 'no'],
+    ])
+    expect(unavailableNominees(result, nominated).map((c) => c.member.id)).toEqual(['p1', 'p3'])
+  })
+
+  it('has no warning when every nominee said yes or maybe', () => {
+    const nominated = new Set(['p2', 'p4'])
+    expect(unavailableNominees(squadCandidates(players, answers, nominated), nominated)).toEqual([])
   })
 })

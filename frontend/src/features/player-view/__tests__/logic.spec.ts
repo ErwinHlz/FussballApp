@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { TeamEvent } from '@/features/events/logic'
 import type { DrillGroups } from '@/features/groups/api'
-import { myGroupsByDrill, nextEvent, relativeDay } from '../logic'
+import { myGroupsByDrill, nextEvent, relativeDay, stripDays } from '../logic'
 
 const local = (d: number, h = 19) => new Date(2030, 0, d, h, 0)
 
@@ -72,5 +72,33 @@ describe('myGroupsByDrill', () => {
     expect(map.get('ed1')?.color).toBe('red')
     expect(map.has('ed2')).toBe(false)
     expect(myGroupsByDrill(drills, null).size).toBe(0)
+  })
+})
+
+describe('stripDays', () => {
+  it('starts today and covers the next seven days, also on a Sunday', () => {
+    // Sunday, 25 October 2026: the next training on Tuesday must be in the strip.
+    const days = stripDays(new Date(2026, 9, 25, 9))
+    expect(days).toEqual([
+      '2026-10-25',
+      '2026-10-26',
+      '2026-10-27',
+      '2026-10-28',
+      '2026-10-29',
+      '2026-10-30',
+      '2026-10-31',
+    ])
+  })
+
+  it('runs across the end of a month on a Saturday', () => {
+    expect(stripDays(new Date(2026, 9, 31, 23))).toEqual([
+      '2026-10-31',
+      '2026-11-01',
+      '2026-11-02',
+      '2026-11-03',
+      '2026-11-04',
+      '2026-11-05',
+      '2026-11-06',
+    ])
   })
 })

@@ -58,9 +58,17 @@ describe('AnimationPlayer', () => {
 
 const saveMutate = vi.fn()
 const drillData = ref<Record<string, unknown> | undefined>(undefined)
+const copyMutate = vi.fn()
+const activeTeamData = ref({
+  team_id: 't1',
+  team_name: 'U17',
+  team_role: 'coach',
+  is_club_admin: false,
+})
 
 vi.mock('@/features/drills/composables/useDrills', () => ({
   useDrill: () => ({ data: drillData, isPending: ref(false), isError: ref(false) }),
+  useCopyDrill: () => ({ mutateAsync: copyMutate, isPending: ref(false), isError: ref(false) }),
   useSaveDrillAnimation: () => ({
     mutateAsync: saveMutate,
     isPending: ref(false),
@@ -70,6 +78,7 @@ vi.mock('@/features/drills/composables/useDrills', () => ({
 vi.mock('../composables/useSquadNames', () => ({ useSquadNames: () => ref([]) }))
 vi.mock('@/features/teams/composables/useActiveTeam', () => ({
   useActiveTeam: () => ({
+    activeTeam: activeTeamData,
     myTeams: { data: ref([{ team_id: 't1', team_role: 'coach', is_club_admin: false }]) },
   }),
 }))
@@ -79,7 +88,13 @@ async function mountEditor() {
     history: createMemoryHistory(),
     routes: [
       { path: '/drills/:drillId/animation', component: BoardEditorView, props: true },
+      {
+        path: '/drills/:drillId/animation',
+        name: 'drill-animation',
+        component: { template: '<div />' },
+      },
       { path: '/drills/:drillId', name: 'drill', component: { template: '<div />' } },
+      { path: '/drills', name: 'drills', component: { template: '<div />' } },
     ],
   })
   await router.push('/drills/d1/animation')
@@ -96,6 +111,13 @@ describe('BoardEditorView', () => {
   beforeEach(() => {
     i18n.global.locale.value = 'de'
     saveMutate.mockReset().mockResolvedValue({})
+    copyMutate.mockReset().mockResolvedValue({ id: 'copy1' })
+    activeTeamData.value = {
+      team_id: 't1',
+      team_name: 'U17',
+      team_role: 'coach',
+      is_club_admin: false,
+    }
     drillData.value = { id: 'd1', team_id: 't1', title: 'Eigene Übung', animation: null }
   })
 
@@ -134,9 +156,27 @@ describe('BoardEditorView', () => {
     expect(wrapper.findAll('.board__object')).toHaveLength(0)
   })
 
-  it('only lets coaches of the drill team edit', async () => {
+  it('offers a coach to copy a library drill and then edit the copy', async () => {
     drillData.value = { id: 'd1', team_id: null, title: 'Bibliothek', animation: null }
     const wrapper = await mountEditor()
-    expect(wrapper.text()).toContain('Nur Trainer können Animationen')
+    expect(wrapper.get('h1').text()).toBe('Taktiktafel')
+    expect(wrapper.text()).toContain('stammt aus der Bibliothek')
+
+    await button(wrapper, 'In U17 kopieren und bearbeiten').trigger('click')
+    await flushPromises()
+    expect(copyMutate).toHaveBeenCalledWith({ drillId: 'd1', teamId: 't1' })
+  })
+
+  it('only tells players that coaches edit animations', async () => {
+    drillData.value = { id: 'd1', team_id: null, title: 'Bibliothek', animation: null }
+    activeTeamData.value = {
+      team_id: 't1',
+      team_name: 'U17',
+      team_role: 'player',
+      is_club_admin: false,
+    }
+    const wrapper = await mountEditor()
+    expect(wrapper.text()).toContain('Nur Trainer der Mannschaft')
+    expect(wrapper.text()).not.toContain('kopieren')
   })
 })
