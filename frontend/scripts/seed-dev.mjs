@@ -7,7 +7,7 @@
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
-import { DEV_ACCOUNTS, DEV_PASSWORD } from '../src/dev/accounts.ts'
+import { DEV_ACCOUNTS, DEV_CLUBS, DEV_PASSWORD } from '../src/dev/accounts.ts'
 
 function env(name) {
   if (process.env[name]) return process.env[name]
@@ -55,7 +55,10 @@ const order = { player: 0, coach: 1, admin: 2 }
 let removed = 0
 for (const account of [...DEV_ACCOUNTS].sort((a, b) => order[a.role] - order[b.role])) {
   const sb = client()
-  const { error } = await sb.auth.signInWithPassword({ email: account.email, password: DEV_PASSWORD })
+  const { error } = await sb.auth.signInWithPassword({
+    email: account.email,
+    password: DEV_PASSWORD,
+  })
   if (error) continue
   must(await sb.rpc('delete_my_account'), `delete ${account.email}`)
   removed++
@@ -102,11 +105,7 @@ for (const [name, season] of [
   ['Damen', '2026/27'],
 ]) {
   teams[name] = must(
-    await admin
-      .from('teams')
-      .insert({ club_id: club.id, name, season })
-      .select()
-      .single(),
+    await admin.from('teams').insert({ club_id: club.id, name, season }).select().single(),
     `team ${name}`,
   )
 }
@@ -122,7 +121,7 @@ async function join(email, teamName, role) {
   )
   must(await as(email).rpc('accept_team_invite', { p_token: invite.token }), `join ${email}`)
 }
-for (const account of DEV_ACCOUNTS.filter((a) => a.team)) {
+for (const account of DEV_ACCOUNTS.filter((a) => a.team && a.club === 'SV Rondo 1920')) {
   await join(account.email, account.team, account.role)
 }
 
@@ -235,6 +234,7 @@ await insertEvent('U17', {
   is_home: true,
   competition: 'cup',
 })
+// Home matches on a club pitch show in the schedule (the U17 cup match above has no pitch).
 const sunday = nextWeekday(0, 2)
 const damenKickoff = at(sunday, 11)
 await insertEvent('Damen', {
@@ -345,7 +345,8 @@ for (const drill of [
     min_players: 6,
     max_players: 16,
     equipment: ['Bälle', 'Hütchen'],
-    description: 'Doppelpass mit dem Trainer an der Strafraumkante, Abschluss mit dem ersten Kontakt.',
+    description:
+      'Doppelpass mit dem Trainer an der Strafraumkante, Abschluss mit dem ersten Kontakt.',
   },
 ]) {
   must(await u17.from('drills').insert({ team_id: teams.U17.id, ...drill }), 'drill')
@@ -440,5 +441,105 @@ try {
   console.warn('Skipped the training history (needs the local Docker container):', error.message)
 }
 
-console.log(`Dev data ready: club "SV Rondo 1920", ${DEV_ACCOUNTS.length} accounts.`)
+// ---------------------------------------------------------------------------
+// 9. Second club "SV Ottweiler": six teams, three pitches and a full week in the pitch
+//    schedule (Monday to Friday, until the end of the season) for testing the schedule.
+// ---------------------------------------------------------------------------
+const OTT = 'SV Ottweiler'
+const ottAdmin = as('vorstand.ottweiler@rondo.test')
+const ottClub = must(await ottAdmin.rpc('create_club', { p_name: OTT }), 'club Ottweiler')
+must(
+  await ottAdmin.rpc('set_club_branding', {
+    p_club_id: ottClub.id,
+    p_logo_path: null,
+    p_accent_color: '#15803d',
+  }),
+  'branding Ottweiler',
+)
+const ottTeams = {}
+for (const name of DEV_CLUBS[OTT]) {
+  ottTeams[name] = must(
+    await ottAdmin
+      .from('teams')
+      .insert({ club_id: ottClub.id, name, season: '2026/27' })
+      .select()
+      .single(),
+    `team ${name}`,
+  )
+}
+const ottCoachOf = {}
+for (const account of DEV_ACCOUNTS.filter((a) => a.team && a.club === OTT)) {
+  const team = ottTeams[account.team]
+  const invite = must(
+    await ottAdmin
+      .from('team_invites')
+      .insert({ team_id: team.id, role: account.role })
+      .select()
+      .single(),
+    'invite',
+  )
+  must(
+    await as(account.email).rpc('accept_team_invite', { p_token: invite.token }),
+    `join ${account.email}`,
+  )
+  if (account.role === 'coach') ottCoachOf[account.team] = as(account.email)
+}
+for (const account of DEV_ACCOUNTS.filter((a) => a.club === OTT && a.role === 'player')) {
+  must(
+    await ottCoachOf[account.team]
+      .from('team_members')
+      .update({ shirt_number: account.shirtNumber, positions: account.positions })
+      .eq('team_id', ottTeams[account.team].id)
+      .eq('user_id', userIds.get(account.email)),
+    `squad ${account.name}`,
+  )
+}
+const ottPitches = Object.fromEntries(
+  must(
+    await ottAdmin
+      .from('pitches')
+      .insert([
+        { club_id: ottClub.id, name: 'Rasenplatz', splittable: true, sort_order: 0 },
+        { club_id: ottClub.id, name: 'Kunstrasen', splittable: true, sort_order: 1 },
+        { club_id: ottClub.id, name: 'Kleinfeld', splittable: false, sort_order: 2 },
+      ])
+      .select(),
+    'pitches Ottweiler',
+  ).map((p) => [p.name, p]),
+)
+// Includes both halves used at once, a free half and trainings right after one another.
+for (const [teamName, pitch, weekday, start, end, part] of [
+  ['C-Jugend (U15)', 'Rasenplatz', 1, '17:00', '18:30', 'b'],
+  ['A-Jugend (U19)', 'Rasenplatz', 1, '18:00', '19:30', 'a'],
+  ['E-Jugend (U11)', 'Kleinfeld', 1, '16:00', '17:00', 'full'],
+  ['SV Ottweiler 2', 'Kunstrasen', 1, '19:00', '20:30', 'full'],
+  ['E-Jugend (U11)', 'Kunstrasen', 2, '15:30', '17:00', 'a'],
+  ['C-Jugend (U15)', 'Kunstrasen', 2, '16:30', '18:00', 'b'],
+  ['SV Ottweiler 1', 'Rasenplatz', 2, '19:00', '20:30', 'full'],
+  ['C-Jugend (U15)', 'Rasenplatz', 3, '17:00', '18:30', 'b'],
+  ['A-Jugend (U19)', 'Rasenplatz', 3, '18:00', '19:30', 'a'],
+  ['SV Ottweiler 2', 'Kunstrasen', 3, '19:00', '20:30', 'full'],
+  ['E-Jugend (U11)', 'Kleinfeld', 4, '16:00', '17:30', 'full'],
+  ['A-Jugend (U19)', 'Kunstrasen', 4, '17:30', '19:00', 'full'],
+  ['SV Ottweiler 1', 'Rasenplatz', 4, '19:00', '20:30', 'full'],
+  ['E-Jugend (U11)', 'Kunstrasen', 5, '15:00', '16:00', 'a'],
+  ['SV Ottweiler 1', 'Kunstrasen', 5, '17:00', '18:30', 'full'],
+  ['Alte Herren', 'Rasenplatz', 5, '18:30', '20:00', 'full'],
+]) {
+  must(
+    await ottCoachOf[teamName].rpc('book_pitch', {
+      p_pitch_id: ottPitches[pitch].id,
+      p_team_id: ottTeams[teamName].id,
+      p_part: part,
+      p_start: start,
+      p_end: end,
+      p_from: day(nextWeekday(weekday, 1)),
+      p_until: null,
+      p_deadline_hours: 24,
+    }),
+    `booking ${teamName}`,
+  )
+}
+
+console.log(`Dev data ready: clubs "SV Rondo 1920" and "${OTT}", ${DEV_ACCOUNTS.length} accounts.`)
 console.log(`Sign in with any account from src/dev/accounts.ts, password "${DEV_PASSWORD}".`)

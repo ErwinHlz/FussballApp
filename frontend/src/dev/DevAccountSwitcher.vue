@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/auth'
 import BottomSheet from '@/ui/BottomSheet.vue'
 import UiAvatar from '@/ui/UiAvatar.vue'
 import UiIcon from '@/ui/UiIcon.vue'
-import { DEV_ACCOUNTS, DEV_PASSWORD, type DevAccount } from './accounts'
+import { DEV_ACCOUNTS, DEV_CLUBS, DEV_PASSWORD, type DevAccount, type DevClub } from './accounts'
 
 /**
  * Debug tool for development builds only (see App.vue): a handle at the left edge opens the
@@ -22,14 +22,22 @@ const open = ref(false)
 const busy = ref<string | null>(null)
 const failed = ref<string | null>(null)
 
-const groups = computed(() => [
-  { key: 'club', title: t('dev.switcher.club'), accounts: DEV_ACCOUNTS.filter((a) => !a.team) },
-  ...(['U17', 'Damen'] as const).map((team) => ({
-    key: team,
-    title: team,
-    accounts: DEV_ACCOUNTS.filter((a) => a.team === team),
-  })),
-])
+const clubs = computed(() =>
+  (Object.keys(DEV_CLUBS) as DevClub[]).map((club) => {
+    const ofClub = DEV_ACCOUNTS.filter((a) => a.club === club)
+    return {
+      name: club,
+      groups: [
+        { key: 'club', title: t('dev.switcher.club'), accounts: ofClub.filter((a) => !a.team) },
+        ...DEV_CLUBS[club].map((team) => ({
+          key: team,
+          title: team,
+          accounts: ofClub.filter((a) => a.team === team),
+        })),
+      ],
+    }
+  }),
+)
 
 async function switchTo(account: DevAccount) {
   busy.value = account.email
@@ -72,39 +80,52 @@ async function switchTo(account: DevAccount) {
     <p v-if="failed" class="dev-switcher__error" role="alert">
       {{ t('dev.switcher.failed') }}
     </p>
-    <section v-for="group in groups" :key="group.key" class="dev-switcher__group">
-      <h3 class="dev-switcher__group-title">{{ group.title }}</h3>
-      <ul class="dev-switcher__list" role="list">
-        <li v-for="account in group.accounts" :key="account.email">
-          <button
-            type="button"
-            class="dev-switcher__account"
-            :aria-current="auth.user?.email === account.email ? 'true' : undefined"
-            :disabled="!!busy"
-            @click="switchTo(account)"
-          >
-            <UiAvatar :name="account.name" :size="36" />
-            <span class="dev-switcher__text">
-              <span class="dev-switcher__name">{{ account.name }}</span>
-              <span class="dev-switcher__meta">
-                {{ t(`dev.switcher.roles.${account.role}`) }} · {{ account.email }}
+    <section v-for="club in clubs" :key="club.name" class="dev-switcher__club">
+      <h3 class="dev-switcher__club-title">{{ club.name }}</h3>
+      <section v-for="group in club.groups" :key="group.key" class="dev-switcher__group">
+        <h4 class="dev-switcher__group-title">{{ group.title }}</h4>
+        <ul class="dev-switcher__list" role="list">
+          <li v-for="account in group.accounts" :key="account.email">
+            <button
+              type="button"
+              class="dev-switcher__account"
+              :aria-current="auth.user?.email === account.email ? 'true' : undefined"
+              :disabled="!!busy"
+              @click="switchTo(account)"
+            >
+              <UiAvatar :name="account.name" :size="36" />
+              <span class="dev-switcher__text">
+                <span class="dev-switcher__name">{{ account.name }}</span>
+                <span class="dev-switcher__meta">
+                  {{ t(`dev.switcher.roles.${account.role}`) }} · {{ account.email }}
+                </span>
               </span>
-            </span>
-            <UiIcon
-              v-if="auth.user?.email === account.email"
-              name="check"
-              :size="20"
-              class="dev-switcher__current"
-            />
-          </button>
-        </li>
-      </ul>
+              <UiIcon
+                v-if="auth.user?.email === account.email"
+                name="check"
+                :size="20"
+                class="dev-switcher__current"
+              />
+            </button>
+          </li>
+        </ul>
+      </section>
     </section>
   </BottomSheet>
 </template>
 
 <style scoped lang="scss">
 .dev-switcher {
+  &__club + &__club {
+    margin-top: $space-6;
+  }
+
+  &__club-title {
+    margin-bottom: $space-2;
+    font-size: $font-lg;
+    font-weight: 800;
+  }
+
   &__handle {
     @include focus-visible;
 
