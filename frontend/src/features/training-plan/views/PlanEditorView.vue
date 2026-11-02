@@ -414,6 +414,7 @@ function togglePublish() {
           <span class="visually-hidden">{{ t('plan.notesLabel') }}</span>
           <textarea
             v-model="notesText"
+            class="field-box"
             rows="4"
             maxlength="1000"
             :placeholder="t('plan.notesPlaceholder')"
@@ -610,21 +611,6 @@ function togglePublish() {
 
     &--on {
       background: var(--color-yes);
-    }
-  }
-
-  &__notes textarea {
-    width: 100%;
-    padding: $space-3;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-lg;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font: inherit;
-    resize: vertical;
-
-    &:focus-visible {
-      @include focus-ring;
     }
   }
 }

@@ -247,7 +247,7 @@
     "empty": "No training planned yet",
     "emptyHint": "Create a training or a training series under “Events”.",
     "libraryTitle": "Drill library",
-    "libraryText": "Standard drills and your team's drills, with description and video.",
+    "libraryText": "Standard drills and your team's drills, with description and animation.",
     "openLibrary": "Open library",
     "plansSoon": "Training plans for single events are coming next.",
     "upcoming": "Upcoming trainings",
@@ -568,8 +568,20 @@
         "squad": "Players and equipment",
         "media": "Video",
         "check": "check",
-        "mediaHint": "Upload your own video or draw an animation on the drill page after saving.",
-        "actions": "Save drill"
+        "actions": "Save drill",
+        "basics": "Core data",
+        "animation": "Picture and animation",
+        "mediaHint": "You add your own videos on the drill page after saving."
+      },
+      "hours": "{n} h",
+      "hoursLabel": "Hours",
+      "minutesLabel": "Minutes",
+      "animation": {
+        "empty": "No picture yet",
+        "summary": "One step · {seconds} s | {steps} steps · {seconds} s",
+        "hint": "Show with players, equipment and runs how the drill works.",
+        "apply": "Apply",
+        "discardConfirm": "Discard the changes to the animation?"
       }
     },
     "upload": {
@@ -596,8 +608,8 @@
     "filter": {
       "label": "Filter",
       "labelActive": "Filter ({n} active)",
-      "media": "Only with animation or video",
-      "mediaShort": "With animation/video",
+      "media": "Only with animation",
+      "mediaShort": "With animation",
       "remove": "Remove filter “{name}”",
       "reset": "Reset",
       "resetAll": "Reset all filters",

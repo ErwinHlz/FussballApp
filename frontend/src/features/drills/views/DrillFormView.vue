@@ -1,16 +1,29 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, toRaw, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import UiChipGroup from '@/ui/UiChipGroup.vue'
 import UiTextarea from '@/ui/UiTextarea.vue'
 import ActionBar from '@/ui/ActionBar.vue'
+import BottomSheet from '@/ui/BottomSheet.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import UiInput from '@/ui/UiInput.vue'
+import UiWheel from '@/ui/UiWheel.vue'
+import UiWheelPicker from '@/ui/UiWheelPicker.vue'
+import { FEATURES } from '@/lib/features'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
+import BoardEditor from '@/features/board/components/BoardEditor.vue'
+import { useSquadNames } from '@/features/board/composables/useSquadNames'
+import {
+  animationSchema,
+  emptyAnimation,
+  parseAnimation,
+  type Animation,
+} from '@/features/board/schema'
+import type { Json } from '@/types/database'
+import DrillThumb from '../components/DrillThumb.vue'
 import YouTubeEmbed from '../components/YouTubeEmbed.vue'
 import type { DrillInput } from '../api'
 import { DRILL_CATEGORIES, parseEquipment, parseYouTubeId } from '../logic'
@@ -40,6 +53,9 @@ const [maxPlayers] = defineField('maxPlayers')
 const [equipment] = defineField('equipment')
 const [videoUrl] = defineField('videoUrl')
 
+// The animation lives in the form and is saved with the drill (also for a new drill).
+const animation = ref<Animation | null>(null)
+
 watch(
   () => existing?.data.value,
   (drill) => {
@@ -56,8 +72,10 @@ watch(
         videoUrl: drill.video_url ?? '',
       },
     })
+    animation.value = parseAnimation(drill.animation)
     // Sections with content start open.
     open.squad = !!(drill.min_players || drill.max_players || drill.equipment.length)
+    open.animation = !!animation.value
     open.media = !!drill.video_url
   },
   { immediate: true },
@@ -66,6 +84,33 @@ watch(
 const categoryOptions = computed(() =>
   DRILL_CATEGORIES.map((c) => ({ value: c, label: t(`drills.categories.${c}`) })),
 )
+// Duration as hours and minutes (5-minute steps, plus an older value off that grid). The
+// database allows at most 3 hours, so 3 hours sets the minutes to 0.
+const MAX_DURATION = 180
+const total = computed(() => Number(durationMin.value) || 0)
+function setDuration(hours: number, minutes: number) {
+  const value = Math.min(MAX_DURATION, hours * 60 + minutes)
+  durationMin.value = value ? String(value) : ''
+}
+const durationHours = computed({
+  get: () => String(Math.floor(total.value / 60)),
+  set: (h) => setDuration(Number(h), total.value % 60),
+})
+const durationMinutes = computed({
+  get: () => String(total.value % 60),
+  set: (m) => setDuration(Math.floor(total.value / 60), Number(m)),
+})
+const hourOptions = computed(() =>
+  [0, 1, 2, 3].map((n) => ({ value: String(n), label: t('drills.form.hours', { n }) })),
+)
+const minuteOptions = computed(() => {
+  const minutes = Array.from({ length: 12 }, (_, i) => i * 5)
+  const current = total.value % 60
+  if (!minutes.includes(current)) minutes.push(current)
+  return minutes
+    .sort((a, b) => a - b)
+    .map((n) => ({ value: String(n), label: t('drills.minutes', { n }) }))
+})
 const previewUrl = computed(() =>
   videoUrl.value && parseYouTubeId(videoUrl.value) ? videoUrl.value : null,
 )
@@ -73,12 +118,63 @@ const isSaving = computed(() => createDrill.isPending.value || updateDrill.isPen
 const saveFailed = computed(() => createDrill.isError.value || updateDrill.isError.value)
 const err = (key: string | undefined) => (key ? t(key) : undefined)
 
-// Three sections instead of one long page: basics always open, the others on demand.
-const open = reactive({ squad: false, media: false })
+// Folding sections instead of one long page: the core data starts open, the others on demand.
+const open = reactive({ basics: true, squad: false, animation: false, media: false })
 const sectionErrors = computed(() => ({
+  basics: !!(errors.value.title || errors.value.description),
   squad: !!(errors.value.minPlayers || errors.value.maxPlayers || errors.value.equipment),
   media: !!errors.value.videoUrl,
 }))
+
+// --- Animation builder in a full-screen window -------------------------------------------
+const squadNames = useSquadNames(() => teamId.value)
+const builderOpen = ref(false)
+const builderDraft = ref<Animation>(emptyAnimation())
+let builderStart = ''
+const builderError = ref(false)
+const animationSummary = computed(() =>
+  animation.value
+    ? t(
+        'drills.form.animation.summary',
+        {
+          steps: animation.value.keyframes.length,
+          seconds: (animation.value.durationMs / 1000).toLocaleString(),
+        },
+        animation.value.keyframes.length,
+      )
+    : t('drills.form.animation.empty'),
+)
+
+function openBuilder() {
+  builderDraft.value = structuredClone(toRaw(animation.value) ?? emptyAnimation())
+  builderStart = JSON.stringify(builderDraft.value)
+  builderError.value = false
+  builderOpen.value = true
+}
+
+/** Closing without taking over the changes asks first. */
+function canCloseBuilder() {
+  return (
+    JSON.stringify(builderDraft.value) === builderStart ||
+    window.confirm(t('drills.form.animation.discardConfirm'))
+  )
+}
+
+function cancelBuilder() {
+  if (canCloseBuilder()) builderOpen.value = false
+}
+
+function applyBuilder() {
+  const result = animationSchema.safeParse(builderDraft.value)
+  if (!result.success) {
+    builderError.value = true
+    return
+  }
+  // An empty pitch is no animation.
+  animation.value = result.data.objects.length ? (result.data as Animation) : null
+  builderStart = JSON.stringify(builderDraft.value)
+  builderOpen.value = false
+}
 
 const onSubmit = handleSubmit(
   async (values) => {
@@ -91,6 +187,7 @@ const onSubmit = handleSubmit(
       max_players: toCount(values.maxPlayers),
       equipment: parseEquipment(values.equipment),
       video_url: values.videoUrl || null,
+      animation: (animation.value as unknown as Json) ?? null,
     }
     const saved = props.drillId
       ? await updateDrill.mutateAsync({ drillId: props.drillId, input })
@@ -99,6 +196,7 @@ const onSubmit = handleSubmit(
   },
   () => {
     // Show the section that holds the error.
+    if (sectionErrors.value.basics) open.basics = true
     if (sectionErrors.value.squad) open.squad = true
     if (sectionErrors.value.media) open.media = true
   },
@@ -112,46 +210,69 @@ const onSubmit = handleSubmit(
     <p v-if="existing?.isPending.value">{{ t('common.loading') }}</p>
 
     <form v-else class="drill-form__form" novalidate @submit="onSubmit">
-      <!-- Basics without a heading: the page title already says what this is. -->
-      <div class="drill-form__section">
-        <UiInput
-          v-model="title"
-          :label="t('drills.form.title')"
-          required
-          :error="err(errors.title)"
-        />
-        <UiChipGroup v-model="category" :label="t('drills.category')" :options="categoryOptions" />
-        <div class="drill-form__row">
+      <details
+        class="fold"
+        :open="open.basics"
+        @toggle="open.basics = ($event.target as HTMLDetailsElement).open"
+      >
+        <summary class="fold__summary">
+          <span class="fold__title">{{ t('drills.form.sections.basics') }}</span>
+          <span v-if="sectionErrors.basics" class="fold__flag">
+            <UiIcon name="alert" :size="16" />{{ t('drills.form.sections.check') }}
+          </span>
+          <UiIcon name="chevronDown" :size="20" class="fold__chevron" />
+        </summary>
+        <div class="fold__body">
           <UiInput
-            v-model="durationMin"
-            :label="t('drills.form.duration')"
-            type="number"
-            inputmode="numeric"
-            :error="err(errors.durationMin)"
+            v-model="title"
+            :label="t('drills.form.title')"
+            required
+            :error="err(errors.title)"
+          />
+          <div class="drill-form__row">
+            <UiWheelPicker :label="t('drills.category')">
+              <UiWheel
+                v-model="category"
+                :label="t('drills.category')"
+                :options="categoryOptions"
+              />
+            </UiWheelPicker>
+            <UiWheelPicker :label="t('drills.duration')">
+              <UiWheel
+                v-model="durationHours"
+                :label="t('drills.form.hoursLabel')"
+                :options="hourOptions"
+              />
+              <UiWheel
+                v-model="durationMinutes"
+                :label="t('drills.form.minutesLabel')"
+                :options="minuteOptions"
+              />
+            </UiWheelPicker>
+          </div>
+          <UiTextarea
+            v-model="description"
+            :label="t('drills.form.description')"
+            :placeholder="t('drills.form.descriptionPlaceholder')"
+            :rows="6"
+            :error="err(errors.description)"
           />
         </div>
-        <UiTextarea
-          v-model="description"
-          :label="t('drills.form.description')"
-          :placeholder="t('drills.form.descriptionPlaceholder')"
-          :rows="6"
-          :error="err(errors.description)"
-        />
-      </div>
+      </details>
 
       <details
-        class="drill-form__more"
+        class="fold"
         :open="open.squad"
         @toggle="open.squad = ($event.target as HTMLDetailsElement).open"
       >
-        <summary class="drill-form__summary">
-          <span>{{ t('drills.form.sections.squad') }}</span>
-          <span v-if="sectionErrors.squad" class="drill-form__flag">
+        <summary class="fold__summary">
+          <span class="fold__title">{{ t('drills.form.sections.squad') }}</span>
+          <span v-if="sectionErrors.squad" class="fold__flag">
             <UiIcon name="alert" :size="16" />{{ t('drills.form.sections.check') }}
           </span>
-          <UiIcon name="chevronDown" :size="20" class="drill-form__chevron" />
+          <UiIcon name="chevronDown" :size="20" class="fold__chevron" />
         </summary>
-        <div class="drill-form__body">
+        <div class="fold__body">
           <div class="drill-form__row">
             <UiInput
               v-model="minPlayers"
@@ -178,18 +299,52 @@ const onSubmit = handleSubmit(
       </details>
 
       <details
-        class="drill-form__more"
+        class="fold"
+        :open="open.animation"
+        @toggle="open.animation = ($event.target as HTMLDetailsElement).open"
+      >
+        <summary class="fold__summary">
+          <span class="fold__title">{{ t('drills.form.sections.animation') }}</span>
+          <UiIcon name="chevronDown" :size="20" class="fold__chevron" />
+        </summary>
+        <div class="fold__body">
+          <div class="drill-form__animation">
+            <DrillThumb
+              :drill="{
+                animation: animation as unknown as Json,
+                video_url: null,
+                video_path: null,
+              }"
+              class="drill-form__preview"
+            />
+            <div class="drill-form__animation-text">
+              <p class="drill-form__animation-summary">{{ animationSummary }}</p>
+              <p class="drill-form__hint">{{ t('drills.form.animation.hint') }}</p>
+            </div>
+          </div>
+          <UiButton variant="secondary" block @click="openBuilder">
+            {{ animation ? t('board.editAnimation') : t('board.createAnimation') }}
+          </UiButton>
+          <UiButton v-if="animation" variant="ghost" block @click="animation = null">
+            {{ t('board.removeAnimation') }}
+          </UiButton>
+        </div>
+      </details>
+
+      <details
+        v-if="FEATURES.videos"
+        class="fold"
         :open="open.media"
         @toggle="open.media = ($event.target as HTMLDetailsElement).open"
       >
-        <summary class="drill-form__summary">
-          <span>{{ t('drills.form.sections.media') }}</span>
-          <span v-if="sectionErrors.media" class="drill-form__flag">
+        <summary class="fold__summary">
+          <span class="fold__title">{{ t('drills.form.sections.media') }}</span>
+          <span v-if="sectionErrors.media" class="fold__flag">
             <UiIcon name="alert" :size="16" />{{ t('drills.form.sections.check') }}
           </span>
-          <UiIcon name="chevronDown" :size="20" class="drill-form__chevron" />
+          <UiIcon name="chevronDown" :size="20" class="fold__chevron" />
         </summary>
-        <div class="drill-form__body">
+        <div class="fold__body">
           <UiInput
             v-model="videoUrl"
             :label="t('drills.form.video')"
@@ -206,6 +361,26 @@ const onSubmit = handleSubmit(
       <p v-if="saveFailed" class="drill-form__error" role="alert">
         {{ t('drills.form.saveFailed') }}
       </p>
+
+      <BottomSheet
+        v-model:open="builderOpen"
+        fullscreen
+        :title="t('board.title')"
+        :description="title || undefined"
+        :can-close="canCloseBuilder"
+      >
+        <BoardEditor
+          v-if="builderOpen"
+          v-model="builderDraft"
+          :title="title ?? ''"
+          :squad-names="squadNames"
+        />
+        <p v-if="builderError" class="drill-form__error" role="alert">{{ t('board.invalid') }}</p>
+        <template #footer>
+          <UiButton variant="secondary" @click="cancelBuilder">{{ t('common.cancel') }}</UiButton>
+          <UiButton @click="applyBuilder">{{ t('drills.form.animation.apply') }}</UiButton>
+        </template>
+      </BottomSheet>
 
       <ActionBar :label="t('drills.form.sections.actions')">
         <UiButton variant="secondary" @click="router.back()">{{ t('common.cancel') }}</UiButton>
@@ -229,63 +404,32 @@ const onSubmit = handleSubmit(
     gap: $space-3;
   }
 
-  &__section {
-    display: flex;
-    flex-direction: column;
-    gap: $space-4;
-  }
-
-  &__more {
-    border-radius: $radius-xl;
-    background: var(--color-surface);
-  }
-
-  &__summary {
-    @include focus-visible;
-
+  // Small preview next to the summary; the builder opens in a full-screen window.
+  &__animation {
     display: flex;
     align-items: center;
-    gap: $space-2;
-    min-height: 56px;
-    padding: 0 $space-4;
-    border-radius: $radius-xl;
-    font-family: var(--font-display);
-    font-size: $font-xl;
-    font-weight: 800;
-    cursor: pointer;
-    list-style: none;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-
-    > :first-child {
-      flex: 1;
-    }
+    gap: $space-3;
   }
 
-  &__more[open] &__chevron {
-    transform: rotate(180deg);
+  &__preview {
+    flex-shrink: 0;
+    width: 128px;
   }
 
-  &__flag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--color-danger);
-    font-family: var(--font-sans);
-    font-size: $font-sm;
-  }
-
-  &__body {
+  &__animation-text {
     display: flex;
     flex-direction: column;
-    gap: $space-4;
-    padding: 0 $space-4 $space-4;
+    gap: $space-1;
+    min-width: 0;
+  }
+
+  &__animation-summary {
+    font-weight: 700;
   }
 
   &__row {
     display: grid;
+    align-items: start;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: $space-2;
   }

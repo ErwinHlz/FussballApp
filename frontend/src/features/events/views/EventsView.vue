@@ -217,9 +217,10 @@ function scrollToFirstUnanswered() {
         :text="isCoach ? t('events.emptyHintCoach') : t('events.emptyHint')"
       />
 
-      <details v-if="lists.past.length" class="events__past">
-        <summary class="events__past-summary">
-          {{ t('events.past', { count: lists.past.length }) }}
+      <details v-if="lists.past.length" class="fold fold--compact events__past">
+        <summary class="fold__summary">
+          <span class="fold__title">{{ t('events.past', { count: lists.past.length }) }}</span>
+          <UiIcon name="chevronDown" :size="20" class="fold__chevron" />
         </summary>
         <ul class="events__list" role="list">
           <li v-for="event in lists.past" :key="event.id">
@@ -395,14 +396,8 @@ function scrollToFirstUnanswered() {
     color: var(--color-danger);
   }
 
-  &__past-summary {
-    @include focus-visible;
-
-    min-height: $touch-target;
-    padding: $space-2 0;
+  &__past .fold__summary {
     color: var(--color-text-muted);
-    font-weight: 700;
-    cursor: pointer;
   }
 
   &__past .events__list {

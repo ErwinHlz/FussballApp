@@ -235,10 +235,15 @@ async function tabTo(page: Page, target: ReturnType<Page['locator']>) {
   throw new Error('target not reached with Tab')
 }
 
-/** The focused element must show a focus indicator (outline or box-shadow ring). */
+/**
+ * The focused element must show a focus indicator (outline or box-shadow ring). Form fields
+ * show it on their frame instead (styles/_fields.scss): the frame gets 3px wide.
+ */
 async function expectVisibleFocus(page: Page) {
   const indicator = await page.evaluate(() => {
     const el = document.activeElement as HTMLElement
+    const frame = el.closest('.field')?.querySelector('.field__outline')
+    if (frame) return parseFloat(getComputedStyle(frame).borderTopWidth) >= 3
     const style = getComputedStyle(el)
     const outline = style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0
     return outline || style.boxShadow !== 'none'

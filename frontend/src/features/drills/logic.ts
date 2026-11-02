@@ -1,4 +1,5 @@
 import type { Tables } from '@/types/database'
+import { FEATURES } from '@/lib/features'
 
 export type Drill = Tables<'drills'>
 
@@ -78,7 +79,9 @@ export function filterDrills(drills: Drill[], filter: DrillFilter): Drill[] {
   const query = normalize(filter.query.trim())
   return drills
     .filter((d) => filter.category === 'all' || d.category === filter.category)
-    .filter((d) => !filter.media || !!(d.animation || d.video_url || d.video_path))
+    .filter(
+      (d) => !filter.media || !!(d.animation || (FEATURES.videos && (d.video_url || d.video_path))),
+    )
     .filter((d) => {
       if (filter.scope === 'team') return d.team_id !== null
       if (filter.scope === 'library') return d.team_id === null

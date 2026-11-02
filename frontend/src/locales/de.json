@@ -247,7 +247,7 @@
     "empty": "Noch kein Training geplant",
     "emptyHint": "Leg unter „Termine“ ein Training oder eine Trainingsserie an.",
     "libraryTitle": "Übungsbibliothek",
-    "libraryText": "Standardübungen und die Übungen deiner Mannschaft, mit Beschreibung und Video.",
+    "libraryText": "Standardübungen und die Übungen deiner Mannschaft, mit Beschreibung und Animation.",
     "openLibrary": "Bibliothek öffnen",
     "plansSoon": "Trainingspläne für einzelne Termine folgen im nächsten Schritt.",
     "upcoming": "Nächste Trainings",
@@ -568,8 +568,20 @@
         "squad": "Spieler und Material",
         "media": "Video",
         "check": "prüfen",
-        "mediaHint": "Eigene Videos und Animationen fügst du nach dem Speichern auf der Übungsseite hinzu.",
-        "actions": "Übung speichern"
+        "actions": "Übung speichern",
+        "basics": "Kerndaten",
+        "animation": "Bild und Animation",
+        "mediaHint": "Eigene Videos fügst du nach dem Speichern auf der Übungsseite hinzu."
+      },
+      "hours": "{n} Std.",
+      "hoursLabel": "Stunden",
+      "minutesLabel": "Minuten",
+      "animation": {
+        "empty": "Noch kein Bild",
+        "summary": "Ein Schritt · {seconds} s | {steps} Schritte · {seconds} s",
+        "hint": "Zeig mit Spielern, Material und Laufwegen, wie die Übung abläuft.",
+        "apply": "Übernehmen",
+        "discardConfirm": "Änderungen an der Animation verwerfen?"
       }
     },
     "upload": {
@@ -596,8 +608,8 @@
     "filter": {
       "label": "Filter",
       "labelActive": "Filter ({n} aktiv)",
-      "media": "Nur mit Animation oder Video",
-      "mediaShort": "Mit Animation/Video",
+      "media": "Nur mit Animation",
+      "mediaShort": "Mit Animation",
       "remove": "Filter „{name}“ entfernen",
       "reset": "Zurücksetzen",
       "resetAll": "Alle Filter zurücksetzen",

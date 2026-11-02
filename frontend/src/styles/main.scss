@@ -1,6 +1,8 @@
 // Tokens and mixins are injected via `additionalData` in vite.config.ts.
 @use 'reset';
 @use 'typography';
+@use 'fields';
+@use 'folds';
 
 :root {
   @include root-custom-properties;

@@ -28,6 +28,9 @@ import UiSegmented from '@/ui/UiSegmented.vue'
 import UiSkeleton from '@/ui/UiSkeleton.vue'
 import UiStepper from '@/ui/UiStepper.vue'
 import UiSwitch from '@/ui/UiSwitch.vue'
+import UiTextarea from '@/ui/UiTextarea.vue'
+import UiWheel from '@/ui/UiWheel.vue'
+import UiWheelPicker from '@/ui/UiWheelPicker.vue'
 import WeekStrip, { type WeekDay } from '@/ui/WeekStrip.vue'
 import { useSnackbar } from '@/ui/useSnackbar'
 
@@ -50,6 +53,19 @@ const chips = ref({ injured: false, sick: true, work: false })
 const segment = ref<'plan' | 'groups' | 'who' | 'info'>('plan')
 const name = ref('')
 const password = ref('')
+const note = ref('')
+const wheelCategory = ref('passing')
+const wheelHours = ref('0')
+const wheelMinutes = ref('20')
+const wheelCategories = ['warmup', 'passing', 'possession', 'finishing', 'tactics'].map((c) => ({
+  value: c,
+  label: t(`drills.categories.${c}`),
+}))
+const wheelHourOptions = ['0', '1', '2'].map((n) => ({ value: n, label: `${n} Std.` }))
+const wheelMinuteOptions = Array.from({ length: 12 }, (_, i) => String(i * 5)).map((n) => ({
+  value: n,
+  label: `${n} Min.`,
+}))
 const sheetOpen = ref(false)
 const lastAction = ref('–')
 
@@ -168,6 +184,39 @@ function onAnswer(value: Answer) {
         type="email"
         error="Bitte eine gültige E-Mail-Adresse eingeben."
       />
+      <UiTextarea v-model="note" label="Notiz" placeholder="Was sollen die Spieler wissen?" />
+      <!-- The same look straight from the global classes (styles/_fields.scss). -->
+      <div class="field field--compact">
+        <label for="dev-search" class="visually-hidden">Suche</label>
+        <div class="field__box">
+          <UiIcon name="search" :size="20" class="field__icon" />
+          <input id="dev-search" class="field__control" type="search" placeholder="Übung suchen" />
+          <fieldset class="field__outline field__outline--plain" aria-hidden="true" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="dev-select" class="field__label">Spieler</label>
+        <div class="field__box">
+          <select id="dev-select" class="field__control">
+            <option>Pia Kramer</option>
+            <option>Finn Hoffmann</option>
+          </select>
+          <fieldset class="field__outline" aria-hidden="true"><legend>Spieler</legend></fieldset>
+        </div>
+      </div>
+      <div class="dev__row">
+        <input class="field-box dev__minutes" aria-label="Minuten" type="number" value="15" />
+        <span class="dev__muted">field-box: einzelnes Feld ohne Label</span>
+      </div>
+      <div class="dev__wheels">
+        <UiWheelPicker label="Kategorie">
+          <UiWheel v-model="wheelCategory" label="Kategorie" :options="wheelCategories" />
+        </UiWheelPicker>
+        <UiWheelPicker label="Dauer">
+          <UiWheel v-model="wheelHours" label="Stunden" :options="wheelHourOptions" />
+          <UiWheel v-model="wheelMinutes" label="Minuten" :options="wheelMinuteOptions" />
+        </UiWheelPicker>
+      </div>
       <UiSwitch v-model="notify" label="Erinnerungen" description="Kurz vor dem Anmeldeschluss" />
       <div class="dev__row">
         <UiChip v-model="chips.injured">Verletzt</UiChip>
@@ -291,6 +340,17 @@ function onAnswer(value: Answer) {
 
   &__title {
     font-size: $font-2xl;
+  }
+
+  &__minutes {
+    width: 64px;
+    text-align: center;
+  }
+
+  &__wheels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $space-3;
   }
 
   &__row {

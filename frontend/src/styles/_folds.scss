@@ -1,0 +1,77 @@
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+// Folding sections: one look for the whole app. Only a heading with a chevron, no box and no
+// fill; change it here and every folding section follows.
+//
+//   <details class="fold">
+//     <summary class="fold__summary">
+//       <span class="fold__title">Spieler und Material</span>
+//       <span class="fold__flag">…</span>                       (optional, e.g. "check")
+//       <UiIcon name="chevronDown" :size="20" class="fold__chevron" />
+//     </summary>
+//     <div class="fold__body">…</div>
+//   </details>
+//
+// fold--compact: a smaller heading in the body font (e.g. a fold inside a page section).
+
+.fold__summary {
+  @include focus-visible;
+
+  display: flex;
+  gap: $space-2;
+  align-items: center;
+  min-height: 56px;
+  font-family: var(--font-display);
+  font-size: $font-xl;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.fold__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.fold__chevron {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.fold[open] > .fold__summary .fold__chevron {
+  transform: rotate(180deg);
+}
+
+.fold__flag {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--color-danger);
+  font-family: var(--font-sans);
+  font-size: $font-sm;
+}
+
+.fold__body {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  padding-bottom: $space-4;
+}
+
+.fold--compact {
+  > .fold__summary {
+    min-height: $touch-target;
+    font-family: var(--font-sans);
+    font-size: $font-md;
+  }
+
+  > .fold__body {
+    gap: $space-3;
+  }
+}

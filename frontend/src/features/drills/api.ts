@@ -13,6 +13,7 @@ export type DrillInput = Pick<
   | 'max_players'
   | 'equipment'
   | 'video_url'
+  | 'animation'
 >
 
 /** Public library plus the drills of the given team (RLS hides everything else). */

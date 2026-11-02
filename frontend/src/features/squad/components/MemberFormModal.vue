@@ -163,13 +163,20 @@ async function onLink() {
       <h3 class="member-form__subtitle">{{ t('squad.linkTitle') }}</h3>
       <p class="member-form__hint">{{ t('squad.linkHint') }}</p>
       <template v-if="candidates.length">
-        <label class="member-form__select-label" for="link-target">{{
-          t('squad.linkSelect')
-        }}</label>
-        <select id="link-target" v-model="linkTargetId" class="member-form__select">
-          <option value="" disabled>{{ t('squad.linkChoose') }}</option>
-          <option v-for="c in candidates" :key="c.id" :value="c.id">{{ c.display_name }}</option>
-        </select>
+        <div class="field">
+          <label class="field__label" for="link-target">{{ t('squad.linkSelect') }}</label>
+          <div class="field__box">
+            <select id="link-target" v-model="linkTargetId" class="field__control">
+              <option value="" disabled>{{ t('squad.linkChoose') }}</option>
+              <option v-for="c in candidates" :key="c.id" :value="c.id">
+                {{ c.display_name }}
+              </option>
+            </select>
+            <fieldset class="field__outline" aria-hidden="true">
+              <legend>{{ t('squad.linkSelect') }}</legend>
+            </fieldset>
+          </div>
+        </div>
         <UiButton
           variant="secondary"
           block
@@ -240,22 +247,6 @@ async function onLink() {
   &__hint {
     font-size: $font-sm;
     color: var(--color-text-muted);
-  }
-
-  &__select-label {
-    font-weight: 600;
-    font-size: $font-sm;
-  }
-
-  &__select {
-    @include focus-visible;
-
-    min-height: $touch-target;
-    padding: $space-2 $space-3;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-md;
-    background: var(--color-surface);
-    font-size: $font-md;
   }
 
   &__error {

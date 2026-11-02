@@ -691,14 +691,43 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
               </button>
             </div>
             <div class="board-editor__timing">
-              <label v-if="keyframeIndex > 0">
-                {{ t('board.keyframeTime') }}
-                <input v-model.lazy="keyframeSeconds" type="number" step="0.1" min="0" />
-              </label>
-              <label>
-                {{ t('board.duration') }}
-                <input v-model.lazy="durationSeconds" type="number" step="0.5" min="0.5" max="60" />
-              </label>
+              <div v-if="keyframeIndex > 0" class="field field--compact board-editor__time">
+                <label :for="`${uid}-keyframe-time`" class="field__label">{{
+                  t('board.keyframeTime')
+                }}</label>
+                <div class="field__box">
+                  <input
+                    :id="`${uid}-keyframe-time`"
+                    v-model.lazy="keyframeSeconds"
+                    class="field__control"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                  />
+                  <fieldset class="field__outline" aria-hidden="true">
+                    <legend>{{ t('board.keyframeTime') }}</legend>
+                  </fieldset>
+                </div>
+              </div>
+              <div class="field field--compact board-editor__time">
+                <label :for="`${uid}-duration`" class="field__label">{{
+                  t('board.duration')
+                }}</label>
+                <div class="field__box">
+                  <input
+                    :id="`${uid}-duration`"
+                    v-model.lazy="durationSeconds"
+                    class="field__control"
+                    type="number"
+                    step="0.5"
+                    min="0.5"
+                    max="60"
+                  />
+                  <fieldset class="field__outline" aria-hidden="true">
+                    <legend>{{ t('board.duration') }}</legend>
+                  </fieldset>
+                </div>
+              </div>
               <UiButton v-if="keyframeIndex > 0" variant="ghost" @click="deleteKeyframe">
                 {{ t('board.removeKeyframe') }}
               </UiButton>
@@ -738,64 +767,103 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
             v-if="selected.type === 'player' || selected.type === 'goalkeeper'"
             class="board-editor__row"
           >
-            <label class="board-editor__field board-editor__field--short">
-              {{ t('board.props.number') }}
-              <input
-                :value="selected.label ?? ''"
-                maxlength="3"
-                inputmode="numeric"
-                @input="
-                  patchSelected({ label: ($event.target as HTMLInputElement).value || undefined })
-                "
-              />
-            </label>
-            <label class="board-editor__field">
-              {{ t('board.props.name') }}
-              <input
-                :value="selected.name ?? ''"
-                maxlength="16"
-                :list="squadNames.length ? `${uid}-squad` : undefined"
-                :placeholder="t('board.props.namePlaceholder')"
-                @input="
-                  patchSelected({ name: ($event.target as HTMLInputElement).value || undefined })
-                "
-              />
-            </label>
+            <div class="field field--compact board-editor__field board-editor__field--short">
+              <label :for="`${uid}-number`" class="field__label">{{
+                t('board.props.number')
+              }}</label>
+              <div class="field__box">
+                <input
+                  :id="`${uid}-number`"
+                  class="field__control"
+                  :value="selected.label ?? ''"
+                  maxlength="3"
+                  inputmode="numeric"
+                  @input="
+                    patchSelected({ label: ($event.target as HTMLInputElement).value || undefined })
+                  "
+                />
+                <fieldset class="field__outline" aria-hidden="true">
+                  <legend>{{ t('board.props.number') }}</legend>
+                </fieldset>
+              </div>
+            </div>
+            <div class="field field--compact board-editor__field">
+              <label :for="`${uid}-name`" class="field__label">{{ t('board.props.name') }}</label>
+              <div class="field__box">
+                <input
+                  :id="`${uid}-name`"
+                  class="field__control"
+                  :value="selected.name ?? ''"
+                  maxlength="16"
+                  :list="squadNames.length ? `${uid}-squad` : undefined"
+                  :placeholder="t('board.props.namePlaceholder')"
+                  @input="
+                    patchSelected({ name: ($event.target as HTMLInputElement).value || undefined })
+                  "
+                />
+                <fieldset class="field__outline" aria-hidden="true">
+                  <legend>{{ t('board.props.name') }}</legend>
+                </fieldset>
+              </div>
+            </div>
             <datalist v-if="squadNames.length" :id="`${uid}-squad`">
               <option v-for="n in squadNames" :key="n" :value="n" />
             </datalist>
           </div>
 
-          <label v-if="selected.type === 'text'" class="board-editor__field">
-            {{ t('board.props.text') }}
-            <input
-              :value="selected.text ?? ''"
-              maxlength="40"
-              @input="patchSelected({ text: ($event.target as HTMLInputElement).value })"
-            />
-          </label>
+          <div v-if="selected.type === 'text'" class="field field--compact board-editor__field">
+            <label :for="`${uid}-text`" class="field__label">{{ t('board.props.text') }}</label>
+            <div class="field__box">
+              <input
+                :id="`${uid}-text`"
+                class="field__control"
+                :value="selected.text ?? ''"
+                maxlength="40"
+                @input="patchSelected({ text: ($event.target as HTMLInputElement).value })"
+              />
+              <fieldset class="field__outline" aria-hidden="true">
+                <legend>{{ t('board.props.text') }}</legend>
+              </fieldset>
+            </div>
+          </div>
 
           <div v-if="selected.type === 'zone'" class="board-editor__row">
-            <label class="board-editor__field board-editor__field--short">
-              {{ t('board.props.width') }}
-              <input
-                type="number"
-                min="1"
-                max="105"
-                :value="selected.w ?? 10"
-                @change="patchSelected({ w: numberInput($event, 1, 105) ?? selected.w })"
-              />
-            </label>
-            <label class="board-editor__field board-editor__field--short">
-              {{ t('board.props.height') }}
-              <input
-                type="number"
-                min="1"
-                max="105"
-                :value="selected.h ?? 10"
-                @change="patchSelected({ h: numberInput($event, 1, 105) ?? selected.h })"
-              />
-            </label>
+            <div class="field field--compact board-editor__field board-editor__field--short">
+              <label :for="`${uid}-width`" class="field__label">{{ t('board.props.width') }}</label>
+              <div class="field__box">
+                <input
+                  :id="`${uid}-width`"
+                  class="field__control"
+                  type="number"
+                  min="1"
+                  max="105"
+                  :value="selected.w ?? 10"
+                  @change="patchSelected({ w: numberInput($event, 1, 105) ?? selected.w })"
+                />
+                <fieldset class="field__outline" aria-hidden="true">
+                  <legend>{{ t('board.props.width') }}</legend>
+                </fieldset>
+              </div>
+            </div>
+            <div class="field field--compact board-editor__field board-editor__field--short">
+              <label :for="`${uid}-height`" class="field__label">{{
+                t('board.props.height')
+              }}</label>
+              <div class="field__box">
+                <input
+                  :id="`${uid}-height`"
+                  class="field__control"
+                  type="number"
+                  min="1"
+                  max="105"
+                  :value="selected.h ?? 10"
+                  @change="patchSelected({ h: numberInput($event, 1, 105) ?? selected.h })"
+                />
+                <fieldset class="field__outline" aria-hidden="true">
+                  <legend>{{ t('board.props.height') }}</legend>
+                </fieldset>
+              </div>
+            </div>
             <UiButton
               variant="secondary"
               @click="patchSelected({ shape: selected.shape === 'circle' ? 'rect' : 'circle' })"
@@ -984,30 +1052,10 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
   }
 
   &__field {
-    display: flex;
     flex: 1 1 8rem;
-    flex-direction: column;
-    gap: 2px;
-    font-size: $font-sm;
-    font-weight: 600;
 
     &--short {
-      flex: 0 0 5rem;
-    }
-
-    input {
-      width: 100%;
-      min-height: $touch-target;
-      padding: $space-1 $space-2;
-      border: 2px solid var(--color-border);
-      border-radius: $radius-md;
-      background: var(--color-surface);
-      color: var(--color-text);
-      font-size: $font-md;
-
-      &:focus-visible {
-        @include focus-ring;
-      }
+      flex: 0 0 7rem;
     }
   }
 
@@ -1162,29 +1210,10 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
     flex-wrap: wrap;
     align-items: flex-end;
     gap: $space-3;
+  }
 
-    label {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      font-size: $font-sm;
-      font-weight: 600;
-    }
-
-    input {
-      width: 88px;
-      min-height: $touch-target;
-      padding: $space-1 $space-2;
-      border: 2px solid var(--color-border);
-      border-radius: $radius-md;
-      background: var(--color-surface);
-      color: var(--color-text);
-      font-size: $font-md;
-
-      &:focus-visible {
-        @include focus-ring;
-      }
-    }
+  &__time {
+    width: 10rem;
   }
 }
 </style>

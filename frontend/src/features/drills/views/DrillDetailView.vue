@@ -7,6 +7,7 @@ import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import YouTubeEmbed from '../components/YouTubeEmbed.vue'
 import DrillVideo from '../components/DrillVideo.vue'
 import DrillVideoUpload from '../components/DrillVideoUpload.vue'
+import { FEATURES } from '@/lib/features'
 import AnimationPlayer from '@/features/board/components/AnimationPlayer.vue'
 import { parseAnimation } from '@/features/board/schema'
 import BibChip from '@/ui/BibChip.vue'
@@ -87,15 +88,18 @@ async function remove() {
 
     <template v-else>
       <!-- Media first and full width: players open a drill to see how it works. -->
-      <div v-if="animation || d.video_path || d.video_url" class="drill__media">
+      <div
+        v-if="animation || (FEATURES.videos && (d.video_path || d.video_url))"
+        class="drill__media"
+      >
         <section v-if="animation" class="drill__animation" :aria-label="t('board.animation')">
           <AnimationPlayer
             :animation="animation"
             :title="t('board.animationOf', { title: d.title })"
           />
         </section>
-        <DrillVideo v-if="d.video_path" :path="d.video_path" :title="d.title" />
-        <YouTubeEmbed v-if="d.video_url" :url="d.video_url" :title="d.title" />
+        <DrillVideo v-if="FEATURES.videos && d.video_path" :path="d.video_path" :title="d.title" />
+        <YouTubeEmbed v-if="FEATURES.videos && d.video_url" :url="d.video_url" :title="d.title" />
       </div>
 
       <header class="drill__header">
@@ -144,7 +148,11 @@ async function remove() {
           {{ t('drills.copyToTeam', { team: activeTeam?.team_name }) }}
         </UiButton>
         <template v-if="canEdit">
-          <section class="drill__upload" :aria-label="t('drills.upload.title')">
+          <section
+            v-if="FEATURES.videos"
+            class="drill__upload"
+            :aria-label="t('drills.upload.title')"
+          >
             <h2 class="drill__subtitle">{{ t('drills.upload.title') }}</h2>
             <DrillVideoUpload :drill="d" />
           </section>

@@ -51,17 +51,18 @@ const describedBy = computed(() => {
 </script>
 
 <template>
-  <div class="ui-input" :class="{ 'ui-input--error': !!error }">
+  <!-- Look from the global field classes (styles/_fields.scss). -->
+  <div class="field">
     <!-- The required mark sits next to the label, so the field's name stays exactly the label. -->
-    <span class="ui-input__label-row" :class="{ 'visually-hidden': hideLabel }">
-      <label :for="id" class="ui-input__label">{{ label }}</label>
-      <span v-if="required" class="ui-input__required" aria-hidden="true">*</span>
+    <span class="field__label" :class="{ 'visually-hidden': hideLabel }">
+      <label :for="id">{{ label }}</label>
+      <span v-if="required" aria-hidden="true">*</span>
     </span>
-    <div class="ui-input__box">
+    <div class="field__box">
       <input
         :id="id"
         :value="model"
-        class="ui-input__field"
+        class="field__control"
         :class="{ 'ui-input__field--reveal': type === 'password' }"
         :type="inputType"
         :placeholder="placeholder"
@@ -87,60 +88,27 @@ const describedBy = computed(() => {
       >
         <UiIcon :name="revealed ? 'eyeOff' : 'eye'" :size="20" />
       </button>
+      <fieldset
+        class="field__outline"
+        :class="{ 'field__outline--plain': hideLabel }"
+        aria-hidden="true"
+      >
+        <legend v-if="!hideLabel">
+          {{ label }}<span v-if="required" class="field__legend-mark">*</span>
+        </legend>
+      </fieldset>
     </div>
-    <p v-if="error" :id="`${id}-error`" class="ui-input__error" role="alert">
+    <p v-if="error" :id="`${id}-error`" class="field__error" role="alert">
       <UiIcon name="alert" :size="16" />{{ error }}
     </p>
-    <p v-else-if="hint" :id="`${id}-hint`" class="ui-input__hint">{{ hint }}</p>
+    <p v-else-if="hint" :id="`${id}-hint`" class="field__hint">{{ hint }}</p>
   </div>
 </template>
 
 <style scoped lang="scss">
 .ui-input {
-  display: flex;
-  flex-direction: column;
-  gap: $space-1;
-
-  &__label-row {
-    display: flex;
-    gap: 4px;
-  }
-
-  &__label,
-  &__required {
-    font-size: $font-sm;
-    font-weight: 700;
-  }
-
-  &__box {
-    position: relative;
-    display: flex;
-  }
-
-  &__field {
-    width: 100%;
-    min-height: 52px;
-    padding: 0 $space-4;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-lg;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-size: $font-md;
-    transition: border-color var(--duration-fast) var(--ease-out);
-
-    &::placeholder {
-      color: var(--color-text-muted);
-    }
-
-    &:focus-visible {
-      @include focus-ring;
-
-      border-color: var(--color-primary);
-    }
-
-    &--reveal {
-      padding-right: 52px;
-    }
+  &__field--reveal {
+    padding-right: 52px;
   }
 
   &__reveal {
@@ -149,6 +117,7 @@ const describedBy = computed(() => {
     position: absolute;
     top: 50%;
     right: 4px;
+    z-index: 1;
     display: grid;
     place-items: center;
     width: $touch-target;
@@ -158,24 +127,6 @@ const describedBy = computed(() => {
     background: transparent;
     color: var(--color-text-muted);
     transform: translateY(-50%);
-  }
-
-  &--error &__field {
-    border-color: var(--color-danger);
-  }
-
-  &__error {
-    display: flex;
-    align-items: center;
-    gap: $space-1;
-    color: var(--color-danger);
-    font-size: $font-sm;
-    font-weight: 600;
-  }
-
-  &__hint {
-    color: var(--color-text-muted);
-    font-size: $font-sm;
   }
 }
 </style>

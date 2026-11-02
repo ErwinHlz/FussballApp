@@ -13,7 +13,14 @@ import UiIcon from './UiIcon.vue'
  * Escape, the close button, a tap on the backdrop or a swipe down on the handle, and gives the
  * focus back to where it came from.
  */
-const props = defineProps<{ title: string; description?: string }>()
+const props = defineProps<{
+  title: string
+  description?: string
+  /** Takes the whole screen (e.g. an editor); no swipe to close. */
+  fullscreen?: boolean
+  /** Asked before closing; returning false keeps the sheet open (e.g. unsaved changes). */
+  canClose?: () => boolean
+}>()
 const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{ closed: [] }>()
 
@@ -33,6 +40,7 @@ function isTop() {
 }
 
 function close() {
+  if (props.canClose && !props.canClose()) return
   open.value = false
 }
 
@@ -101,7 +109,7 @@ onBeforeUnmount(() => {
 
 // Swipe down on the handle area: follow the finger, close past 96px or on a quick flick.
 function onPointerDown(event: PointerEvent) {
-  if (event.button !== 0) return
+  if (event.button !== 0 || props.fullscreen) return
   dragStart = { y: event.clientY, time: event.timeStamp }
   ;(event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId)
 }
@@ -123,7 +131,12 @@ function onPointerUp(event: PointerEvent) {
 <template>
   <Teleport to="body">
     <Transition name="sheet">
-      <div v-if="open" class="sheet" @click.self="close">
+      <div
+        v-if="open"
+        class="sheet"
+        :class="{ 'sheet--fullscreen': fullscreen }"
+        @click.self="close"
+      >
         <div
           :id="id"
           ref="sheet"
@@ -142,7 +155,7 @@ function onPointerUp(event: PointerEvent) {
             @pointerup="onPointerUp"
             @pointercancel="onPointerUp"
           >
-            <span class="sheet__handle" aria-hidden="true" />
+            <span v-if="!fullscreen" class="sheet__handle" aria-hidden="true" />
             <div class="sheet__titles">
               <h2 :id="`${id}-title`" class="sheet__title">{{ title }}</h2>
               <p v-if="description" :id="`${id}-desc`" class="sheet__description">
@@ -294,6 +307,33 @@ function onPointerUp(event: PointerEvent) {
 
   .sheet__panel {
     transform: translateY(100%);
+  }
+}
+
+// The whole screen, also on wide screens; the safe areas keep it clear of notch and home bar.
+.sheet--fullscreen {
+  align-items: stretch;
+  padding: 0;
+
+  .sheet__panel {
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .sheet__head {
+    @include safe-area-padding(top, $space-3);
+
+    align-items: center;
+  }
+
+  .sheet__titles {
+    padding-top: 0;
+  }
+
+  .sheet__title {
+    font-size: $font-xl;
   }
 }
 </style>

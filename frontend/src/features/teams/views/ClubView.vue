@@ -195,13 +195,13 @@ function setAdmin(member: ClubMember, admin: boolean) {
       </section>
 
       <!-- Logo and color: set up once, so folded away. -->
-      <details class="club__fold">
-        <summary class="club__fold-summary">
+      <details class="fold fold--compact">
+        <summary class="fold__summary">
           <UiIcon name="shield" :size="22" />
-          <span>{{ t('branding.title') }}</span>
-          <UiIcon name="chevronDown" :size="20" class="club__fold-chevron" />
+          <span class="fold__title">{{ t('branding.title') }}</span>
+          <UiIcon name="chevronDown" :size="20" class="fold__chevron" />
         </summary>
-        <div class="club__fold-body">
+        <div class="fold__body">
           <p class="club__muted">{{ t('branding.intro') }}</p>
           <UiCard v-if="club.data.value">
             <ClubBrandingPanel :club="club.data.value" />
@@ -335,43 +335,6 @@ function setAdmin(member: ClubMember, admin: boolean) {
 
   li + li &__pick {
     border-top: 1px solid var(--color-border);
-  }
-
-  &__fold {
-    border-radius: $radius-lg;
-    background: var(--color-surface);
-  }
-
-  &__fold-summary {
-    @include focus-visible;
-
-    display: flex;
-    align-items: center;
-    gap: $space-3;
-    min-height: 56px;
-    padding: 0 $space-4;
-    font-weight: 800;
-    cursor: pointer;
-    list-style: none;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-
-    span {
-      flex: 1;
-    }
-  }
-
-  &__fold[open] &__fold-chevron {
-    transform: rotate(180deg);
-  }
-
-  &__fold-body {
-    display: flex;
-    flex-direction: column;
-    gap: $space-3;
-    padding: 0 $space-3 $space-3;
   }
 
   &__warning {

@@ -4,6 +4,7 @@ import UiIcon from '@/ui/UiIcon.vue'
 import BoardScene from '@/features/board/components/BoardScene.vue'
 import { positionsAt } from '@/features/board/interpolate'
 import { parseAnimation } from '@/features/board/schema'
+import { FEATURES } from '@/lib/features'
 import type { Drill } from '../logic'
 
 /**
@@ -21,7 +22,9 @@ const props = withDefaults(
 
 const animation = computed(() => parseAnimation(props.drill.animation))
 const positions = computed(() => (animation.value ? positionsAt(animation.value, 0) : {}))
-const hasVideo = computed(() => !!props.drill.video_url || !!props.drill.video_path)
+const hasVideo = computed(
+  () => FEATURES.videos && (!!props.drill.video_url || !!props.drill.video_path),
+)
 </script>
 
 <template>

@@ -10,6 +10,7 @@ import UiIconButton from '@/ui/UiIconButton.vue'
 import UiSegmented from '@/ui/UiSegmented.vue'
 import UiSkeleton from '@/ui/UiSkeleton.vue'
 import UiSwitch from '@/ui/UiSwitch.vue'
+import { FEATURES } from '@/lib/features'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import TrainingNav from '@/features/training-plan/components/TrainingNav.vue'
 import DrillThumb from '../components/DrillThumb.vue'
@@ -126,11 +127,20 @@ const filterOpen = ref(false)
 
     <div class="drills__filters">
       <div class="drills__search-row">
-        <label class="drills__search">
-          <span class="visually-hidden">{{ t('drills.search') }}</span>
-          <UiIcon name="search" :size="20" />
-          <input v-model="query" type="search" :placeholder="t('drills.searchPlaceholder')" />
-        </label>
+        <div class="field field--compact drills__search">
+          <label for="drill-search" class="visually-hidden">{{ t('drills.search') }}</label>
+          <div class="field__box">
+            <UiIcon name="search" :size="20" class="field__icon" />
+            <input
+              id="drill-search"
+              v-model="query"
+              class="field__control"
+              type="search"
+              :placeholder="t('drills.searchPlaceholder')"
+            />
+            <fieldset class="field__outline field__outline--plain" aria-hidden="true" />
+          </div>
+        </div>
         <UiIconButton
           icon="filter"
           :label="
@@ -230,9 +240,11 @@ const filterOpen = ref(false)
                 <span v-if="drill.animation" class="drill-tile__tag">{{
                   t('board.animation')
                 }}</span>
-                <span v-if="drill.video_url || drill.video_path" class="drill-tile__tag">{{
-                  t('drills.hasVideo')
-                }}</span>
+                <span
+                  v-if="FEATURES.videos && (drill.video_url || drill.video_path)"
+                  class="drill-tile__tag"
+                  >{{ t('drills.hasVideo') }}</span
+                >
               </span>
             </span>
           </RouterLink>
@@ -312,29 +324,6 @@ const filterOpen = ref(false)
 
   &__search {
     flex: 1;
-    display: flex;
-    align-items: center;
-    gap: $space-2;
-    min-height: 48px;
-    padding: 0 $space-3;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-full;
-    background: var(--color-surface);
-    color: var(--color-text-muted);
-
-    &:focus-within {
-      @include focus-ring;
-    }
-
-    input {
-      flex: 1;
-      min-width: 0;
-      border: 0;
-      background: transparent;
-      color: var(--color-text);
-      font-size: $font-md;
-      outline: none;
-    }
   }
 
   // Categories as tabs with an underline, like the area navigation.

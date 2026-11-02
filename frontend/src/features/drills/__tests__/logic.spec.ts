@@ -116,16 +116,13 @@ describe('helpers', () => {
 describe('drill filter extras', () => {
   const all = { query: '', category: 'all', scope: 'all' } as const
 
-  it('keeps only drills with an animation or a video', () => {
+  it('keeps only drills with an animation (videos are switched off)', () => {
     const drills = [
       drill({ title: 'Ohne' }),
       drill({ title: 'Video', video_url: 'https://youtu.be/abcdefghijk' }),
       drill({ title: 'Animiert', animation: { keyframes: [] } }),
     ]
-    expect(filterDrills(drills, { ...all, media: true }).map((d) => d.title)).toEqual([
-      'Animiert',
-      'Video',
-    ])
+    expect(filterDrills(drills, { ...all, media: true }).map((d) => d.title)).toEqual(['Animiert'])
   })
 
   it('counts the filters of the sheet', () => {

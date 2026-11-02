@@ -88,3 +88,50 @@ describe('BottomSheet', () => {
     wrapper.unmount()
   })
 })
+
+describe('BottomSheet in full screen with a close check', () => {
+  let allowClose = false
+
+  function mountGuarded() {
+    const wrapper = mount(BottomSheet, {
+      attachTo: document.body,
+      global: { plugins: [i18n] },
+      props: {
+        title: 'Taktiktafel',
+        fullscreen: true,
+        canClose: () => allowClose,
+        open: true,
+        'onUpdate:open': (value: boolean): void => {
+          void wrapper.setProps({ open: value })
+        },
+      },
+      slots: { default: '<button>Spieler</button>' },
+    })
+    return wrapper
+  }
+
+  it('fills the screen without a swipe handle', async () => {
+    const wrapper = mountGuarded()
+    await nextTick()
+    expect(document.body.querySelector('.sheet--fullscreen')).not.toBeNull()
+    expect(document.body.querySelector('.sheet__handle')).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('stays open while the check says no', async () => {
+    allowClose = false
+    const wrapper = mountGuarded()
+    await nextTick()
+
+    key('Escape')
+    await nextTick()
+    expect(dialog()).not.toBeNull()
+
+    allowClose = true
+    key('Escape')
+    await nextTick()
+    await nextTick()
+    expect(dialog()).toBeNull()
+    wrapper.unmount()
+  })
+})

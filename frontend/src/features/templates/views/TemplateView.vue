@@ -279,6 +279,7 @@ async function onApplied(eventId: string) {
                 {{ t('plan.minutesFor', { title: item.drill_title }) }}
               </span>
               <input
+                class="field-box"
                 type="number"
                 inputmode="numeric"
                 min="1"
@@ -335,6 +336,7 @@ async function onApplied(eventId: string) {
           <label v-if="canEdit && openNotes === item.id" class="item__notes">
             <span class="visually-hidden">{{ t('plan.notesLabel') }}</span>
             <textarea
+              class="field-box"
               rows="3"
               maxlength="1000"
               :value="item.coach_notes ?? ''"
@@ -540,18 +542,8 @@ async function onApplied(eventId: string) {
 
     input {
       width: 56px;
-      min-height: $touch-target;
-      padding: $space-1;
-      border: 2px solid var(--color-border);
-      border-radius: $radius-md;
-      background: var(--color-surface);
-      color: var(--color-text);
-      font-size: $font-md;
+      padding-inline: $space-1;
       text-align: center;
-
-      &:focus-visible {
-        @include focus-ring;
-      }
     }
   }
 
@@ -585,20 +577,6 @@ async function onApplied(eventId: string) {
     &--danger {
       margin-left: auto;
       color: var(--color-danger);
-    }
-  }
-
-  &__notes textarea {
-    width: 100%;
-    padding: $space-2;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-md;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-size: $font-md;
-
-    &:focus-visible {
-      @include focus-ring;
     }
   }
 
