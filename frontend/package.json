@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "tunnel": "npx --yes cloudflared@0.7.3 tunnel --url http://localhost:5173",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "vue-tsc --build",

@@ -778,7 +778,7 @@
       "line": "Linie"
     },
     "toolHints": {
-      "move": "Teile aus der Leiste aufs Feld ziehen. Auf dem Feld antippen zum Auswählen, ziehen zum Verschieben, Pfeiltasten für feine Schritte.",
+      "move": "Teile vom Rand aufs Feld ziehen. Antippen zum Auswählen, ziehen zum Verschieben, Pfeiltasten für feine Schritte.",
       "run": "Auf dem Feld von Start zu Ziel ziehen: gestrichelter Laufweg.",
       "pass": "Auf dem Feld von Start zu Ziel ziehen: Pass.",
       "dribble": "Auf dem Feld von Start zu Ziel ziehen: Dribbling (Welle).",
@@ -788,10 +788,11 @@
     "sceneLabel": "Spielfeld, Schritt {n}",
     "timeline": "Zeitleiste",
     "keyframeLabel": "Schritt {n} bei {s} Sekunden",
-    "addKeyframe": "Schritt",
+    "addKeyframeLabel": "Schritt hinzufügen",
     "keyframeTime": "Zeitpunkt (s)",
     "duration": "Gesamtdauer (s)",
-    "removeKeyframe": "Schritt löschen",
+    "removeKeyframeN": "Schritt {n} löschen",
+    "keyframeRemoved": "Schritt {n} gelöscht",
     "keyframeHint": "Jeder Schritt ist ein Bild der Animation. Wähle einen Schritt und verschiebe Spieler oder gib den Ball weiter – dazwischen bewegt sich alles flüssig.",
     "addLabel": "Material",
     "playerColor": "Farbe für neue Spieler",
@@ -819,6 +820,8 @@
     },
     "added": "{what} hinzugefügt",
     "removed": "Entfernt",
+    "trash": "Hierher ziehen zum Löschen",
+    "zoomReset": "Zoom {n} % · zurücksetzen",
     "arrowAdded": "Pfeil hinzugefügt",
     "keyframeAdded": "Schritt hinzugefügt",
     "limitReached": "Maximum erreicht.",
@@ -843,7 +846,7 @@
       "people": "Spieler",
       "equipment": "Material",
       "zones": "Zonen",
-      "hint": "Aufs Feld ziehen oder antippen.",
+      "hint": "Teile vom Rand aufs Feld ziehen oder antippen.",
       "items": {
         "player": "Spieler",
         "goalkeeper": "Torwart",
@@ -880,12 +883,32 @@
       "duplicate": "Duplizieren",
       "remove": "Entfernen",
       "open": "Eigenschaften",
-      "deselect": "Auswahl aufheben"
+      "deselect": "Auswahl aufheben",
+      "size": "Größe",
+      "smaller": "Kleiner",
+      "bigger": "Größer",
+      "sizeValue": "{n} Prozent",
+      "zoneSize": "{w} mal {h} Meter"
     },
-    "dock": {
-      "label": "Bereich unter dem Spielfeld",
-      "add": "Hinzufügen",
-      "steps": "Ablauf"
+    "settings": "Einstellungen",
+    "saveShort": "Speichern",
+    "fieldsShort": {
+      "full": "Ganz",
+      "half": "Halb",
+      "quarter": "Viertel"
+    },
+    "squad": {
+      "open": "Kader",
+      "hint": "Spieler aufs Feld ziehen oder antippen.",
+      "onField": "auf dem Feld"
+    },
+    "export": {
+      "open": "Bild teilen oder herunterladen",
+      "title": "Bild von Schritt {n}",
+      "share": "Teilen",
+      "download": "Als PNG herunterladen",
+      "failed": "Das Bild konnte nicht erstellt werden.",
+      "stepWord": "Schritt"
     }
   },
   "stats": {

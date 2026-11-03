@@ -10,12 +10,18 @@ const props = defineProps<{ object: BoardObject; r: number }>()
 
 const o = computed(() => props.object)
 const color = computed(() => o.value.color ?? '#3b82f6')
-const rotation = computed(() => (o.value.rotation ? `rotate(${o.value.rotation})` : undefined))
+// Rotation and size; the name keeps its counter-rotation (a uniform scale commutes with it).
+const transform = computed(() => {
+  const parts = []
+  if (o.value.rotation) parts.push(`rotate(${o.value.rotation})`)
+  if (o.value.scale && o.value.type !== 'zone') parts.push(`scale(${o.value.scale})`)
+  return parts.length ? parts.join(' ') : undefined
+})
 const ladderRungs = computed(() => Array.from({ length: 7 }, (_, i) => -props.r * 3 + i * props.r))
 </script>
 
 <template>
-  <g :transform="rotation">
+  <g :transform="transform">
     <!-- People -->
     <template v-if="o.type === 'player'">
       <circle :r="r * 1.1" :fill="color" class="token__body" />

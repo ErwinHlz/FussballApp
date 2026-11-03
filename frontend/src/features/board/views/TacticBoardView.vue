@@ -9,7 +9,7 @@ import type { Json } from '@/types/database'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useDrills, useSaveDrillAnimation } from '@/features/drills/composables/useDrills'
 import BoardEditor from '../components/BoardEditor.vue'
-import { useSquadNames } from '../composables/useSquadNames'
+import { useBoardSquad } from '../composables/useBoardSquad'
 import { useBoard, useDeleteBoard, useSaveBoard } from '../boards'
 import { animationSchema, emptyAnimation, parseAnimation, type Animation } from '../schema'
 import PageProblem from '@/ui/PageProblem.vue'
@@ -24,7 +24,7 @@ const save = useSaveBoard()
 const remove = useDeleteBoard()
 const { myTeams } = useActiveTeam()
 const teamId = computed(() => board.data.value?.team_id ?? null)
-const squadNames = useSquadNames(teamId)
+const squad = useBoardSquad(teamId)
 
 const canEdit = computed(() => {
   const team = myTeams.data.value?.find((x) => x.team_id === teamId.value)
@@ -121,43 +121,40 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
     />
 
     <template v-else>
-      <header>
-        <p class="tactic__eyebrow">{{ t('boards.eyebrow') }}</p>
-        <h1>{{ board.data.value.title }}</h1>
-      </header>
-
-      <UiInput v-model="title" :label="t('boards.name')" required />
-
-      <BoardEditor v-model="draft" :title="title" :squad-names="squadNames" />
-
-      <p v-if="notice && !dirty" class="tactic__notice" role="status">✓ {{ notice }}</p>
-      <p v-if="error" class="tactic__error" role="alert">{{ error }}</p>
-      <p v-if="save.isError.value || attach.isError.value" class="tactic__error" role="alert">
-        {{ t('boards.saveFailed') }}
-      </p>
-
-      <div class="tactic__savebar">
-        <UiButton
-          size="lg"
-          block
-          :disabled="!dirty"
-          :loading="save.isPending.value"
-          @click="onSave"
-        >
-          {{ dirty ? t('boards.save') : `✓ ${t('groups.savedState')}` }}
-        </UiButton>
-        <UiButton variant="secondary" block @click="attachOpen = true">
-          {{ t('boards.attach') }}
-        </UiButton>
-        <UiButton
-          :variant="confirmDelete ? 'danger' : 'ghost'"
-          block
-          :loading="remove.isPending.value"
-          @click="onDelete"
-        >
-          {{ confirmDelete ? t('schedule.confirmDelete') : t('boards.delete') }}
-        </UiButton>
-      </div>
+      <BoardEditor
+        v-model="draft"
+        :heading="title.trim() || board.data.value.title"
+        :eyebrow="t('boards.eyebrow')"
+        :title="title"
+        :squad="squad"
+      >
+        <template #actions>
+          <UiButton :disabled="!dirty" :loading="save.isPending.value" @click="onSave">
+            {{ dirty ? t('board.saveShort') : `✓ ${t('groups.savedState')}` }}
+          </UiButton>
+        </template>
+        <template #status>
+          <p v-if="notice && !dirty" class="tactic__notice" role="status">✓ {{ notice }}</p>
+          <p v-if="error" class="tactic__error" role="alert">{{ error }}</p>
+          <p v-if="save.isError.value || attach.isError.value" class="tactic__error" role="alert">
+            {{ t('boards.saveFailed') }}
+          </p>
+        </template>
+        <template #settings="{ close }">
+          <UiInput v-model="title" :label="t('boards.name')" required />
+          <UiButton variant="secondary" block @click="(close(), (attachOpen = true))">
+            {{ t('boards.attach') }}
+          </UiButton>
+          <UiButton
+            :variant="confirmDelete ? 'danger' : 'ghost'"
+            block
+            :loading="remove.isPending.value"
+            @click="onDelete"
+          >
+            {{ confirmDelete ? t('schedule.confirmDelete') : t('boards.delete') }}
+          </UiButton>
+        </template>
+      </BoardEditor>
 
       <BottomSheet v-model:open="attachOpen" :title="t('boards.attachTitle')">
         <p class="tactic__muted">{{ t('boards.attachHint') }}</p>
@@ -188,21 +185,6 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
   display: flex;
   flex-direction: column;
   gap: $space-3;
-
-  &__eyebrow {
-    font-size: $font-sm;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--color-text-muted);
-  }
-
-  &__savebar {
-    display: flex;
-    flex-direction: column;
-    gap: $space-2;
-    margin-top: $space-2;
-  }
 
   &__list {
     display: flex;

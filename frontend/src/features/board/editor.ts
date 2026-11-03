@@ -1,5 +1,12 @@
 import type { Animation, BoardObject, ObjectType, Point } from './schema'
-import { BALL_CARRIERS, MAX_DURATION_MS, MAX_KEYFRAMES, MAX_OBJECTS } from './schema'
+import {
+  BALL_CARRIERS,
+  MAX_DURATION_MS,
+  MAX_KEYFRAMES,
+  MAX_OBJECTS,
+  MAX_SCALE,
+  MIN_SCALE,
+} from './schema'
 import { distance } from './geometry'
 
 /** Pure editing operations on an animation draft (easy to test, no UI state). */
@@ -131,6 +138,23 @@ export function updateObject(
   return {
     ...animation,
     objects: animation.objects.map((o) => (o.id === id ? { ...o, ...patch } : o)),
+  }
+}
+
+/**
+ * Sets the size factor of an object (clamped, in 5 % steps). Normal size removes the field, so
+ * unscaled objects stay as they were stored before sizes existed.
+ */
+export function scaleObject(animation: Animation, id: string, scale: number): Animation {
+  const clamped = Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round(scale * 20) / 20))
+  return {
+    ...animation,
+    objects: animation.objects.map((o) => {
+      if (o.id !== id) return o
+      const next: BoardObject = { ...o, scale: clamped }
+      if (clamped === 1) delete next.scale
+      return next
+    }),
   }
 }
 

@@ -1,6 +1,9 @@
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+
+// The proxy below only exists on the dev server, so the development values are the right ones.
+const devEnv = loadEnv('development', fileURLToPath(new URL('.', import.meta.url)))
 
 export default defineConfig({
   plugins: [vue()],
@@ -17,7 +20,20 @@ export default defineConfig({
     },
   },
   server: {
+    // Reachable from phones in the same network (http://<PC-IP>:5173) …
     host: '0.0.0.0',
     port: 5173,
+    // … and through an HTTPS tunnel (`npm run tunnel`).
+    allowedHosts: ['.trycloudflare.com'],
+    // The local Supabase through the dev server, so the phone needs only this one address
+    // (src/lib/supabase.ts). `ws` carries realtime.
+    proxy: {
+      '/supabase': {
+        target: devEnv.VITE_SUPABASE_URL || 'http://127.0.0.1:54321',
+        changeOrigin: true,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/supabase/, ''),
+      },
+    },
   },
 })

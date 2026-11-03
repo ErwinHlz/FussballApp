@@ -6,7 +6,6 @@ import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import UiTextarea from '@/ui/UiTextarea.vue'
 import ActionBar from '@/ui/ActionBar.vue'
-import BottomSheet from '@/ui/BottomSheet.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import UiInput from '@/ui/UiInput.vue'
@@ -15,7 +14,7 @@ import UiWheelPicker from '@/ui/UiWheelPicker.vue'
 import { FEATURES } from '@/lib/features'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import BoardEditor from '@/features/board/components/BoardEditor.vue'
-import { useSquadNames } from '@/features/board/composables/useSquadNames'
+import { useBoardSquad } from '@/features/board/composables/useBoardSquad'
 import {
   animationSchema,
   emptyAnimation,
@@ -127,7 +126,7 @@ const sectionErrors = computed(() => ({
 }))
 
 // --- Animation builder in a full-screen window -------------------------------------------
-const squadNames = useSquadNames(() => teamId.value)
+const squad = useBoardSquad(() => teamId.value)
 const builderOpen = ref(false)
 const builderDraft = ref<Animation>(emptyAnimation())
 let builderStart = ''
@@ -362,25 +361,24 @@ const onSubmit = handleSubmit(
         {{ t('drills.form.saveFailed') }}
       </p>
 
-      <BottomSheet
-        v-model:open="builderOpen"
-        fullscreen
-        :title="t('board.title')"
-        :description="title || undefined"
-        :can-close="canCloseBuilder"
+      <BoardEditor
+        v-if="builderOpen"
+        v-model="builderDraft"
+        :heading="t('board.title')"
+        :eyebrow="title || undefined"
+        :title="title ?? ''"
+        :squad="squad"
+        @back="cancelBuilder"
       >
-        <BoardEditor
-          v-if="builderOpen"
-          v-model="builderDraft"
-          :title="title ?? ''"
-          :squad-names="squadNames"
-        />
-        <p v-if="builderError" class="drill-form__error" role="alert">{{ t('board.invalid') }}</p>
-        <template #footer>
-          <UiButton variant="secondary" @click="cancelBuilder">{{ t('common.cancel') }}</UiButton>
+        <template #actions>
           <UiButton @click="applyBuilder">{{ t('drills.form.animation.apply') }}</UiButton>
         </template>
-      </BottomSheet>
+        <template #status>
+          <p v-if="builderError" class="drill-form__error" role="alert">
+            {{ t('board.invalid') }}
+          </p>
+        </template>
+      </BoardEditor>
 
       <ActionBar :label="t('drills.form.sections.actions')">
         <UiButton variant="secondary" @click="router.back()">{{ t('common.cancel') }}</UiButton>

@@ -50,6 +50,24 @@ Die App läuft unter http://localhost:5173. Konto mit E-Mail und Passwort anlege
 „Verein anlegen“ → Mannschaft anmelden → Trainer-Link verschicken. Mails (z. B. „Passwort
 vergessen“) landen lokal im Postfach unter http://127.0.0.1:54324.
 
+### Auf dem Handy testen
+
+Im Entwicklungsmodus läuft das lokale Supabase über den Dev-Server (`/supabase`, siehe
+`frontend/vite.config.ts`). Das Handy braucht deshalb nur die Adresse des Dev-Servers, und
+`.env.local` bleibt unverändert.
+
+- **Im selben WLAN:** `npm run dev` zeigt unter „Network“ die Adresse, z. B.
+  `http://192.168.178.20:5173`. Diese auf dem Handy öffnen. Windows muss Node.js im Netzwerkprofil
+  erlauben (Firewall-Abfrage beim ersten Start). In Uni- oder Firmennetzen (z. B. eduroam)
+  sind Geräte oft voneinander abgeschirmt, dann hilft nur der Tunnel.
+- **Über einen Tunnel (HTTPS, jedes Netz):** `npm run dev` und in einem zweiten Terminal
+  `npm run tunnel`. Die ausgegebene Adresse `https://….trycloudflare.com` auf dem Handy öffnen.
+  Nur über HTTPS funktionieren dort Teilen, Push und Uploads. Die Adresse ist öffentlich
+  erreichbar, solange der Tunnel läuft: danach mit Strg+C beenden.
+- Links aus Mails (z. B. „Passwort vergessen“) führen auf diese Adressen, wenn `config.toml`
+  aktuell geladen ist (einmal `npm run stop && npm start` in `backend/`). Die Mails selbst liest
+  man am PC unter http://127.0.0.1:54324.
+
 ### Testdaten und Kontowechsel
 
 `npm run seed:dev` (im Ordner `frontend`, lokales Supabase muss laufen) legt den Verein
@@ -69,6 +87,7 @@ enthalten.
 | Skript              | Zweck                               |
 | ------------------- | ----------------------------------- |
 | `npm run dev`       | Entwicklungsserver                  |
+| `npm run tunnel`    | HTTPS-Tunnel zum Dev-Server fürs Handy |
 | `npm run build`     | Typcheck und Produktionsbuild       |
 | `npm run preview`   | Produktionsbuild lokal ansehen      |
 | `npm run typecheck` | `vue-tsc`                           |

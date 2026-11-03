@@ -24,7 +24,7 @@ export function fromSvg(field: FieldType, x: number, y: number): Point {
 /** Object size scales with the visible field so objects look the same on every field type. */
 export function objectRadius(field: FieldType): number {
   const { w, h } = FIELD_SIZE[field]
-  return Math.min(w, h) * 0.045
+  return Math.min(w, h) * 0.04
 }
 
 /** Where a carried ball sits relative to its carrier (field percent): at the right foot. */

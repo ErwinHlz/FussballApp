@@ -20,6 +20,8 @@ export function resolveKeyframes(
   const last: Positions = {}
   const carrier: Record<string, string | null> = {}
   const offset = ballOffset(animation.field ?? 'half')
+  // A bigger carrier keeps the ball at its (bigger) feet.
+  const scale = Object.fromEntries(animation.objects.map((o) => [o.id, o.scale ?? 1]))
   const clamp = (v: number) => Math.min(100, Math.max(0, v))
   // Seed with the first known position so objects appearing later are not undefined.
   for (const k of animation.keyframes) {
@@ -37,7 +39,8 @@ export function resolveKeyframes(
     for (const [ball, holder] of Object.entries(carrier)) {
       const at = holder ? positions[holder] : undefined
       if (!at || !positions[ball]) continue
-      positions[ball] = [clamp(at[0] + offset[0]), clamp(at[1] + offset[1])]
+      const s = (holder && scale[holder]) || 1
+      positions[ball] = [clamp(at[0] + offset[0] * s), clamp(at[1] + offset[1] * s)]
       // A ball released later starts from where it was carried.
       last[ball] = positions[ball]
     }

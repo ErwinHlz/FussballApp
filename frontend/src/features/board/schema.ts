@@ -49,6 +49,11 @@ export const COLORED: readonly ObjectType[] = [
   'zone',
 ]
 
+/** Objects resized with `scale` (zones have their own size in meters, `w`/`h`). */
+export const SCALABLE: readonly ObjectType[] = OBJECT_TYPES.filter((type) => type !== 'zone')
+export const MIN_SCALE = 0.5
+export const MAX_SCALE = 3
+
 export const MAX_OBJECTS = 60
 export const MAX_KEYFRAMES = 30
 export const MAX_DURATION_MS = 60_000
@@ -67,6 +72,8 @@ export const boardObjectSchema = z.object({
   name: z.string().max(16).optional(),
   /** Degrees, clockwise. */
   rotation: z.number().int().min(0).max(359).optional(),
+  /** Size factor of people and equipment (1 = normal, missing = 1). */
+  scale: z.number().min(MIN_SCALE).max(MAX_SCALE).optional(),
   /** Zone size in meters. */
   w: z.number().min(1).max(105).optional(),
   h: z.number().min(1).max(105).optional(),

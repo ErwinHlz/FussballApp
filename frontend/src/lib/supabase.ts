@@ -10,7 +10,19 @@ if (!url || !anonKey) {
   )
 }
 
-export const supabase = createClient<Database>(url, anonKey, {
+/**
+ * In development a local Supabase is reached through the dev server (`/supabase`, see
+ * vite.config.ts), so a phone in the same network or a tunnel works without another
+ * .env.local: 127.0.0.1 would point to the phone itself.
+ */
+function apiUrl(configured: string): string {
+  if (!import.meta.env.DEV || typeof window === 'undefined') return configured
+  const { hostname } = new URL(configured)
+  if (hostname !== '127.0.0.1' && hostname !== 'localhost') return configured
+  return `${window.location.origin}/supabase`
+}
+
+export const supabase = createClient<Database>(apiUrl(url), anonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

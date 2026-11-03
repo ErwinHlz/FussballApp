@@ -11,7 +11,7 @@ import {
 } from '@/features/drills/composables/useDrills'
 import type { Json } from '@/types/database'
 import BoardEditor from '../components/BoardEditor.vue'
-import { useSquadNames } from '../composables/useSquadNames'
+import { useBoardSquad } from '../composables/useBoardSquad'
 import { animationSchema, emptyAnimation, parseAnimation, type Animation } from '../schema'
 import PageProblem from '@/ui/PageProblem.vue'
 
@@ -23,7 +23,7 @@ const router = useRouter()
 const drill = useDrill(() => props.drillId)
 const save = useSaveDrillAnimation()
 const { activeTeam, myTeams } = useActiveTeam()
-const squadNames = useSquadNames(() => drill.data.value?.team_id ?? null)
+const squad = useBoardSquad(() => drill.data.value?.team_id ?? null)
 
 const canEdit = computed(() => {
   const team = myTeams.data.value?.find((x) => x.team_id === drill.data.value?.team_id)
@@ -106,30 +106,26 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
       </p>
     </template>
 
-    <template v-else>
-      <header>
-        <p class="editor__eyebrow">{{ drill.data.value.title }}</p>
-        <h1>{{ t('board.title') }}</h1>
-      </header>
-
-      <BoardEditor v-model="draft" :title="drill.data.value.title" :squad-names="squadNames" />
-
-      <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
-      <p v-if="validationError" class="editor__error" role="alert">{{ validationError }}</p>
-      <p v-if="save.isError.value" class="editor__error" role="alert">
-        {{ t('board.saveFailed') }}
-      </p>
-
-      <div class="editor__savebar">
-        <UiButton
-          size="lg"
-          block
-          :disabled="!dirty"
-          :loading="save.isPending.value"
-          @click="saveDraft"
-        >
-          {{ dirty ? t('board.save') : `✓ ${t('groups.savedState')}` }}
+    <BoardEditor
+      v-else
+      v-model="draft"
+      :heading="t('board.title')"
+      :eyebrow="drill.data.value.title"
+      :title="drill.data.value.title"
+      :squad="squad"
+    >
+      <template #actions>
+        <UiButton :disabled="!dirty" :loading="save.isPending.value" @click="saveDraft">
+          {{ dirty ? t('board.saveShort') : `✓ ${t('groups.savedState')}` }}
         </UiButton>
+      </template>
+      <template #status>
+        <p v-if="validationError" class="editor__error" role="alert">{{ validationError }}</p>
+        <p v-if="save.isError.value" class="editor__error" role="alert">
+          {{ t('board.saveFailed') }}
+        </p>
+      </template>
+      <template #settings>
         <UiButton
           v-if="drill.data.value.animation"
           variant="ghost"
@@ -139,8 +135,9 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
         >
           {{ t('board.removeAnimation') }}
         </UiButton>
-      </div>
-    </template>
+      </template>
+    </BoardEditor>
+    <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
   </section>
 </template>
 
@@ -149,19 +146,6 @@ onBeforeRouteLeave(() => !dirty.value || window.confirm(t('board.unsavedConfirm'
   display: flex;
   flex-direction: column;
   gap: $space-3;
-
-  &__eyebrow {
-    margin: 0;
-    color: var(--color-text-muted);
-    font-weight: 600;
-  }
-
-  &__savebar {
-    display: flex;
-    flex-direction: column;
-    gap: $space-2;
-    margin-top: $space-2;
-  }
 
   &__error {
     color: var(--color-danger);

@@ -6,9 +6,11 @@ import {
   nextLabel,
   removeKeyframe,
   removeObject,
+  scaleObject,
   setDuration,
   setKeyframeTime,
 } from '../editor'
+import { exportFileName } from '../export'
 import { animationSchema, emptyAnimation, type Animation } from '../schema'
 
 function withTwoKeyframes(): Animation {
@@ -58,6 +60,18 @@ describe('objects', () => {
   })
 })
 
+describe('size', () => {
+  it('scales people and equipment within the limits and drops the field at normal size', () => {
+    const { animation, id } = addObject(emptyAnimation(), { type: 'cone' }, [50, 50], 0)!
+    const bigger = scaleObject(animation, id, 1.53)
+    expect(bigger.objects[0]!.scale).toBe(1.55)
+    expect(animationSchema.safeParse(bigger).success).toBe(true)
+    expect(scaleObject(bigger, id, 9).objects[0]!.scale).toBe(3)
+    expect(scaleObject(bigger, id, 0.1).objects[0]!.scale).toBe(0.5)
+    expect(scaleObject(bigger, id, 1).objects[0]).not.toHaveProperty('scale')
+  })
+})
+
 describe('keyframes', () => {
   it('appends 1.5 s after the last keyframe and extends the duration', () => {
     const a = { ...withTwoKeyframes(), durationMs: 2000 }
@@ -94,5 +108,12 @@ describe('keyframes', () => {
     expect(setDuration(a, 1000).durationMs).toBe(2000)
     expect(setDuration(a, 9000).durationMs).toBe(9000)
     expect(setDuration(a, 999_999).durationMs).toBe(60_000)
+  })
+})
+
+describe('exportFileName', () => {
+  it('builds a readable file name for the picture of a step', () => {
+    expect(exportFileName('Ecke kurz – Übung', 2, 'Schritt')).toBe('ecke-kurz-uebung-schritt-2.png')
+    expect(exportFileName('', 1, 'step')).toBe('rondo-step-1.png')
   })
 })

@@ -75,7 +75,8 @@ vi.mock('@/features/drills/composables/useDrills', () => ({
     isError: ref(false),
   }),
 }))
-vi.mock('../composables/useSquadNames', () => ({ useSquadNames: () => ref([]) }))
+const squadData = ref<{ id: string; name: string; number?: string }[]>([])
+vi.mock('../composables/useBoardSquad', () => ({ useBoardSquad: () => squadData }))
 vi.mock('@/features/teams/composables/useActiveTeam', () => ({
   useActiveTeam: () => ({
     activeTeam: activeTeamData,
@@ -119,6 +120,7 @@ describe('BoardEditorView', () => {
       is_club_admin: false,
     }
     drillData.value = { id: 'd1', team_id: 't1', title: 'Eigene Übung', animation: null }
+    squadData.value = []
   })
 
   it('adds a player, moves it with the keyboard in a new keyframe and saves a valid animation', async () => {
@@ -128,13 +130,11 @@ describe('BoardEditorView', () => {
     const player = wrapper.get('.board__object')
     expect(player.attributes('aria-label')).toBe('Spieler 1')
 
-    // Steps live in the dock's second panel.
-    await button(wrapper, 'Ablauf').trigger('click')
-    await button(wrapper, '+ Schritt').trigger('click')
+    await wrapper.get('[aria-label="Schritt hinzufügen"]').trigger('click')
     await wrapper.get('.board__object').trigger('keydown', { key: 'ArrowRight', shiftKey: true })
     await wrapper.get('.board__object').trigger('keydown', { key: 'ArrowDown' })
 
-    await button(wrapper, 'Animation speichern').trigger('click')
+    await button(wrapper, 'Speichern').trigger('click')
     await flushPromises()
 
     const saved = saveMutate.mock.calls[0]![0].animation as Animation
@@ -143,6 +143,74 @@ describe('BoardEditorView', () => {
     expect(saved.keyframes.map((k) => k.t)).toEqual([0, 1500])
     expect(saved.keyframes[0]!.positions.p1).toEqual([40, 45])
     expect(saved.keyframes[1]!.positions.p1).toEqual([45, 46])
+  })
+
+  it('makes the selected object bigger and smaller', async () => {
+    const wrapper = await mountEditor()
+    await paletteItem(wrapper, 'cone').trigger('click')
+    const bigger = wrapper.get('[aria-label="Größer"]')
+    await bigger.trigger('click')
+    await bigger.trigger('click')
+    expect(wrapper.get('.board__object g').attributes('transform')).toBe('scale(1.5)')
+    await wrapper.get('[aria-label="Kleiner"]').trigger('click')
+    await wrapper.get('.board__object').trigger('keydown', { key: '-' })
+    expect(wrapper.get('.board__object g').attributes('transform')).toBeUndefined()
+
+    await button(wrapper, 'Speichern').trigger('click')
+    await flushPromises()
+    expect(saveMutate.mock.calls[0]![0].animation.objects[0]).not.toHaveProperty('scale')
+  })
+
+  it('switches the field size at the top of the field', async () => {
+    const wrapper = await mountEditor()
+    const full = wrapper.get('[aria-label="Ganzes Feld"]')
+    expect(wrapper.get('[aria-label="Halbes Feld"]').attributes('aria-pressed')).toBe('true')
+    await full.trigger('click')
+    expect(full.attributes('aria-pressed')).toBe('true')
+
+    await button(wrapper, 'Speichern').trigger('click')
+    await flushPromises()
+    expect(saveMutate.mock.calls[0]![0].animation.field).toBe('full')
+  })
+
+  it('puts squad players on the field with name and number, once', async () => {
+    squadData.value = [
+      { id: 'm1', name: 'Lena', number: '10' },
+      { id: 'm2', name: 'Mia' },
+    ]
+    const wrapper = await mountEditor()
+    await button(wrapper, 'Kader').trigger('click')
+    await wrapper.get('[data-squad="m1"]').trigger('click')
+    expect(wrapper.get('.board__object').attributes('aria-label')).toBe('Spieler 10')
+    expect(wrapper.get('[data-squad="m1"]').text()).toContain('auf dem Feld')
+
+    // Tapping a player who is already on the field selects them instead of adding a copy.
+    await wrapper.get('[data-squad="m1"]').trigger('click')
+    expect(wrapper.findAll('.board__object')).toHaveLength(1)
+
+    await button(wrapper, 'Speichern').trigger('click')
+    await flushPromises()
+    expect(saveMutate.mock.calls[0]![0].animation.objects[0]).toMatchObject({
+      type: 'player',
+      name: 'Lena',
+      label: '10',
+    })
+  })
+
+  it('deletes the chosen step, but never the first one', async () => {
+    const wrapper = await mountEditor()
+    const remove = () => wrapper.get('.board-editor__keyframe--remove')
+    expect(remove().attributes('disabled')).toBeDefined()
+
+    await wrapper.get('[aria-label="Schritt hinzufügen"]').trigger('click')
+    await wrapper.get('[aria-label="Schritt hinzufügen"]').trigger('click')
+    expect(wrapper.findAll('[aria-label^="Schritt 3 bei"]')).toHaveLength(1)
+    expect(remove().attributes('aria-label')).toBe('Schritt 3 löschen')
+
+    await remove().trigger('click')
+    expect(wrapper.findAll('[aria-label^="Schritt 3 bei"]')).toHaveLength(0)
+    expect(wrapper.text()).toContain('Schritt 3 gelöscht')
+    expect(remove().attributes('aria-label')).toBe('Schritt 2 löschen')
   })
 
   it('removes an object with the erase tool', async () => {

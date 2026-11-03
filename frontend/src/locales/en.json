@@ -778,7 +778,7 @@
       "line": "Line"
     },
     "toolHints": {
-      "move": "Drag items from the palette onto the field. Tap on the field to select, drag to move, arrow keys for fine steps.",
+      "move": "Drag items from the edge onto the field. Tap to select, drag to move, arrow keys for fine steps.",
       "run": "Drag on the field from start to end: dashed run.",
       "pass": "Drag on the field from start to end: pass.",
       "dribble": "Drag on the field from start to end: dribble (wave).",
@@ -788,10 +788,11 @@
     "sceneLabel": "Field, step {n}",
     "timeline": "Timeline",
     "keyframeLabel": "Step {n} at {s} seconds",
-    "addKeyframe": "Step",
+    "addKeyframeLabel": "Add step",
     "keyframeTime": "Time (s)",
     "duration": "Total duration (s)",
-    "removeKeyframe": "Delete step",
+    "removeKeyframeN": "Delete step {n}",
+    "keyframeRemoved": "Step {n} deleted",
     "keyframeHint": "Each step is a frame of the animation. Choose a step and move players or pass the ball – everything moves smoothly in between.",
     "addLabel": "Equipment",
     "playerColor": "Color for new players",
@@ -819,6 +820,8 @@
     },
     "added": "{what} added",
     "removed": "Removed",
+    "trash": "Drop here to delete",
+    "zoomReset": "Zoom {n} % · reset",
     "arrowAdded": "Arrow added",
     "keyframeAdded": "Step added",
     "limitReached": "Maximum reached.",
@@ -843,7 +846,7 @@
       "people": "Players",
       "equipment": "Equipment",
       "zones": "Zones",
-      "hint": "Drag onto the field or tap.",
+      "hint": "Drag items from the edge onto the field, or tap them.",
       "items": {
         "player": "Player",
         "goalkeeper": "Goalkeeper",
@@ -880,12 +883,32 @@
       "duplicate": "Duplicate",
       "remove": "Remove",
       "open": "Properties",
-      "deselect": "Clear selection"
+      "deselect": "Clear selection",
+      "size": "Size",
+      "smaller": "Smaller",
+      "bigger": "Bigger",
+      "sizeValue": "{n} percent",
+      "zoneSize": "{w} by {h} meters"
     },
-    "dock": {
-      "label": "Panel below the field",
-      "add": "Add",
-      "steps": "Steps"
+    "settings": "Settings",
+    "saveShort": "Save",
+    "fieldsShort": {
+      "full": "Full",
+      "half": "Half",
+      "quarter": "Quarter"
+    },
+    "squad": {
+      "open": "Squad",
+      "hint": "Drag players onto the field or tap them.",
+      "onField": "on the field"
+    },
+    "export": {
+      "open": "Share or download picture",
+      "title": "Picture of step {n}",
+      "share": "Share",
+      "download": "Download as PNG",
+      "failed": "The picture could not be created.",
+      "stepWord": "step"
     }
   },
   "stats": {
