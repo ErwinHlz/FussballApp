@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import UiIcon from '@/ui/UiIcon.vue'
+import UiIconButton from '@/ui/UiIconButton.vue'
 import UiBadge from '@/ui/UiBadge.vue'
 import { formatDate } from '@/lib/date'
 import { useAuthStore } from '@/stores/auth'
 import type { Absence } from '../api'
-import { isCurrent, lastDay } from '../logic'
+import { isCurrent, lastDay, mergeAbsences } from '../logic'
 import { useDeleteAbsence } from '../composables/useAbsences'
 
 const props = withDefaults(
@@ -22,6 +23,7 @@ const props = withDefaults(
 const { t, locale } = useI18n()
 const auth = useAuthStore()
 const remove = useDeleteAbsence()
+const entries = computed(() => mergeAbsences(props.absences))
 
 const day = (value: Date | string) => formatDate(value, locale.value, 'EEEEEE dd.MM.')
 
@@ -32,7 +34,7 @@ function canDelete(a: Absence) {
 
 <template>
   <ul class="absences" role="list">
-    <li v-for="a in absences" :key="a.id" class="absences__item">
+    <li v-for="a in entries" :key="a.id" class="absences__item">
       <span class="absences__main">
         <span v-if="showName" class="absences__name">{{ a.member.display_name }}</span>
         <span class="absences__dates">
@@ -43,16 +45,14 @@ function canDelete(a: Absence) {
         </span>
       </span>
       <UiBadge v-if="isCurrent(a)" tone="maybe">{{ t('absences.now') }}</UiBadge>
-      <button
+      <UiIconButton
         v-if="canDelete(a)"
-        type="button"
-        class="absences__delete"
-        :aria-label="t('absences.delete', { name: a.member.display_name })"
+        icon="x"
+        variant="ghost"
+        :label="t('absences.delete', { name: a.member.display_name })"
         :disabled="remove.isPending.value"
-        @click="remove.mutate(a.id)"
-      >
-        <UiIcon name="x" :size="18" />
-      </button>
+        @click="remove.mutate(a.ids)"
+      />
     </li>
   </ul>
 </template>
@@ -90,19 +90,6 @@ function canDelete(a: Absence) {
     font-size: $font-sm;
     color: var(--color-text-muted);
     overflow-wrap: anywhere;
-  }
-
-  &__delete {
-    @include touch-target;
-    @include focus-visible;
-
-    display: grid;
-    flex-shrink: 0;
-    place-items: center;
-    border: 0;
-    border-radius: $radius-md;
-    background: transparent;
-    color: var(--color-danger);
   }
 }
 </style>

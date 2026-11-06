@@ -1,5 +1,5 @@
 /**
- * Club branding: the admin uploads a logo, the app suggests its colors and themes itself.
+ * Club branding: the admin uploads a logo; the accent color is chosen per account.
  */
 import { crc32, deflateSync } from 'node:zlib'
 import { expect, test, type Page } from '@playwright/test'
@@ -43,30 +43,28 @@ const primary = (page: Page) =>
     getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim(),
   )
 
-test('the logo gives the club color; every account can pick its own', async ({ browser }) => {
+test('the club shows its logo; every account picks its own accent', async ({ browser }) => {
   const demo = await seedDemo()
 
   const admin = await (await browser.newContext()).newPage()
   await login(admin, demo.coach.email, `/clubs/${demo.club.id}`)
   expect(await primary(admin)).toBe('#3f6212')
-  // No color picker for the club any more.
-  await expect(admin.getByRole('button', { name: /Farbe aus dem Logo/ })).toHaveCount(0)
 
-  // Logo and color are folded away on the club page (UX-PLAN X6).
+  // The logo is folded away on the club page (UX-PLAN X6); it no longer sets a club color.
   await admin.getByText('Vereinslogo', { exact: true }).click()
   await admin.getByLabel('Logo hochladen').setInputFiles({
     name: 'logo.png',
     mimeType: 'image/png',
     buffer: logoPng(),
   })
-  await expect(admin.getByText('Vereinsfarbe aus dem Logo: #c8102e')).toBeVisible()
+  await expect(admin.getByText(/Vereinsfarbe/)).toHaveCount(0)
   await admin.getByRole('button', { name: 'Speichern' }).click()
   await expect(admin.getByRole('status')).toContainText('Gespeichert')
-  await expect.poll(() => primary(admin)).toBe('#c8102e')
   await expect(admin.locator('.top-bar__logo')).toBeVisible()
+  expect(await primary(admin)).toBe('#3f6212')
   await admin.screenshot({ path: 'e2e/__screens__/50-branding.png', fullPage: true })
 
-  // A player in dark mode: logo in the header, the club color lightened for readability.
+  // A player in dark mode: logo in the header, the app's own accent.
   const player = await (await browser.newContext({ colorScheme: 'dark' })).newPage()
   await login(player, demo.player.email)
   await expect
@@ -74,38 +72,26 @@ test('the logo gives the club color; every account can pick its own', async ({ b
       player.locator('.top-bar__logo').evaluate((img: HTMLImageElement) => img.naturalWidth),
     )
     .toBeGreaterThan(0)
-  const dark = await primary(player)
-  expect(dark).not.toBe('#c6f25b')
-  expect(dark).not.toBe('#c8102e')
-  await player.screenshot({ path: 'e2e/__screens__/51-branding-dark.png' })
+  expect(await primary(player)).toBe('#c6f25b')
 
-  // The player picks an own color in the profile: club color is the default, logo colors
-  // are offered, Rondo green brings back the app's color.
+  // The player picks an own color in the profile; Rondo green is the standard.
   await player.goto('/profile')
   const accent = player.getByRole('group', { name: 'Akzentfarbe' })
-  await expect(accent.getByRole('button', { name: /^Vereinsfarbe/ })).toHaveAttribute(
+  await expect(accent.getByRole('button', { name: /Vereinsfarbe/ })).toHaveCount(0)
+  await expect(accent.getByRole('button', { name: 'Rondo-Grün' })).toHaveAttribute(
     'aria-pressed',
     'true',
   )
-  // The stored logo is compressed, so its colors may shift slightly: take the first one.
-  await accent
-    .getByRole('button', { name: /^Farbe aus dem Vereinslogo / })
-    .first()
-    .click()
+  await accent.getByRole('button', { name: 'Farbe #1d4ed8' }).click()
   await expect(player.getByText('Akzentfarbe gespeichert')).toBeVisible()
-  await expect.poll(() => primary(player)).not.toBe(dark)
-  const blue = await primary(player)
+  await expect.poll(() => primary(player)).not.toBe('#c6f25b')
+
+  // Only the player's account changed.
+  await admin.reload()
+  await expect.poll(() => primary(admin)).toBe('#3f6212')
+
   await accent.getByRole('button', { name: 'Rondo-Grün' }).click()
   await expect.poll(() => primary(player)).toBe('#c6f25b')
-
-  // Only the player's account changed: the admin still sees the club color.
-  await admin.reload()
-  await expect.poll(() => primary(admin)).toBe('#c8102e')
-  expect(blue).not.toBe('#c8102e')
-
-  // Back to the club color.
-  await accent.getByRole('button', { name: /^Vereinsfarbe/ }).click()
-  await expect.poll(() => primary(player)).toBe(dark)
 })
 
 test('an account manages only one club', async ({ page }) => {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiButton from '@/ui/UiButton.vue'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -23,7 +24,9 @@ function back() {
 
 <template>
   <main class="legal" :lang="'de'">
-    <button type="button" class="legal__back" @click="back">‹ {{ t('common.back') }}</button>
+    <UiButton variant="ghost" size="sm" icon="chevronLeft" class="legal__back" @click="back">
+      {{ t('common.back') }}
+    </UiButton>
     <h1>{{ doc.title }}</h1>
     <p v-if="locale !== 'de'" class="legal__note" :lang="locale">{{ t('legal.germanOnly') }}</p>
     <p class="legal__template" role="note">{{ t('legal.template') }}</p>
@@ -61,14 +64,7 @@ function back() {
   line-height: 1.6;
 
   &__back {
-    @include focus-visible;
-
     align-self: flex-start;
-    min-height: $touch-target;
-    border: 0;
-    background: transparent;
-    color: var(--color-primary);
-    font-weight: 600;
   }
 
   &__note,

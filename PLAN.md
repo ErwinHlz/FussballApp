@@ -52,6 +52,7 @@ Chat, Zahlungen, Mannschaftskasse, Mitgliederverwaltung des Vereins (Beiträge, 
 | Formulare | VeeValidate + Zod (`@vee-validate/zod`) |
 | Drag & Drop | `vue-draggable-plus` (SortableJS, touchfähig) |
 | Hilfsfunktionen | VueUse |
+| Icons | Lucide (`lucide-vue-next`), nur über `UiIcon` eingebunden |
 | Datum | date-fns |
 | i18n | vue-i18n (de, en) |
 | Backend | Supabase (Auth, Postgres, Row Level Security, Storage, Realtime) |
@@ -287,7 +288,7 @@ Gespeichert in `drills.animation` als JSON:
 - [x] **Übersicht für den Trainer:** Zugesagt / Abgesagt / Vielleicht / Keine Antwort mit Namen und Anzahl, live per Supabase Realtime
 - [x] Trainer kann Anmeldungen für Spieler ohne Account eintragen
 - [x] Verletzte Spieler werden bei neuen Terminen automatisch als „abgesagt (verletzt)“ vorgeschlagen
-- [x] **Nominierung für Spiele:** Trainer wählt aus den Zusagen den Spieltagskader (Startelf, Bank, Reserve). Spieler sehen, ob sie nominiert sind.
+- [x] **Nominierung für Spiele:** Trainer wählt aus den Zusagen den Spieltagskader (Startelf, Bank, Reserve). Spieler sehen, ob sie nominiert sind. *Nov. 2026 umgestellt: keine Nominierung mehr, der Kader sind alle Zusagen (mit Rückennummer, für alle sichtbar auf der Spiel-Seite). Tabelle `match_squad` bleibt ungenutzt.*
 - [x] Termin absagen (mit Grund), abgesagte Termine bleiben sichtbar, aber durchgestrichen
 - [x] Erinnerungs-Hinweis in der App für Spieler, die noch nicht geantwortet haben (Push folgt in Phase 11)
 - [x] Unit-Tests für Serienerzeugung und Anmeldeschluss-Logik
@@ -365,7 +366,7 @@ Gespeichert in `drills.animation` als JSON:
 - [ ] ~~Spielplan per `.ics` importieren~~ – verworfen (Nutzerentscheidung). Ein automatischer Import von FuPa wurde ebenfalls verworfen: keine offizielle Schnittstelle, rechtliches Risiko (Nutzungsbedingungen, Datenbankrecht, Vereinswappen).
 - [ ] Aufstellung auf dem Taktikboard aus dem nominierten Kader
 - [ ] Wechsel und Einsatzzeiten live erfassen, Tore und Karten
-- [x] Saisonstatistik pro Spieler: Trainingsbeteiligung, Trainingszeit, Zusage-/Antwortquote, Absagegründe, Nominierungen – nur aus vorhandenen App-Daten, ohne manuelle Pflege (Zeitraum: 30 Tage / Saison ab 1. Juli / gesamt). Einsatzminuten, Tore und Karten nicht enthalten.
+- [x] Saisonstatistik pro Spieler: Trainingsbeteiligung, Trainingszeit, Zusage-/Antwortquote, Absagegründe, Nominierungen – nur aus vorhandenen App-Daten, ohne manuelle Pflege (Zeitraum: 30 Tage / Saison ab 1. Juli / gesamt). Einsatzminuten, Tore und Karten nicht enthalten. *Ansicht vorerst entfernt (Nov. 2026), DB-Funktionen bleiben.*
 
 ---
 
@@ -383,13 +384,13 @@ Gespeichert in `drills.animation` als JSON:
 ## 9. Erweiterungen nach dem Plan (mit dem Nutzer abgestimmt)
 
 - [x] Qualitätsrunde: Browser-Tests (Playwright), Sichtprüfung per Screenshots, Dark Mode, installierbare Web-App (Manifest + Icon), Zurück-Navigation, Seitentitel und Fokus für Screenreader
-- [x] Statistik aus vorhandenen App-Daten (siehe Phase 12), für die ganze Mannschaft sichtbar
+- [x] Statistik aus vorhandenen App-Daten (siehe Phase 12), für die ganze Mannschaft sichtbar *(vorerst entfernt, Nov. 2026)*
 - [x] **Abwesenheiten:** Zeitraum (Urlaub, Krank, Verletzt, Arbeit, Sonstiges) einmal eintragen – alle Termine darin werden automatisch abgesagt, auch später angelegte. Eigene Antworten haben Vorrang; nach Anmeldeschluss wirkt nur der Trainer. Löschen entfernt genau die automatischen Absagen.
 - [x] **Web-Push:** Benachrichtigungen über die installierte Web-App – neuer Termin (Serie: eine Nachricht), Plan veröffentlicht (Spieler), Absage, Nominierung (nur neu Nominierte), Erinnerung < 24 h vor Anmeldeschluss (nur ohne Antwort). Outbox per Trigger, pg_cron jede Minute, Edge Function `push-dispatch` (VAPID, aes128gcm), abgelaufene Geräte werden entfernt. Testnachricht im Profil.
 - [x] **DSGVO & Go-live:** Konto löschen, Datenexport (Knopf seit F6 entfernt, Auskunft auf Anfrage), Datenschutz/Impressum, Supabase-Cloud und Hosting vorbereiten
 - [x] **Belegungsplan des Vereins:** Der Admin legt Plätze (teilbar in Hälften A/B) und feste Wochen-Platzzeiten pro Saison an. Trainer reservieren freie Zeiten für ein Datum oder jede Woche und geben einzelne Termine oder den Rest wieder ab. Reservierungen legen automatisch die Trainings an, Abgeben sagt sie ab (Push an die Spieler). Alle Vereinsmitglieder sehen den Plan.
 - [x] **Vereinslogo & Vereinsfarbe:** Der Admin lädt das Logo hoch (verkleinert, öffentlicher Speicher). Die App schlägt die prägenden Logofarben vor, alternativ eine eigene Farbe oder Standard-Grün. Die Akzentfarbe wird für hell und dunkel auf WCAG-Kontrast ≥ 4,5:1 angepasst. Logo im Kopfbereich; Bedeutungsfarben (Training, Spiel, Zu-/Absage) bleiben.
-- [x] **Trainingsvorlagen:** Trainings ohne Datum bauen (Übungen, Dauer, Notizen), einen fertigen Plan als Vorlage speichern, Vorlagen auf kommende Trainings legen (angehängt). Optional mit den Trainern im Verein teilen; Übungen anderer Mannschaften werden beim Übernehmen in die eigene Bibliothek kopiert. Spieler sehen keine Vorlagen.
+- [x] ~~**Trainingsvorlagen:** Trainings ohne Datum bauen (Übungen, Dauer, Notizen), einen fertigen Plan als Vorlage speichern, Vorlagen auf kommende Trainings legen (angehängt). Optional mit den Trainern im Verein teilen; Übungen anderer Mannschaften werden beim Übernehmen in die eigene Bibliothek kopiert. Spieler sehen keine Vorlagen.~~ *Entfernt (Nov. 2026): ohne Nutzen, „Plan kopieren“ deckt den Bedarf.*
 - [x] **Taktiktafel 2:** eigener Bereich „Taktiktafel“ (Tafeln pro Mannschaft, nur Trainer) und derselbe Editor für Übungs-Animationen. Material per Drag & Drop aus einer Leiste (Spieler, Torwart, Trainer, Ball, Hütchen, Scheiben, Stangen, Dummies, Minitore, Tore, Leiter, Ringe, Zonen, Text), Eigenschaften (Farbe, Nummer, Name aus dem Kader, Drehen, Größe, Duplizieren), Linien, Ball klebt am Spieler und wird per „Ball geben“ gepasst. Tafeln lassen sich an Übungen hängen.
 - [x] **Taktiktafel im Vollbild:** Der Editor (Übungs-Animation, Taktiktafel, Animation im Übungsformular) deckt die ganze Seite ab, das Feld füllt alles zwischen den Leisten. Immer Handy-Format in der Spaltenbreite der App (max. 720 px, auf dem Desktop mittig): Material liegt unten am Rand und wird ins Feld gezogen (Mausrad scrollt die Leiste), Werkzeuge oben, Schritte darüber, die Auswahl schwebt über dem Feld. Oben auf dem Feld: links „Kader“ (Spielerliste der Mannschaft mit Rückennummer, einzeln aufs Feld ziehen oder antippen; schon platzierte Spieler sind markiert und werden beim Antippen ausgewählt), in der Mitte die Feldgröße (Ganz/Halb/Viertel), rechts „Bild teilen“ (PNG des aktuellen Schritts mit Vorschau: Teilen-Menü, wo das Gerät es kann, sonst Download). Speichern oben rechts; Dauer, Name, „An Übung hängen“ und Löschen im Zahnrad. **Größe:** Objekte lassen sich am Griff oben rechts skalieren (Zonen: Breite und Höhe), außerdem mit − / + in der Auswahlleiste, per Regler in den Eigenschaften und mit den Tasten + / −; gespeichert als optionales `scale` (50–300 %) im Animations-JSON, bestehende Animationen bleiben gültig.
 - [x] **+-Knopf & Events:** Neue Termine über den +-Knopf in der Kopfzeile (Training, Trainingsserie, Spiel, Event). Neuer Termintyp `event` mit Pflicht-Titel (Teamabend, Turnier, Versammlung …): Zu-/Absagen, Abwesenheiten, Erinnerungen und Push wie bei anderen Terminen, kein Trainingsplan und kein Kader; eigene Farbe (Violett). Zählt nicht in die Trainings- oder Spielstatistik.

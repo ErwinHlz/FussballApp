@@ -14,7 +14,7 @@ import { useSnackbar } from '@/ui/useSnackbar'
 import { formatDate } from '@/lib/date'
 import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import DeclineSheet from '../components/DeclineSheet.vue'
-import EventRow from '../components/EventRow.vue'
+import EventTile from '../components/EventTile.vue'
 import EventsNav from '../components/EventsNav.vue'
 import { useAnswer } from '../composables/useAnswer'
 import { useAttendAll, useMyMember, useTeamEvents } from '../composables/useEvents'
@@ -134,6 +134,14 @@ function scrollToFirstUnanswered() {
     <header class="events__head">
       <!-- The area tab above names the page already: the heading is for screen readers. -->
       <h1 class="visually-hidden">{{ t('events.title') }}</h1>
+      <!-- Answer all open dates; without open dates the sheet says so. -->
+      <UiIconButton
+        v-if="memberId"
+        icon="checkAll"
+        :label="t('events.attendAll.button')"
+        aria-haspopup="dialog"
+        @click="attendOpen = true"
+      />
       <UiIconButton
         icon="filter"
         :label="
@@ -141,13 +149,10 @@ function scrollToFirstUnanswered() {
             ? t('events.filter.labelActive', { n: filterCount })
             : t('events.filter.label')
         "
-        :class="{ 'events__filter--on': filterCount > 0 }"
+        :badge="filterCount"
         aria-haspopup="dialog"
         @click="filterOpen = true"
-      >
-        <UiIcon name="filter" :size="22" />
-        <span v-if="filterCount" class="events__badge" aria-hidden="true">{{ filterCount }}</span>
-      </UiIconButton>
+      />
       <UiIconButton
         v-if="isCoach"
         icon="plus"
@@ -157,21 +162,12 @@ function scrollToFirstUnanswered() {
       />
     </header>
 
-    <!-- Players only: coaches answer on the side and are not reminded. -->
-    <div v-if="memberId && !isCoach" class="events__tools">
-      <button
-        v-if="unanswered.length"
-        type="button"
-        class="events__reminder"
-        @click="scrollToFirstUnanswered"
-      >
+    <!-- Players are reminded of open answers. -->
+    <div v-if="memberId && unanswered.length && !isCoach" class="events__tools">
+      <button type="button" class="events__reminder" @click="scrollToFirstUnanswered">
         <UiIcon name="alert" :size="18" />
         {{ t('events.reminder', unanswered.length) }}
       </button>
-      <!-- Always there; without open dates the sheet says so. -->
-      <UiButton variant="secondary" icon="check" aria-haspopup="dialog" @click="attendOpen = true">
-        {{ t('events.attendAll.button') }}
-      </UiButton>
     </div>
 
     <div v-if="events.isPending.value" class="events__list" aria-busy="true">
@@ -191,7 +187,7 @@ function scrollToFirstUnanswered() {
         <h2 :id="`week-${week.key}`" class="events__week-title">{{ weekTitle(week) }}</h2>
         <ul class="events__list" role="list">
           <li v-for="event in week.events" :id="`event-${event.id}`" :key="event.id">
-            <EventRow
+            <EventTile
               :event="event"
               :my-member="myMember"
               :is-coach="isCoach"
@@ -224,7 +220,7 @@ function scrollToFirstUnanswered() {
         </summary>
         <ul class="events__list" role="list">
           <li v-for="event in lists.past" :key="event.id">
-            <EventRow
+            <EventTile
               :event="event"
               :my-member="null"
               :is-coach="isCoach"
@@ -320,26 +316,6 @@ function scrollToFirstUnanswered() {
     h1 {
       flex: 1;
     }
-  }
-
-  &__filter--on {
-    position: relative;
-    outline: 2px solid var(--color-primary);
-  }
-
-  &__badge {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    display: grid;
-    place-items: center;
-    min-width: 20px;
-    height: 20px;
-    border-radius: $radius-full;
-    background: var(--color-primary);
-    color: var(--color-primary-contrast);
-    font-size: $font-xs;
-    font-weight: 800;
   }
 
   &__tools {

@@ -17,8 +17,6 @@ import EventCoachNav from '@/features/events/components/EventCoachNav.vue'
 import { useEventFormat } from '@/features/events/format'
 import { useEvent, useMyMember } from '@/features/events/composables/useEvents'
 import { useEventGroups } from '@/features/groups/composables/useGroups'
-import SaveAsTemplateModal from '@/features/templates/components/SaveAsTemplateModal.vue'
-import TemplatePickerModal from '@/features/templates/components/TemplatePickerModal.vue'
 import CopyPlanModal from '../components/CopyPlanModal.vue'
 import DrillPickerModal from '../components/DrillPickerModal.vue'
 import LateDeclines from '../components/LateDeclines.vue'
@@ -74,8 +72,6 @@ const groupColors = computed(
 
 const pickerOpen = ref(false)
 const copyOpen = ref(false)
-const templateOpen = ref(false)
-const saveTemplateOpen = ref(false)
 const announcement = ref('')
 
 // Local copy for drag & drop and instant minute changes; refreshed from the server.
@@ -229,18 +225,12 @@ function onRowAction(item: PlanItem, index: number, action: RowAction) {
   else remove(item)
 }
 
-type PlanAction = 'copy' | 'template' | 'saveTemplate'
+type PlanAction = 'copy'
 const planActions = computed<OverflowItem<PlanAction>[]>(() => [
   { key: 'copy', label: t('plan.copyFrom'), icon: 'copy' },
-  { key: 'template', label: t('templates.fromTemplate'), icon: 'note' },
-  ...(items.value.length
-    ? [{ key: 'saveTemplate' as const, label: t('templates.saveAs'), icon: 'star' as const }]
-    : []),
 ])
 function onPlanAction(action: PlanAction) {
   if (action === 'copy') copyOpen.value = true
-  else if (action === 'template') templateOpen.value = true
-  else saveTemplateOpen.value = true
 }
 
 function togglePublish() {
@@ -373,15 +363,16 @@ function togglePublish() {
 
       <p v-else class="plan__empty">{{ t('plan.empty') }}</p>
 
-      <button
-        type="button"
-        class="plan__add"
+      <UiButton
+        variant="secondary"
+        size="lg"
+        icon="plus"
+        block
         :disabled="addDrill.isPending.value"
         @click="pickerOpen = true"
       >
-        <UiIcon name="plus" :size="22" :stroke-width="2.6" />
         {{ t('plan.addDrill') }}
-      </button>
+      </UiButton>
       <p class="plan__hint">{{ t('plan.moreHint') }}</p>
 
       <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
@@ -432,18 +423,6 @@ function togglePublish() {
         :team-id="teamId"
         :used-drill-ids="items.map((i) => i.drill.id)"
         @pick="onPick"
-      />
-      <TemplatePickerModal
-        v-if="teamId"
-        v-model:open="templateOpen"
-        :team-id="teamId"
-        :event-id="eventId"
-        @applied="(n) => snackbar.show({ text: t('plan.copied', n) })"
-      />
-      <SaveAsTemplateModal
-        v-model:open="saveTemplateOpen"
-        :event-id="eventId"
-        @created="snackbar.show({ text: t('templates.savedAs') })"
       />
       <CopyPlanModal
         v-if="teamId"
@@ -557,30 +536,6 @@ function togglePublish() {
     color: var(--color-text-muted);
     font-size: $font-sm;
     text-align: center;
-  }
-
-  &__add {
-    @include focus-visible;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: $space-2;
-    min-height: 60px;
-    border: 2px dashed var(--color-chalk);
-    border-radius: $radius-xl;
-    background: transparent;
-    color: var(--color-text);
-    font-size: $font-md;
-    font-weight: 800;
-
-    :deep(.ui-icon) {
-      color: var(--color-primary);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-    }
   }
 
   &__status {

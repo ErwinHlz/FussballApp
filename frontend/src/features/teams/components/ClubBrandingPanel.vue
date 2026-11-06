@@ -2,9 +2,8 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import UiButton from '@/ui/UiButton.vue'
-import { extractPalette } from '@/lib/color'
 import { clubLogoUrl } from '@/lib/clubTheme'
-import { downscale, loadImage, samplePixels } from '@/lib/image'
+import { downscale, loadImage } from '@/lib/image'
 import type { Club } from '../api'
 import { useSaveClubBranding } from '../composables/useTeams'
 
@@ -20,7 +19,6 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const newLogo = ref<Blob | null>(null)
 const newLogoUrl = ref<string | null>(null)
 const removeLogo = ref(false)
-const palette = ref<string[]>([])
 const fileError = ref<string | null>(null)
 const saved = ref(false)
 
@@ -31,15 +29,6 @@ const previewUrl = computed(
   () => newLogoUrl.value ?? (removeLogo.value ? null : currentLogoUrl.value),
 )
 const dirty = computed(() => !!newLogo.value || removeLogo.value)
-/**
- * The club's color is the strongest color of the logo. It is the default accent for all
- * members; everyone can pick an own one in the profile.
- */
-const color = computed(() => {
-  if (newLogo.value) return palette.value[0] ?? null
-  if (removeLogo.value) return null
-  return props.club.accent_color
-})
 
 function setNewLogoUrl(url: string | null) {
   if (newLogoUrl.value) URL.revokeObjectURL(newLogoUrl.value)
@@ -68,7 +57,6 @@ async function onFile(event: Event) {
     newLogo.value = blob
     removeLogo.value = false
     setNewLogoUrl(URL.createObjectURL(blob))
-    palette.value = extractPalette(samplePixels(img))
   } catch {
     fileError.value = t('branding.errors.read')
   } finally {
@@ -80,7 +68,6 @@ function onRemove() {
   newLogo.value = null
   setNewLogoUrl(null)
   removeLogo.value = true
-  palette.value = []
   saved.value = false
 }
 
@@ -91,7 +78,8 @@ async function onSave() {
     currentLogoPath: props.club.logo_path,
     newLogo: newLogo.value,
     removeLogo: removeLogo.value,
-    accentColor: color.value,
+    // No club color any more: everyone picks an own accent in the profile.
+    accentColor: null,
   })
   newLogo.value = null
   setNewLogoUrl(null)
@@ -126,12 +114,6 @@ async function onSave() {
     </div>
     <p class="branding__hint">{{ t('branding.hint') }}</p>
     <p v-if="fileError" class="branding__error" role="alert">{{ fileError }}</p>
-
-    <p class="branding__club-color">
-      <span class="branding__dot" :style="{ background: color ?? '#3f6212' }" aria-hidden="true" />
-      {{ color ? t('branding.clubColor', { color }) : t('branding.clubColorNone') }}
-    </p>
-    <p class="branding__hint">{{ t('branding.colorHint') }}</p>
 
     <p v-if="save.isError.value" class="branding__error" role="alert">
       {{ t('branding.errors.save') }}
@@ -182,20 +164,6 @@ async function onSave() {
     display: flex;
     flex-direction: column;
     gap: $space-1;
-  }
-
-  &__club-color {
-    display: flex;
-    align-items: center;
-    gap: $space-2;
-    font-weight: 700;
-  }
-
-  &__dot {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
   }
 
   &__file {

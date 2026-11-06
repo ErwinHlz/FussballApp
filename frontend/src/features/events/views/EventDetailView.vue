@@ -23,11 +23,12 @@ import AttachToSchedule from '@/features/schedule/components/AttachToSchedule.vu
 import AttendanceOverview from '../components/AttendanceOverview.vue'
 import DeclineSheet from '../components/DeclineSheet.vue'
 import EventCoachNav from '../components/EventCoachNav.vue'
+import MatchSquadList from '../components/MatchSquadList.vue'
 import { useAnswer } from '../composables/useAnswer'
 import { useDeleteWithUndo } from '../composables/useDeleteWithUndo'
 import { useEvent, useMyMember, useUpdateEvent } from '../composables/useEvents'
 import { useEventFormat } from '../format'
-import { canRespond, responseState, SQUAD_ROLES, type AttendanceStatus } from '../logic'
+import { canRespond, responseState, type AttendanceStatus } from '../logic'
 import PageProblem from '@/ui/PageProblem.vue'
 
 const props = defineProps<{ eventId: string }>()
@@ -69,19 +70,6 @@ const canAttach = computed(
 )
 const myAttendance = computed(
   () => e.value?.attendances.find((a) => a.member_id === myMember.value?.id) ?? null,
-)
-const myNomination = computed(
-  () => e.value?.match_squad.find((s) => s.member_id === myMember.value?.id) ?? null,
-)
-const memberById = computed(() => new Map((members.data.value ?? []).map((m) => [m.id, m])))
-const squadByRole = computed(() =>
-  SQUAD_ROLES.map((role) => ({
-    role,
-    names: (e.value?.match_squad ?? [])
-      .filter((s) => s.role === role)
-      .map((s) => memberById.value.get(s.member_id)?.display_name ?? '?')
-      .sort(),
-  })).filter((g) => g.names.length),
 )
 
 const typeLabel = computed(() =>
@@ -211,12 +199,7 @@ async function remove() {
     />
 
     <template v-else>
-      <EventCoachNav
-        v-if="isCoach && (e.type === 'training' || e.type === 'match')"
-        :event-id="e.id"
-        :type="e.type"
-        active="event"
-      />
+      <EventCoachNav v-if="isCoach && e.type === 'training'" :event-id="e.id" active="event" />
 
       <header class="detail__head">
         <OverflowMenu
@@ -356,25 +339,13 @@ async function remove() {
         <p v-else class="detail__muted">{{ t('player.planNotYet') }}</p>
       </template>
 
-      <!-- Nomination for players; coaches have the squad as its own view (EventCoachNav). -->
-      <section
-        v-if="e.type === 'match' && !isCoach && (myNomination || squadByRole.length)"
-        class="detail__squad"
-        aria-labelledby="squad-title"
-      >
-        <h2 id="squad-title">{{ t('events.nomination.title') }}</h2>
-        <p v-if="myMember?.role === 'player'" class="detail__nomination" role="status">
-          {{
-            myNomination
-              ? t('events.nomination.you', { role: t(`events.squadRole.${myNomination.role}`) })
-              : t('events.nomination.notYou')
-          }}
-        </p>
-        <div v-for="group in squadByRole" :key="group.role" class="detail__squad-group">
-          <h3>{{ t(`events.squadRole.${group.role}`) }} ({{ group.names.length }})</h3>
-          <p>{{ group.names.join(', ') }}</p>
-        </div>
-      </section>
+      <!-- The squad of a match is everyone who said yes. -->
+      <MatchSquadList
+        v-if="e.type === 'match' && members.data.value"
+        :event="e"
+        :members="members.data.value"
+        :my-member-id="myMember?.id ?? null"
+      />
 
       <!-- Coach -->
       <template v-if="isCoach && members.data.value">
@@ -595,20 +566,6 @@ async function remove() {
   &__hint {
     color: var(--color-text-muted);
     font-size: $font-sm;
-  }
-
-  &__squad {
-    display: flex;
-    flex-direction: column;
-    gap: $space-2;
-  }
-
-  &__nomination {
-    font-weight: 800;
-  }
-
-  &__squad-group h3 {
-    font-size: $font-md;
   }
 
   &__answer {

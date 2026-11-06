@@ -1,0 +1,17 @@
+// A whole card that opens one page, while it still holds its own buttons and links.
+// The link with `.card-link` spreads over the nearest positioned ancestor (the card); anything
+// else that can be tapped inside the card gets `.card-link-above`, so it stays reachable.
+// Screen readers still meet the link once, with its own text.
+
+.card-link::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  content: '';
+}
+
+.card-link-above {
+  position: relative;
+  z-index: 1;
+}

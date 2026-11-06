@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import UiBadge from '@/ui/UiBadge.vue'
 import UiButton from '@/ui/UiButton.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import UiSkeleton from '@/ui/UiSkeleton.vue'
-import { applyClubTheme, clubLogoUrl } from '@/lib/clubTheme'
+import { clubLogoUrl } from '@/lib/clubTheme'
 import AuthShell from '@/features/auth/components/AuthShell.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useActiveTeamStore } from '@/stores/activeTeam'
@@ -27,16 +27,10 @@ const accept = useAcceptInvite()
 const returnPath = computed(() => `/join/${props.token}?accept=1`)
 const invite = computed(() => info.data.value ?? null)
 const isValid = computed(() => invite.value?.status === 'valid')
-// The invite looks like the club: its logo and its color.
+// The invite shows the club's logo.
 const logoUrl = computed(() =>
   invite.value?.club_logo_path ? clubLogoUrl(invite.value.club_logo_path) : null,
 )
-watch(
-  () => invite.value?.club_accent_color ?? null,
-  (accent) => applyClubTheme(accent),
-  { immediate: true },
-)
-onUnmounted(() => applyClubTheme(null))
 
 const roleLabel = computed(() =>
   invite.value?.role === 'coach' ? t('roles.coach') : t('roles.player'),

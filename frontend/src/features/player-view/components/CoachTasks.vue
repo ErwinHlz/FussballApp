@@ -13,7 +13,7 @@ import { differenceInCalendarDays } from 'date-fns'
 
 /**
  * "To do" on the coach's start page: every open task of the coming days is one row that leads
- * straight to the place where it is done (plan, groups, squad, who is coming).
+ * straight to the place where it is done (plan, groups, who is coming).
  */
 const props = defineProps<{ events: TeamEvent[]; playerIds: string[] }>()
 
@@ -58,15 +58,6 @@ const rows = computed<Row[]>(() => {
         title: t('coachTasks.plan'),
         subtitle: when(task.event),
         to: { name: 'event-plan', params },
-        at,
-      }
-    if (task.kind === 'squad')
-      return {
-        key: `squad-${task.event.id}`,
-        icon: 'shirt',
-        title: t('coachTasks.squad'),
-        subtitle: when(task.event),
-        to: { name: 'event-squad', params },
         at,
       }
     return {

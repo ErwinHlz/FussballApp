@@ -5,7 +5,7 @@
  * Run: npm run test:tour (local Supabase running; the test seeds its own demo club).
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { addDays, format, startOfWeek } from 'date-fns'
+import { format, startOfWeek } from 'date-fns'
 import { expect, test, type Page } from '@playwright/test'
 import { login } from './support/app'
 import { seedDemo } from './support/seed'
@@ -117,7 +117,6 @@ test('tour: every page as player and coach, light and dark', async ({ browser })
     ['drills', '/drills'],
     ['drill', `/drills/${drill}`],
     ['squad', '/squad'],
-    ['stats', '/stats'],
     ['teams', '/teams'],
     ['profile', '/profile'],
   ] as const)
@@ -137,14 +136,11 @@ test('tour: every page as player and coach, light and dark', async ({ browser })
     ['plan', `/events/${demo.training.id}/plan`],
     ['groups', `/events/${demo.training.id}/groups`],
     ['match', `/events/${demo.match.id}`],
-    ['match-squad', `/events/${demo.match.id}/squad`],
     ['training-list', '/training'],
     ['drills', '/drills'],
     ['drill-new', '/drills/new'],
     ['boards', '/boards'],
-    ['templates', '/templates'],
     ['squad', '/squad'],
-    ['stats', '/stats'],
     ['club', `/clubs/${demo.club.id}`],
     ['schedule-setup', `/clubs/${demo.club.id}/schedule/setup`],
     ['profile', '/profile'],
@@ -171,7 +167,7 @@ test('tour: every page as player and coach, light and dark', async ({ browser })
   )
 })
 
-test('on a Sunday the week strip and the schedule still show what comes next', async ({ page }) => {
+test('on a Sunday the schedule still shows the running week', async ({ page }) => {
   const demo = await seedDemo()
   await demo.coach.sb.from('pitches').insert({ club_id: demo.club.id, name: 'Rasen' })
   // The last Sunday (a past time keeps the session tokens valid), 10:00.
@@ -179,13 +175,6 @@ test('on a Sunday the week strip and the schedule still show what comes next', a
   sunday.setHours(10, 0, 0, 0)
   await page.clock.setFixedTime(sunday)
   await signIn(page, demo.coach.email)
-
-  // Week strip: today (Sunday) and the six days after it.
-  const strip = page.getByRole('navigation', { name: 'Die nächsten 7 Tage' })
-  const days = strip.getByRole('button')
-  await expect(days).toHaveCount(7)
-  await expect(days.first()).toContainText(format(sunday, 'd'))
-  await expect(days.last()).toContainText(format(addDays(sunday, 6), 'd'))
 
   // Schedule: Monday to Sunday of the running week, Sunday included.
   await page.goto('/events/schedule')

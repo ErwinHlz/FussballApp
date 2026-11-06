@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIconButton from '@/ui/UiIconButton.vue'
 import { computed, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -384,14 +385,12 @@ function names(ids: string[]) {
                 <input v-model="group.name" maxlength="30" />
               </label>
               <span class="groups__count">{{ group.memberIds.length }}</span>
-              <button
-                type="button"
-                class="groups__icon-button"
-                :aria-label="t('groups.removeGroup', { name: group.name })"
+              <UiIconButton
+                icon="x"
+                variant="ghost"
+                :label="t('groups.removeGroup', { name: group.name })"
                 @click="removeGroup(current, group.key)"
-              >
-                <UiIcon name="x" :size="18" />
-              </button>
+              />
             </header>
             <button
               v-if="selected && !containsSelected(group.memberIds)"
@@ -653,18 +652,6 @@ function names(ids: string[]) {
 
   &__count {
     font-weight: 800;
-    color: var(--color-text-muted);
-  }
-
-  &__icon-button {
-    @include touch-target;
-    @include focus-visible;
-
-    display: grid;
-    place-items: center;
-    border: 0;
-    border-radius: $radius-md;
-    background: transparent;
     color: var(--color-text-muted);
   }
 

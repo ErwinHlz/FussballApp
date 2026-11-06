@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { member } from '@/features/squad/__tests__/squad.spec'
 import {
+  matchSquad,
   deadlineOffset,
   placeSuggestions,
   shiftTime,
   activeFilterCount,
+  answerCounts,
   attendAllCandidates,
   DEFAULT_EVENT_FILTER,
   filterEvents,
@@ -14,9 +16,7 @@ import {
   generateSeriesOccurrences,
   responseState,
   splitEvents,
-  squadCandidates,
   summarizeAttendance,
-  unavailableNominees,
   unansweredEvents,
   type Attendance,
   type TeamEvent,
@@ -57,7 +57,6 @@ function event(overrides: Partial<TeamEvent>): TeamEvent {
     competition: null,
     created_at: '',
     attendances: [],
-    match_squad: [],
     ...overrides,
   }
 }
@@ -384,31 +383,36 @@ describe('deadlineOffset', () => {
   })
 })
 
-describe('squadCandidates', () => {
-  const players = [
-    member({ id: 'p1', shirt_number: 1 }),
-    member({ id: 'p2', shirt_number: 2 }),
-    member({ id: 'p3', shirt_number: 3 }),
-    member({ id: 'p4', shirt_number: 4 }),
-    member({ id: 'p5', shirt_number: 5 }),
-    member({ id: 'c', role: 'coach', shirt_number: null }),
-  ]
-  const answers = [attendance('p2', 'yes'), attendance('p3', 'no'), attendance('p4', 'maybe')]
-
-  it('offers yes and maybe, keeps nominated players and puts unavailable ones last', () => {
-    const nominated = new Set(['p1', 'p3'])
-    const result = squadCandidates(players, answers, nominated)
-    expect(result.map((c) => [c.member.id, c.status])).toEqual([
-      ['p2', 'yes'],
-      ['p4', 'maybe'],
-      ['p1', null],
-      ['p3', 'no'],
-    ])
-    expect(unavailableNominees(result, nominated).map((c) => c.member.id)).toEqual(['p1', 'p3'])
+describe('matchSquad', () => {
+  it('is every player who said yes, by shirt number, players without a number last', () => {
+    const players = [
+      member({ id: 'p9', display_name: 'Zoe', shirt_number: 9 }),
+      member({ id: 'p1', display_name: 'Ben', shirt_number: 1 }),
+      member({ id: 'pn', display_name: 'Anna', shirt_number: null }),
+      member({ id: 'p3', shirt_number: 3 }),
+      member({ id: 'p4', shirt_number: 4 }),
+      member({ id: 'c', role: 'coach', shirt_number: null }),
+    ]
+    const answers = [
+      attendance('p9', 'yes'),
+      attendance('p1', 'yes'),
+      attendance('pn', 'yes'),
+      attendance('p3', 'no'),
+      attendance('p4', 'maybe'),
+      attendance('c', 'yes'),
+    ]
+    expect(matchSquad(players, answers).map((m) => m.id)).toEqual(['p1', 'p9', 'pn'])
   })
+})
 
-  it('has no warning when every nominee said yes or maybe', () => {
-    const nominated = new Set(['p2', 'p4'])
-    expect(unavailableNominees(squadCandidates(players, answers, nominated), nominated)).toEqual([])
+describe('answerCounts', () => {
+  it('counts the players answers and the missing ones, not the coaches', () => {
+    const answers = [
+      { member_id: 'p1', status: 'yes' as const },
+      { member_id: 'p2', status: 'no' as const },
+      { member_id: 'coach', status: 'yes' as const },
+    ]
+    expect(answerCounts(answers, ['p1', 'p2', 'p3'])).toEqual({ yes: 1, maybe: 0, no: 1, none: 1 })
+    expect(answerCounts([], [])).toEqual({ yes: 0, maybe: 0, no: 0, none: 0 })
   })
 })

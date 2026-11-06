@@ -56,7 +56,6 @@ test.describe('axe: WCAG 2.1 AA', () => {
       '/drills',
       ANIMATED_DRILL,
       '/squad',
-      '/stats',
       '/profile',
       '/teams',
     ])
@@ -81,7 +80,6 @@ test.describe('axe: WCAG 2.1 AA', () => {
       '/drills',
       '/drills/new',
       '/boards',
-      '/templates',
       '/squad',
       `/clubs/${demo.club.id}`,
     ])

@@ -11,16 +11,13 @@ import type { TeamMember } from '@/features/teams/api'
 
 export type EventRow = Tables<'events'>
 export type Attendance = Tables<'attendances'>
-export type MatchSquadEntry = Tables<'match_squad'>
 export type AttendanceStatus = Database['public']['Enums']['attendance_status']
-export type SquadRole = Database['public']['Enums']['squad_role']
-export type TeamEvent = EventRow & { attendances: Attendance[]; match_squad: MatchSquadEntry[] }
+export type TeamEvent = EventRow & { attendances: Attendance[] }
 
 export const DECLINE_REASONS = ['injured', 'sick', 'work', 'vacation', 'other'] as const
 export type DeclineReason = (typeof DECLINE_REASONS)[number]
 export const COMPETITIONS = ['league', 'cup', 'friendly'] as const
 export type Competition = (typeof COMPETITIONS)[number]
-export const SQUAD_ROLES = ['starter', 'bench', 'reserve'] as const
 export const DEADLINE_HOURS = [2, 6, 12, 24, 48] as const
 
 /** Events of past days stay "upcoming" until they are over (or 2h after start). */
@@ -146,35 +143,33 @@ export function summarizeAttendance(
   return summary
 }
 
-export type SquadCandidate = { member: TeamMember; status: AttendanceStatus | null }
+export type AnswerCounts = Record<AttendanceStatus | 'none', number>
 
-/**
- * Players for the match squad: everyone who said yes or maybe, plus anyone already nominated.
- * Nominated players who declined or did not answer go to the end, so they stand out.
- */
-export function squadCandidates(
-  members: TeamMember[],
-  attendances: Attendance[],
-  nominated: Set<string>,
-): SquadCandidate[] {
-  const status = new Map(attendances.map((a) => [a.member_id, a.status]))
-  const available = (s: AttendanceStatus | null) => s === 'yes' || s === 'maybe'
-  return members
-    .filter((m) => m.role === 'player')
-    .map((m) => ({ member: m, status: status.get(m.id) ?? null }))
-    .filter((c) => available(c.status) || nominated.has(c.member.id))
-    .sort(
-      (a, b) =>
-        Number(!available(a.status)) - Number(!available(b.status)) ||
-        (a.member.shirt_number ?? 999) - (b.member.shirt_number ?? 999),
-    )
+/** The squad players' answers in numbers; coaches are not counted (neither as missing). */
+export function answerCounts(
+  attendances: Pick<Attendance, 'member_id' | 'status'>[],
+  playerIds: string[],
+): AnswerCounts {
+  const players = new Set(playerIds)
+  const counts: AnswerCounts = { yes: 0, maybe: 0, no: 0, none: 0 }
+  for (const a of attendances) if (players.has(a.member_id)) counts[a.status]++
+  counts.none = Math.max(0, players.size - counts.yes - counts.maybe - counts.no)
+  return counts
 }
 
-/** Nominated players who declined or have not answered (warning for the coach). */
-export function unavailableNominees(candidates: SquadCandidate[], nominated: Set<string>) {
-  return candidates.filter(
-    (c) => nominated.has(c.member.id) && c.status !== 'yes' && c.status !== 'maybe',
-  )
+/**
+ * The match squad: every player who said yes, by shirt number (players without a number last,
+ * then by name). There is no separate nomination; the answers are the squad.
+ */
+export function matchSquad(members: TeamMember[], attendances: Attendance[]): TeamMember[] {
+  const yes = new Set(attendances.filter((a) => a.status === 'yes').map((a) => a.member_id))
+  return members
+    .filter((m) => m.role === 'player' && yes.has(m.id))
+    .sort(
+      (a, b) =>
+        (a.shirt_number ?? 999) - (b.shirt_number ?? 999) ||
+        a.display_name.localeCompare(b.display_name),
+    )
 }
 
 /** Only events within this many days trigger the in-app reminder. */

@@ -21,13 +21,11 @@ const router = useRouter()
 const { myTeams, activeTeam, isCoach } = useActiveTeam()
 const profile = useProfile()
 
-// The app takes on the account's accent color; by default the color of the active team's club
-// ('default' = always the app's green).
+// The app takes on the account's own accent color (none or 'default' = the app's green).
 watch(
   () => {
     const own = profile.data.value?.accent_color ?? null
-    if (own === 'default') return null
-    return own ?? activeTeam.value?.club_accent_color ?? null
+    return own === 'default' ? null : own
   },
   (accent) => applyClubTheme(accent),
   { immediate: true },
@@ -71,8 +69,8 @@ const tabs = computed<Tab[]>(() => [
 ])
 const tabPrefixes: [string, string[]][] = [
   ['events', ['/events']],
-  ['training', ['/training', '/drills', '/boards', '/templates']],
-  ['team', ['/squad', '/stats', '/teams']],
+  ['training', ['/training', '/drills', '/boards']],
+  ['team', ['/squad', '/teams']],
   ['club', ['/clubs']],
 ]
 const activeTab = computed(() => {
@@ -166,12 +164,17 @@ watchEffect(() => {
   <div class="app-layout" :class="{ 'app-layout--no-nav': !showNav }">
     <header class="top-bar" :class="{ 'top-bar--compact': compact }">
       <div class="top-bar__inner">
+        <!-- Without the tab bar (no team yet) the back button stays up here. -->
         <UiIconButton
-          v-if="route.meta.back"
+          v-if="!showNav && route.meta.back"
           icon="chevronLeft"
+          variant="ghost"
           :label="t('common.back')"
           @click="goBack"
         />
+        <RouterLink v-else :to="{ name: 'home' }" class="top-bar__home" :aria-label="t('nav.home')">
+          <RondoLogo :size="36" :wordmark="false" aria-hidden="true" />
+        </RouterLink>
         <button
           type="button"
           class="top-bar__team"
@@ -179,7 +182,6 @@ watchEffect(() => {
           @click="switcherOpen = true"
         >
           <img v-if="logoUrl" :src="logoUrl" alt="" class="top-bar__logo" />
-          <RondoLogo v-else-if="!activeTeam" :size="32" :wordmark="false" />
           <span class="top-bar__text">
             <template v-if="activeTeam">
               <span class="top-bar__name">{{ activeTeam.team_name }}</span>
@@ -211,6 +213,8 @@ watchEffect(() => {
       :active="activeTab"
       :label="t('nav.label')"
       :hidden="navHidden"
+      :back-label="route.meta.back ? t('common.back') : null"
+      @back="goBack"
       @focusin="navHidden = false"
     />
     <TeamSwitcherSheet v-model:open="switcherOpen" />
@@ -255,8 +259,10 @@ watchEffect(() => {
     box-shadow: 0 1px 0 var(--color-border);
   }
 
+  // Logo left, team switcher in the middle, profile right.
   &__inner {
-    display: flex;
+    display: grid;
+    grid-template-columns: $touch-target minmax(0, 1fr) $touch-target;
     align-items: center;
     gap: $space-2;
     max-width: 720px;
@@ -267,13 +273,26 @@ watchEffect(() => {
     padding: $space-2 $space-3 $space-2 $space-3;
   }
 
+  &__home {
+    @include focus-visible;
+
+    display: grid;
+    place-items: center;
+    width: $touch-target;
+    height: $touch-target;
+    border-radius: $radius-md;
+    color: var(--color-primary);
+  }
+
   &__team {
     @include focus-visible;
 
     display: flex;
-    flex: 1;
     align-items: center;
+    justify-content: center;
+    justify-self: center;
     gap: $space-2;
+    max-width: 100%;
     min-width: 0;
     min-height: $touch-target;
     padding: 0 $space-2;
@@ -281,7 +300,7 @@ watchEffect(() => {
     border-radius: $radius-lg;
     background: transparent;
     color: inherit;
-    text-align: left;
+    text-align: center;
   }
 
   &__logo {
@@ -294,6 +313,7 @@ watchEffect(() => {
   &__text {
     display: flex;
     flex-direction: column;
+    align-items: center;
     min-width: 0;
     line-height: 1.1;
   }

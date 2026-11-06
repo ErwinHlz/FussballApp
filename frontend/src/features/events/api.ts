@@ -1,19 +1,12 @@
 import { subDays } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import type { TablesInsert } from '@/types/database'
-import type {
-  Attendance,
-  AttendanceStatus,
-  DeclineReason,
-  EventRow,
-  SquadRole,
-  TeamEvent,
-} from './logic'
+import type { Attendance, AttendanceStatus, DeclineReason, EventRow, TeamEvent } from './logic'
 
 /** How far back the event list goes (older events are not shown in the MVP). */
 const PAST_DAYS = 60
 
-const EVENT_SELECT = '*, attendances(*), match_squad(*)'
+const EVENT_SELECT = '*, attendances(*)'
 
 export type EventInput = Omit<
   TablesInsert<'events'>,
@@ -131,15 +124,4 @@ export async function withdrawAttendance(input: {
   if (error) throw error
   // A delete blocked by RLS removes nothing and raises no error: report it.
   if (!data.length) throw new Error('not allowed')
-}
-
-export async function setMatchSquad(
-  eventId: string,
-  entries: { member_id: string; role: SquadRole }[],
-): Promise<void> {
-  const { error } = await supabase.rpc('set_match_squad', {
-    p_event_id: eventId,
-    p_entries: entries,
-  })
-  if (error) throw error
 }

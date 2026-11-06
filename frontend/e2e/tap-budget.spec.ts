@@ -31,17 +31,18 @@ test('S1: a player says yes from the start page with one tap', async ({ page }) 
   await login(page, demo.player.email, '/')
 
   const t = taps()
-  await t.tap(page.locator('.next').getByRole('button', { name: 'Ich bin dabei' }))
-  await expect(
-    page.locator('.next').getByRole('button', { name: 'Du bist dabei' }),
-  ).toHaveAttribute('aria-pressed', 'true')
+  const yes = page.locator('.next__foot').getByRole('button', { name: 'Zusage' })
+  await t.tap(yes)
+  await expect(yes).toHaveAttribute('aria-pressed', 'true')
   expect(t.count).toBeLessThanOrEqual(1)
 })
 
 test('S2: the own bib for tomorrow is visible without scrolling', async ({ page }) => {
   const demo = await seedDemo()
   await login(page, demo.player.email, '/')
-  const bib = page.locator('.next .bib-chip', { hasText: 'Rondo 4 gegen 2' })
+  const bib = page
+    .locator('.next .glance__link', { hasText: 'Rondo 4 gegen 2' })
+    .locator('.bib-chip')
   await expect(bib).toContainText('Rot')
   await expect(bib).toBeInViewport()
 })

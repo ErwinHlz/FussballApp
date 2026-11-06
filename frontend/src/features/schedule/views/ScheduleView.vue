@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiButton from '@/ui/UiButton.vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -361,15 +362,15 @@ const dayLong = (date: string) => formatDate(parseISO(date), locale.value, 'EEEE
         :label="t('schedule.nextWeek')"
         @click="weekOffset++"
       />
-      <button
+      <UiButton
         v-if="weekOffset !== 0"
-        type="button"
-        class="schedule__today"
+        variant="secondary"
+        size="sm"
         :title="t('schedule.thisWeek')"
         @click="weekOffset = 0"
       >
         {{ t('schedule.today') }}
-      </button>
+      </UiButton>
     </nav>
 
     <p v-if="notice" class="schedule__notice" role="status">✓ {{ notice }}</p>
@@ -637,19 +638,6 @@ $gutter: 40px;
     font-size: $font-lg;
     font-weight: 800;
     text-align: center;
-  }
-
-  &__today {
-    @include focus-visible;
-
-    flex-shrink: 0;
-    min-height: $touch-target;
-    padding: 0 $space-3;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-full;
-    background: transparent;
-    color: var(--color-text);
-    font-weight: 800;
   }
 
   &__notice {

@@ -6,29 +6,55 @@ import ChalkCard from '@/ui/ChalkCard.vue'
 import UiIcon from '@/ui/UiIcon.vue'
 import type { TeamMember } from '@/features/teams/api'
 import { useEventFormat } from '@/features/events/format'
+import { useSetPlanStatus } from '@/features/training-plan/composables/usePlan'
+import { useSnackbar } from '@/ui/useSnackbar'
+import UiButton from '@/ui/UiButton.vue'
 import {
+  answerCounts,
   canRespond,
   responseState,
   type AttendanceStatus,
   type TeamEvent,
 } from '@/features/events/logic'
-import MyBibs from './MyBibs.vue'
+import PlanGlance from './PlanGlance.vue'
 import { relativeDay } from '../logic'
 
 /**
- * "Up next" on the start page, readable in seconds: when (big), where, my bibs, my answer.
- * The match nomination is deliberately not shown here (only on the event page).
+ * "Up next" on the start page, readable in seconds: team, when (big), where, training plan and
+ * groups (if there are any), my answer.
  */
 const props = defineProps<{
   event: TeamEvent
   myMember: TeamMember | null
   isCoach: boolean
   playerIds: string[]
+  teamName: string | null
+  /** Squad names by member id (for the groups). */
+  names: Map<string, string>
 }>()
-const emit = defineEmits<{ answer: [AttendanceStatus]; absence: [] }>()
+const emit = defineEmits<{ answer: [AttendanceStatus] }>()
 
 const { t } = useI18n()
 const fmt = useEventFormat()
+const snackbar = useSnackbar()
+const setStatus = useSetPlanStatus()
+
+// The place opens in the phone's maps app (free text, so a search).
+const mapsUrl = computed(() =>
+  props.event.location
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(props.event.location)}`
+    : null,
+)
+const isTraining = computed(() => props.event.type === 'training' && !props.event.is_cancelled)
+function publish() {
+  setStatus.mutate(
+    { eventId: props.event.id, status: 'published' },
+    {
+      onSuccess: () => snackbar.show({ text: t('plan.publishedHint') }),
+      onError: () => snackbar.show({ text: t('plan.saveFailed'), tone: 'error' }),
+    },
+  )
+}
 
 const when = computed(() => {
   const rel = relativeDay(props.event.starts_at)
@@ -49,6 +75,10 @@ const myAttendance = computed(
   () => props.event.attendances.find((a) => a.member_id === props.myMember?.id) ?? null,
 )
 const canAnswer = computed(() => canRespond(props.event, props.isCoach))
+const answerLabel = computed(
+  () =>
+    `${t('ui.answer.question')} ${fmt.title(props.event)}, ${fmt.dayMonth(props.event.starts_at)}`,
+)
 const lockedHint = computed(() => {
   if (canAnswer.value) return null
   const state = responseState(props.event)
@@ -60,16 +90,14 @@ const prefilledInjured = computed(
     myAttendance.value.reason === 'injured' &&
     !myAttendance.value.updated_by,
 )
-const showBibs = computed(
-  () => props.event.type === 'training' && props.event.plan_status === 'published',
+// Players see published plans; coaches also their draft (marked).
+const showPlan = computed(
+  () =>
+    props.event.type === 'training' &&
+    !props.event.is_cancelled &&
+    (props.event.plan_status === 'published' || props.isCoach),
 )
-const counts = computed(() => {
-  const players = new Set(props.playerIds)
-  const c = { yes: 0, maybe: 0, no: 0, none: 0 }
-  for (const a of props.event.attendances) if (players.has(a.member_id)) c[a.status]++
-  c.none = Math.max(0, players.size - c.yes - c.maybe - c.no)
-  return c
-})
+const counts = computed(() => answerCounts(props.event.attendances, props.playerIds))
 </script>
 
 <template>
@@ -85,6 +113,7 @@ const counts = computed(() => {
     </svg>
 
     <div class="next__head">
+      <p v-if="teamName" class="next__team">{{ teamName }}</p>
       <h2 id="next-event-title" class="next__eyebrow">
         {{ t('player.upNext') }} · {{ when }} · {{ typeLabel }}
       </h2>
@@ -96,9 +125,17 @@ const counts = computed(() => {
           >· {{ t('player.until', { time: fmt.time(event.ends_at) }) }}</template
         >
       </p>
-      <p v-if="event.location" class="next__line">
-        <UiIcon name="pin" :size="18" />{{ event.location }}
-      </p>
+      <a
+        v-if="mapsUrl"
+        :href="mapsUrl"
+        target="_blank"
+        rel="noopener"
+        class="next__place card-link-above"
+      >
+        <UiIcon name="pin" :size="18" />
+        <span class="next__place-name">{{ event.location }}</span>
+        <span class="next__place-route">{{ t('player.route') }}</span>
+      </a>
       <p v-if="event.meet_at || event.meet_location" class="next__line">
         <UiIcon name="clock" :size="18" />
         {{ t('events.meet') }}
@@ -107,43 +144,60 @@ const counts = computed(() => {
       </p>
     </div>
 
-    <MyBibs v-if="showBibs" :event-id="event.id" :member-id="myMember?.id ?? null" />
+    <PlanGlance
+      v-if="showPlan"
+      :event-id="event.id"
+      :member-id="myMember?.id ?? null"
+      :names="names"
+      :draft="event.plan_status !== 'published'"
+      :show-all="isCoach"
+    />
 
-    <!-- Coaches answer on the side: the team's counts come first. -->
-    <div v-if="myMember && isCoach" class="next__own">
-      <span class="next__own-label">{{ t('player.ownAnswer') }}</span>
-      <AnswerControl
-        variant="compact"
-        :status="myAttendance?.status ?? null"
-        :disabled="!canAnswer"
-        @answer="emit('answer', $event)"
-      />
+    <div v-if="isCoach && isTraining" class="next__coach card-link-above">
+      <UiButton variant="secondary" :to="{ name: 'event-plan', params: { eventId: event.id } }">
+        {{ t('plan.edit') }}
+      </UiButton>
+      <UiButton variant="secondary" :to="{ name: 'event-groups', params: { eventId: event.id } }">
+        {{ t('groups.short') }}
+      </UiButton>
+      <UiButton
+        v-if="event.plan_status !== 'published'"
+        :loading="setStatus.isPending.value"
+        @click="publish"
+      >
+        {{ t('plan.publish') }}
+      </UiButton>
     </div>
-    <template v-else-if="myMember">
-      <AnswerControl
-        :status="myAttendance?.status ?? null"
-        :disabled="!canAnswer"
-        @answer="emit('answer', $event)"
-      />
-      <p v-if="lockedHint" class="next__hint">{{ lockedHint }}</p>
-      <p v-else-if="prefilledInjured" class="next__hint">{{ t('events.prefilledInjured') }}</p>
-    </template>
 
     <p v-if="isCoach" class="next__counts">
       <strong>{{ t('player.countYes', { n: counts.yes }) }}</strong>
       · {{ t('player.countMaybe', { n: counts.maybe }) }} ·
       {{ t('player.countOpen', { n: counts.none }) }}
     </p>
+    <p v-if="myMember && lockedHint" class="next__hint">{{ lockedHint }}</p>
+    <p v-else-if="myMember && prefilledInjured" class="next__hint">
+      {{ t('events.prefilledInjured') }}
+    </p>
 
-    <div class="next__links">
-      <RouterLink :to="{ name: 'event', params: { eventId: event.id } }" class="next__more">
+    <!-- Always the same place, whatever is above: answer bottom left, details bottom right.
+         The details link covers the whole card (card-link); everything tappable sits above it. -->
+    <div class="next__foot">
+      <AnswerControl
+        v-if="myMember"
+        variant="compact"
+        :status="myAttendance?.status ?? null"
+        :disabled="!canAnswer"
+        :label="answerLabel"
+        class="card-link-above"
+        @answer="emit('answer', $event)"
+      />
+      <RouterLink
+        :to="{ name: 'event', params: { eventId: event.id } }"
+        class="next__more card-link"
+      >
         {{ event.type === 'training' ? t('player.flowAndDetails') : t('player.allDetails') }}
         <UiIcon name="arrowRight" :size="18" />
       </RouterLink>
-      <!-- Holidays and the like: one absence instead of declining date by date. -->
-      <button v-if="myMember" type="button" class="next__away" @click="emit('absence')">
-        {{ t('player.away') }}
-      </button>
     </div>
   </ChalkCard>
 </template>
@@ -194,6 +248,11 @@ const counts = computed(() => {
     gap: 2px;
   }
 
+  &__team {
+    font-weight: 800;
+    overflow-wrap: anywhere;
+  }
+
   &__eyebrow {
     color: var(--type-text);
     font-family: var(--font-sans);
@@ -205,17 +264,17 @@ const counts = computed(() => {
 
   &__title {
     font-family: var(--font-display);
-    font-size: $font-2xl;
+    font-size: $font-xl;
     font-weight: 800;
     line-height: 1.1;
   }
 
   &__time {
     font-family: var(--font-display);
-    font-size: 4rem;
+    font-size: $font-3xl;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
-    line-height: 0.95;
+    line-height: 1;
   }
 
   &__where {
@@ -231,39 +290,49 @@ const counts = computed(() => {
     font-weight: 600;
   }
 
-  &__hint,
-  &__links {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: $space-2;
-  }
-
-  &__away {
+  &__place {
     @include focus-visible;
 
+    position: relative;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    align-self: flex-start;
+    gap: $space-1;
     min-height: $touch-target;
-    padding: 0 $space-2;
-    border: 0;
-    background: transparent;
-    color: var(--color-text-muted);
+    color: var(--color-text);
     font-weight: 700;
+    text-decoration: none;
+  }
+
+  &__place-name {
     text-decoration: underline;
     text-underline-offset: 4px;
   }
 
-  &__own {
+  &__place-route {
+    color: var(--color-text-muted);
+    font-size: $font-sm;
+  }
+
+  &__coach {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+  }
+
+  &__foot {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: $space-3;
+    gap: $space-2;
+    padding-top: $space-3;
+    border-top: 1px solid var(--color-border);
   }
 
-  &__own-label {
+  &__hint {
     color: var(--color-text-muted);
     font-size: $font-sm;
-    font-weight: 700;
   }
 
   &__counts {
@@ -278,14 +347,15 @@ const counts = computed(() => {
   &__more {
     @include focus-visible;
 
-    position: relative;
     display: inline-flex;
-    align-self: flex-start;
     align-items: center;
     gap: $space-1;
     min-height: $touch-target;
+    margin-left: auto;
     color: var(--color-text);
+    font-size: $font-sm;
     font-weight: 800;
+    text-align: right;
     text-decoration: underline;
     text-decoration-color: var(--color-primary);
     text-decoration-thickness: 3px;

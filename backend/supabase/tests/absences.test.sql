@@ -52,8 +52,8 @@ select public.set_attendance((select id from ids where key = 'e5'), (select id f
 
 select is(
   public.create_absences(array[(select id from ids where key = 'p')], now() + interval '1 day', now() + interval '10 days', 'vacation', 'Mallorca'),
-  1,
-  'vacation declines open events in the period (own yes kept, closed event skipped)'
+  2,
+  'vacation declines open events in the period (also an earlier yes, closed event skipped)'
 );
 select is(
   (select status::text || '/' || reason || '/' || reason_note from public.attendances where event_id = (select id from ids where key = 'e3') and member_id = (select id from ids where key = 'p')),
@@ -61,9 +61,9 @@ select is(
   'the declined answer carries reason and note'
 );
 select is(
-  (select status::text from public.attendances where event_id = (select id from ids where key = 'e5') and member_id = (select id from ids where key = 'p')),
-  'yes',
-  'an explicit own answer wins'
+  (select status::text || '/' || reason from public.attendances where event_id = (select id from ids where key = 'e5') and member_id = (select id from ids where key = 'p')),
+  'no/vacation',
+  'the absence overrides an earlier own answer'
 );
 select is(
   (select count(*)::int from public.attendances where event_id = (select id from ids where key = 'closed') and member_id = (select id from ids where key = 'p')),

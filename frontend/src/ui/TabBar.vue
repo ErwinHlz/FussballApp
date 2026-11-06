@@ -6,14 +6,29 @@ export type Tab = { key: string; to: RouteLocationRaw; icon: UiIconName; label: 
 
 /**
  * Floating bottom navigation; the active tab sits on an accent pill. `hidden` slides it out
- * of view (while scrolling down); keyboard focus brings it back.
+ * of view (while scrolling down); keyboard focus brings it back. On sub pages a back button
+ * comes first, in thumb reach.
  */
-defineProps<{ tabs: Tab[]; active: string | null; label: string; hidden?: boolean }>()
+defineProps<{
+  tabs: Tab[]
+  active: string | null
+  label: string
+  hidden?: boolean
+  /** Label of a back button in front of the tabs; none on top-level pages. */
+  backLabel?: string | null
+}>()
+const emit = defineEmits<{ back: [] }>()
 </script>
 
 <template>
   <nav class="tab-bar" :class="{ 'tab-bar--hidden': hidden }" :aria-label="label">
     <ul class="tab-bar__list" role="list">
+      <li v-if="backLabel" class="tab-bar__back-item">
+        <button type="button" class="tab-bar__link tab-bar__back" @click="emit('back')">
+          <UiIcon name="chevronLeft" :size="22" />
+          <span class="tab-bar__label">{{ backLabel }}</span>
+        </button>
+      </li>
       <li v-for="tab in tabs" :key="tab.key">
         <RouterLink
           :to="tab.to"
@@ -81,6 +96,7 @@ defineProps<{ tabs: Tab[]; active: string | null; label: string; hidden?: boolea
     font-size: $font-xs;
     font-weight: 700;
     text-decoration: none;
+    cursor: pointer;
     transition: background-color var(--duration-medium) var(--ease-out);
 
     &:focus-visible {
@@ -92,6 +108,29 @@ defineProps<{ tabs: Tab[]; active: string | null; label: string; hidden?: boolea
       background: var(--color-nav-active);
       color: var(--color-nav-active-text);
     }
+  }
+
+  // The back button: same shape as a tab, set apart by a thin line.
+  &__back-item {
+    position: relative;
+    padding-right: 4px;
+
+    &::after {
+      position: absolute;
+      top: 12px;
+      right: 0;
+      bottom: 12px;
+      width: 1px;
+      background: color-mix(in srgb, var(--color-nav-text) 30%, transparent);
+      content: '';
+    }
+  }
+
+  &__back {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
   }
 
   &__label {

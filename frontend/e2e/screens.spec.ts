@@ -4,7 +4,7 @@
  */
 import { test, type Page } from '@playwright/test'
 import { login } from './support/app'
-import { register, seedDemo, seedHistory } from './support/seed'
+import { register, seedDemo } from './support/seed'
 
 const shot = (page: Page, name: string) =>
   page.screenshot({ path: `e2e/__screens__/${name}.png`, fullPage: true })
@@ -19,7 +19,7 @@ test('screens: player', async ({ page }) => {
   await shot(page, '02-register')
 
   await login(page, demo.player.email, '/')
-  await page.getByRole('button', { name: /dabei/ }).first().waitFor()
+  await page.locator('.next__foot').waitFor()
   await page.waitForTimeout(500)
   await shot(page, '10-player-home')
   await page.goto('/events')
@@ -65,7 +65,7 @@ test('screens: player', async ({ page }) => {
 test('screens: coach', async ({ page }) => {
   const demo = await seedDemo()
   await login(page, demo.coach.email, '/')
-  await page.getByRole('button', { name: /dabei/ }).first().waitFor()
+  await page.getByRole('button', { name: 'Zusage', exact: true }).first().waitFor()
   await page.waitForTimeout(500)
   await shot(page, '20-coach-home')
 
@@ -82,7 +82,7 @@ test('screens: coach', async ({ page }) => {
   await shot(page, '23-groups')
 
   await page.goto(`/events/${demo.match.id}`)
-  await page.getByText('Spieltagskader').waitFor()
+  await page.getByRole('heading', { name: /^Kader \(/ }).waitFor()
   await shot(page, '24-coach-match-detail')
 
   await page.goto('/events')
@@ -125,7 +125,7 @@ test.describe('dark mode', () => {
   test('screens: dark', async ({ page }) => {
     const demo = await seedDemo()
     await login(page, demo.player.email, '/')
-    await page.getByRole('button', { name: /dabei/ }).first().waitFor()
+    await page.locator('.next__foot').waitFor()
     await page.waitForTimeout(500)
     await shot(page, '40-dark-home')
 
@@ -137,24 +137,6 @@ test.describe('dark mode', () => {
     await page.getByRole('button', { name: 'Abspielen' }).waitFor()
     await shot(page, '42-dark-drill')
   })
-})
-
-test('screens: statistics', async ({ page }) => {
-  const demo = await seedDemo()
-  await seedHistory(demo)
-  await login(page, demo.coach.email, '/stats')
-  await page.getByText('Beteiligung pro Training').waitFor()
-  await shot(page, '50-stats-coach')
-
-  await page.getByRole('button', { name: 'Als Tabelle' }).click()
-  await shot(page, '51-stats-table')
-
-  await page.getByRole('link', { name: 'Profil' }).click()
-  await page.getByRole('button', { name: 'Abmelden' }).click()
-  await login(page, demo.player.email, '/stats')
-  await page.getByText('Deine Werte').waitFor()
-  await page.getByText('(du)').waitFor()
-  await shot(page, '52-stats-player')
 })
 
 test('screens: design system', async ({ page }) => {

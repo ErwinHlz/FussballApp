@@ -104,7 +104,7 @@ test('the team switcher sheet closes with Escape and swipe', async ({ page }) =>
 test('the back button returns to the list, also on a deep link', async ({ page }) => {
   const demo = await seedDemo()
   await login(page, demo.player.email)
-  await page.locator('.event-row', { hasText: 'FC Nachbarort' }).getByRole('link').first().click()
+  await page.locator('.tile', { hasText: 'FC Nachbarort' }).getByRole('link').first().click()
   await expect(page).toHaveURL(new RegExp(`/events/${demo.match.id}$`))
   await page.getByRole('button', { name: 'Zurück' }).click()
   await expect(page).toHaveURL(/\/events$/)
@@ -257,7 +257,7 @@ test('the filter sheet narrows the list and is remembered', async ({ page }) => 
   await expect(sheet).toBeHidden()
   await expect(page.getByRole('button', { name: 'Filter (1 aktiv)' })).toBeVisible()
   await expect(page.locator('main')).toContainText('FC Nachbarort')
-  await expect(page.locator('.event-row--training')).toHaveCount(0)
+  await expect(page.locator('.tile--training')).toHaveCount(0)
 
   await page.reload()
   await ready(page)

@@ -19,29 +19,22 @@ test('groups: a drill without groups is not reported as "everyone assigned" (A2)
   await expect(page.getByText('Alle Zusagen sind eingeteilt')).toHaveCount(0)
 })
 
-test('match: the coach gets no player nomination sentence and sees unavailable nominees (A4, A5)', async ({
+test('match: the squad is everyone who said yes, with shirt numbers, no roles', async ({
   page,
 }) => {
   const demo = await seedDemo()
-  // Lena is nominated, then declines.
-  await demo.coach.sb
-    .from('match_squad')
-    .insert({ event_id: demo.match.id, member_id: demo.memberId('Lena'), role: 'starter' })
   await demo.coach.sb.rpc('set_attendance', {
     p_event_id: demo.match.id,
     p_member_id: demo.memberId('Lena'),
-    p_status: 'no',
+    p_status: 'yes',
   })
 
-  await login(page, demo.coach.email)
+  await login(page, demo.player.email)
   await page.goto(`/events/${demo.match.id}`)
   await expect(page.getByRole('heading', { name: 'vs. FC Nachbarort' })).toBeVisible()
-  await expect(page.getByText('Du bist für dieses Spiel nicht nominiert.')).toHaveCount(0)
-  // The squad is its own view next to the overview (X3).
-  await page.getByRole('link', { name: 'Kader' }).click()
-  await expect(page.getByRole('heading', { name: 'Spieltagskader', level: 1 })).toBeVisible()
-  await expect(page.getByText('1 Nominierter hat abgesagt oder nicht geantwortet:')).toBeVisible()
-  await expect(page.getByText('(Absage)')).toBeVisible()
+  const squad = page.getByRole('region', { name: /^Kader/ })
+  await expect(squad.getByText('Lena')).toBeVisible()
+  await expect(page.getByText(/Startelf|nominiert/)).toHaveCount(0)
 })
 
 test('a page that cannot be loaded keeps its heading and leads back (A6)', async ({ page }) => {
@@ -52,14 +45,6 @@ test('a page that cannot be loaded keeps its heading and leads back (A6)', async
   await expect(page.getByText('Termin konnte nicht geladen werden.')).toBeVisible()
   await page.getByRole('link', { name: 'Zu den Terminen' }).click()
   await expect(page).toHaveURL(/\/events$/)
-})
-
-test('statistics is a tab of the team area, without a back arrow (A7)', async ({ page }) => {
-  const demo = await seedDemo()
-  await login(page, demo.player.email)
-  await page.goto('/stats')
-  await expect(page.getByRole('heading', { name: 'Statistik', level: 1 })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Zurück' })).toHaveCount(0)
 })
 
 test('a disabled button is grey, not a faded accent, in light and dark (A8)', async ({ page }) => {

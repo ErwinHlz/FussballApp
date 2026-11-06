@@ -52,15 +52,14 @@ test('player answers on the start page, the coach sees it live', async ({ browse
   const next = player.locator('.next')
   await expect(next).toContainText('Training')
   // Different group per drill: shown per drill (Rondo: Rot, Abschlussspiel: Blau).
-  await expect(next.locator('.bib-chip', { hasText: 'Rondo 4 gegen 2' })).toContainText('Rot')
-  // The match waits for an answer below the next event: answer there.
-  const matchRow = player.locator('.event-row', { hasText: 'FC Nachbarort' })
+  await expect(next.locator('.glance__link', { hasText: 'Rondo 4 gegen 2' })).toContainText('Rot')
+  // The match comes next under "Danach": answer right there.
+  const matchRow = player.locator('.tile', { hasText: 'FC Nachbarort' })
   await matchRow.getByRole('button', { name: 'Zusage' }).click()
   await expect(matchRow.getByRole('button', { name: 'Zusage' })).toHaveAttribute(
     'aria-pressed',
     'true',
   )
-  await expect(matchRow).toContainText('Du bist dabei')
 
   // Live update via Supabase Realtime, no reload on the coach side.
   await expect(yesCount).toContainText('5')

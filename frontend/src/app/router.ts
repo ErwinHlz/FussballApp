@@ -126,14 +126,6 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/groups/views/GroupsView.vue'),
       },
       {
-        // The match squad switches with the match overview via EventCoachNav.
-        path: 'events/:eventId/squad',
-        name: 'event-squad',
-        props: true,
-        meta: { title: 'events.nomination.title', back: 'event' },
-        component: () => import('@/features/events/views/MatchSquadView.vue'),
-      },
-      {
         path: 'events/:eventId/edit',
         name: 'event-edit',
         props: true,
@@ -193,29 +185,10 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/features/board/views/TacticBoardView.vue'),
       },
       {
-        path: 'templates',
-        name: 'templates',
-        meta: { requiresTeam: true, title: 'templates.title' },
-        component: () => import('@/features/templates/views/TemplatesView.vue'),
-      },
-      {
-        path: 'templates/:templateId',
-        name: 'template',
-        props: true,
-        meta: { requiresTeam: true, title: 'templates.eyebrow', back: 'templates' },
-        component: () => import('@/features/templates/views/TemplateView.vue'),
-      },
-      {
         path: 'squad',
         name: 'squad',
         meta: { requiresTeam: true, title: 'squad.title' },
         component: () => import('@/features/squad/views/SquadView.vue'),
-      },
-      {
-        path: 'stats',
-        name: 'stats',
-        meta: { requiresTeam: true, title: 'stats.title' },
-        component: () => import('@/features/stats/views/StatsView.vue'),
       },
       {
         path: 'profile',

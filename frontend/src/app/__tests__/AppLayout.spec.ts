@@ -37,13 +37,16 @@ describe('App layout', () => {
 
     expect(router.currentRoute.value.name).toBe('home')
     expect(tabLabels(wrapper)).toEqual(['Start', 'Termine', 'Training', 'Team'])
-    expect(wrapper.get('[aria-current="page"]').text()).toBe('Start')
+    expect(wrapper.get('.tab-bar [aria-current="page"]').text()).toBe('Start')
+    // The app logo top left leads home; top-level pages have no back button.
+    expect(wrapper.get('.top-bar__home').attributes('href')).toBe('/')
+    expect(wrapper.find('.tab-bar__back').exists()).toBe(false)
     wrapper.unmount()
   })
 
   it('marks the tab of sub-pages and links the profile from the header', async () => {
     i18n.global.locale.value = 'de'
-    const { wrapper } = await mountAt('/stats')
+    const { wrapper } = await mountAt('/squad')
     await flush()
 
     expect(wrapper.get('.tab-bar [aria-current="page"]').text()).toBe('Team')

@@ -1,4 +1,4 @@
-import { addDays, differenceInCalendarDays, format } from 'date-fns'
+import { differenceInCalendarDays } from 'date-fns'
 import type { TeamEvent } from '@/features/events/logic'
 import { eventEnd, responseState } from '@/features/events/logic'
 import type { DrillGroups, SavedGroup } from '@/features/groups/api'
@@ -10,14 +10,6 @@ export function nextEvent(events: TeamEvent[], now: Date = new Date()): TeamEven
       .filter((e) => !e.is_cancelled && eventEnd(e) > now)
       .sort((a, b) => a.starts_at.localeCompare(b.starts_at))[0] ?? null
   )
-}
-
-/**
- * Local dates (yyyy-MM-dd) of the week strip: today and the six days after it. A rolling week
- * keeps the next event in view on weekends, when the calendar week is almost over.
- */
-export function stripDays(now: Date = new Date()): string[] {
-  return Array.from({ length: 7 }, (_, i) => format(addDays(now, i), 'yyyy-MM-dd'))
 }
 
 export type RelativeDay = 'today' | 'tomorrow' | 'inDays' | 'date'
@@ -47,21 +39,35 @@ export function myGroupsByDrill(
   return result
 }
 
+/**
+ * The groups if every drill uses the same split (same bibs, same players), so the start page
+ * can show them once instead of per drill. Null when they differ or a drill has none.
+ */
+export function sameGroupsEverywhere(sets: SavedGroup[][]): SavedGroup[] | null {
+  const first = sets[0]
+  if (!first?.length) return null
+  const signature = (groups: SavedGroup[]) =>
+    groups
+      .map((g) => `${g.color}:${g.name}:${[...g.member_ids].sort().join(',')}`)
+      .sort()
+      .join('|')
+  const expected = signature(first)
+  return sets.every((s) => s.length && signature(s) === expected) ? first : null
+}
+
 /** Days ahead in which a training without a published plan becomes a task for the coach. */
 export const PLAN_TASK_DAYS = 3
-/** Days ahead in which a match without a squad or missing answers become tasks. */
+/** Days ahead in which missing answers become tasks. */
 export const SOON_TASK_DAYS = 7
 /** From this many players without an answer, the event is a task ("chase the answers"). */
 export const MISSING_ANSWERS_TASK = 3
 
 export type CoachTask =
-  | { kind: 'plan'; event: TeamEvent }
-  | { kind: 'squad'; event: TeamEvent }
-  | { kind: 'answers'; event: TeamEvent; count: number }
+  { kind: 'plan'; event: TeamEvent } | { kind: 'answers'; event: TeamEvent; count: number }
 
 /**
  * What the coach still has to do for the coming days, by date: publish the plan of a training
- * soon, pick the squad of a match, chase missing answers (only while players can still answer).
+ * soon, chase missing answers (only while players can still answer).
  */
 export function coachTasks(
   events: TeamEvent[],
@@ -80,8 +86,6 @@ export function coachTasks(
       within(event, PLAN_TASK_DAYS)
     )
       tasks.push({ kind: 'plan', event })
-    if (event.type === 'match' && !event.match_squad.length && within(event, SOON_TASK_DAYS))
-      tasks.push({ kind: 'squad', event })
     if (within(event, SOON_TASK_DAYS) && responseState(event, now) === 'open') {
       const answered = new Set(event.attendances.map((a) => a.member_id))
       const count = [...players].filter((id) => !answered.has(id)).length

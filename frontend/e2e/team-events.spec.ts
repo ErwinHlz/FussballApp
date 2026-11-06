@@ -46,6 +46,15 @@ test('a player attends all open dates, filters the list and jumps back to the to
   page,
 }) => {
   const demo = await seedDemo()
+  // A long season, so the slim list scrolls far enough for "Nach oben".
+  await demo.coach.sb.from('events').insert(
+    Array.from({ length: 12 }, (_, i) => ({
+      team_id: demo.team.id,
+      type: 'training' as const,
+      starts_at: addDays(new Date(), 14 + i * 3).toISOString(),
+      location: 'Sportpark',
+    })),
+  )
   await login(page, demo.player.email)
   await expect(page.getByRole('button', { name: '+' })).toHaveCount(0)
 
@@ -57,7 +66,7 @@ test('a player attends all open dates, filters the list and jumps back to the to
   await filter.getByRole('button', { name: /^Zeigen/ }).click()
   await expect(page.getByRole('button', { name: 'Filter (1 aktiv)' })).toBeVisible()
   await expect(page.getByText('vs. FC Nachbarort').first()).toBeVisible()
-  await expect(page.locator('.event-row--training')).toHaveCount(0)
+  await expect(page.locator('.tile--training')).toHaveCount(0)
   await page.getByRole('button', { name: 'Filter (1 aktiv)' }).click()
   await filter.getByRole('button', { name: 'Filter zurücksetzen' }).click()
   await filter.getByRole('button', { name: 'Schließen' }).click()

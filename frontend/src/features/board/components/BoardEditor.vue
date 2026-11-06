@@ -1149,7 +1149,7 @@ const seconds = (ms: number) => (ms / 1000).toLocaleString(undefined, { maximumF
             <strong class="board-editor__context-name">{{ objectName(selected) }}</strong>
             <UiIconButton
               icon="settings"
-              variant="surface"
+              variant="secondary"
               :label="t('board.props.open')"
               aria-haspopup="dialog"
               @click="propsOpen = true"
@@ -1615,17 +1615,18 @@ $editor-width: 720px;
     background: $bar;
     border-bottom: 1px solid $bar-line;
 
-    :deep(.ui-icon-button--ghost) {
+    :deep(.ui-button--icon.ui-button--ghost) {
       color: #fff;
     }
 
-    :deep(.ui-icon-button[aria-pressed='true']) {
+    :deep(.ui-button--icon[aria-pressed='true']) {
+      border-color: #fff;
       background: #fff;
       color: $grass;
     }
 
     // Compact save button, so the title keeps room on phones.
-    :deep(.ui-button) {
+    :deep(.ui-button:not(.ui-button--icon)) {
       flex-shrink: 0;
       padding-inline: $space-3;
     }

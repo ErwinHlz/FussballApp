@@ -6,7 +6,7 @@ import type { RouteLocationRaw } from 'vue-router'
 export type Area = { key: string; to: RouteLocationRaw; label: string }
 
 /**
- * Areas within a tab (e.g. training: sessions, drills, boards, templates) as tabs with an
+ * Areas within a tab (e.g. training: sessions, drills, boards) as tabs with an
  * underline, sticky below the top bar. Each area keeps its own address, the back button works
  * as expected. `fill` spreads few areas over the full width, `replace` switches views of the
  * same thing without growing the history.

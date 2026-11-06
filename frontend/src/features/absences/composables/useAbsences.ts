@@ -34,7 +34,6 @@ function useInvalidate() {
     Promise.all([
       queryClient.invalidateQueries({ queryKey: absenceKeys.all }),
       queryClient.invalidateQueries({ queryKey: eventKeys.all }),
-      queryClient.invalidateQueries({ queryKey: ['stats'] }),
     ])
 }
 
@@ -43,7 +42,11 @@ export function useCreateAbsences() {
   return useMutation({ mutationFn: createAbsences, onSuccess: invalidate })
 }
 
+/** Deletes absences that belong together (the same period for several teams). */
 export function useDeleteAbsence() {
   const invalidate = useInvalidate()
-  return useMutation({ mutationFn: deleteAbsence, onSuccess: invalidate })
+  return useMutation({
+    mutationFn: (ids: string[]) => Promise.all(ids.map(deleteAbsence)),
+    onSettled: invalidate,
+  })
 }

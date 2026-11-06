@@ -18,7 +18,6 @@ import MemberFormModal from '../components/MemberFormModal.vue'
 import AbsenceList from '@/features/absences/components/AbsenceList.vue'
 import { useTeamAbsences } from '@/features/absences/composables/useAbsences'
 import StatusBadge from '../components/StatusBadge.vue'
-import TeamNav from '../components/TeamNav.vue'
 import { filterSquad, MEMBER_STATUSES, POSITIONS, sortSquad, type SquadFilter } from '../squad'
 
 const { t } = useI18n()
@@ -94,11 +93,8 @@ function positionsLabel(member: TeamMember) {
 
 <template>
   <section class="squad">
-    <TeamNav active="squad" />
-
     <header class="squad__head">
-      <!-- The area tab above names the page already: the heading is for screen readers. -->
-      <h1 class="visually-hidden">{{ t('squad.title') }}</h1>
+      <h1>{{ t('squad.title') }}</h1>
       <template v-if="isCoach && activeTeam">
         <UiIconButton
           icon="link"

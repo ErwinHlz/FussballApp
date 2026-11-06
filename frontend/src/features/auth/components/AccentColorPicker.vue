@@ -1,58 +1,25 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import UiIcon from '@/ui/UiIcon.vue'
 import { useSnackbar } from '@/ui/useSnackbar'
-import { extractPalette } from '@/lib/color'
-import { clubLogoUrl } from '@/lib/clubTheme'
-import { loadImage, samplePixels } from '@/lib/image'
-import { useActiveTeam } from '@/features/teams/composables/useActiveTeam'
 import { useProfile, useUpdateProfile } from '../composables/useProfile'
 
 /**
- * Accent color of this account. Standard is the club's color (from the logo); the other logo
- * colors, a few suggestions, the app's green or any own color are one tap away and saved
- * right away. NULL = club color, 'default' = the app's green.
+ * Accent color of this account: the app's green (standard), a few suggestions or any own
+ * color, saved right away. NULL (or the older 'default') = the app's green.
  */
 const { t } = useI18n()
 const snackbar = useSnackbar()
 const profile = useProfile()
 const update = useUpdateProfile()
-const { activeTeam } = useActiveTeam()
 
 const RONDO_GREEN = '#3f6212'
 const SUGGESTIONS = ['#1d4ed8', '#b91c1c', '#c2410c', '#6d28d9', '#0f766e', '#be185d']
 
-const current = computed(() => profile.data.value?.accent_color ?? null)
-const clubColor = computed(() => activeTeam.value?.club_accent_color ?? null)
-
-// More colors of the club's logo as suggestions.
-const logoColors = ref<string[]>([])
-watch(
-  () => activeTeam.value?.club_logo_path ?? null,
-  async (path) => {
-    logoColors.value = []
-    if (!path) return
-    try {
-      logoColors.value = extractPalette(samplePixels(await loadImage(clubLogoUrl(path))))
-    } catch {
-      logoColors.value = []
-    }
-  },
-  { immediate: true },
-)
-const others = computed(() =>
-  [...new Set([...logoColors.value, ...SUGGESTIONS])].filter(
-    (c) => c !== clubColor.value?.toLowerCase(),
-  ),
-)
-const isCustom = computed(
-  () =>
-    !!current.value &&
-    current.value !== 'default' &&
-    !others.value.includes(current.value) &&
-    current.value !== clubColor.value,
-)
+const stored = computed(() => profile.data.value?.accent_color ?? null)
+const current = computed(() => (stored.value === 'default' ? null : stored.value))
+const isCustom = computed(() => !!current.value && !SUGGESTIONS.includes(current.value))
 
 async function choose(value: string | null) {
   if (value === current.value) return
@@ -74,47 +41,23 @@ function onCustom(value: string) {
 
 <template>
   <div class="accent" role="group" :aria-label="t('profile.accent.label')">
-    <button
-      type="button"
-      class="accent__club"
-      :aria-pressed="current === null"
-      @click="choose(null)"
-    >
-      <span
-        class="accent__dot"
-        :style="{ background: clubColor ?? RONDO_GREEN }"
-        aria-hidden="true"
-      />
-      <span class="accent__club-text">
-        <span class="accent__club-title">{{ t('profile.accent.club') }}</span>
-        <span class="accent__club-hint">
-          {{ clubColor ? t('profile.accent.clubHint') : t('profile.accent.clubNone') }}
-        </span>
-      </span>
-      <UiIcon v-if="current === null" name="check" :size="20" />
-    </button>
-
     <div class="accent__swatches">
       <button
         type="button"
         class="accent__swatch"
         :style="{ background: RONDO_GREEN }"
-        :aria-pressed="current === 'default'"
+        :aria-pressed="current === null"
         :aria-label="t('profile.accent.rondo')"
-        @click="choose('default')"
+        @click="choose(null)"
       />
       <button
-        v-for="color in others"
+        v-for="color in SUGGESTIONS"
         :key="color"
         type="button"
         class="accent__swatch"
         :style="{ background: color }"
         :aria-pressed="current === color"
-        :aria-label="
-          logoColors.includes(color)
-            ? t('profile.accent.logoColor', { color })
-            : t('profile.accent.color', { color })
-        "
+        :aria-label="t('profile.accent.color', { color })"
         @click="choose(color)"
       />
       <label
@@ -141,43 +84,6 @@ function onCustom(value: string) {
   flex-direction: column;
   gap: $space-3;
 
-  &__club {
-    @include focus-visible;
-
-    display: flex;
-    align-items: center;
-    gap: $space-3;
-    min-height: 56px;
-    padding: $space-2 $space-3;
-    border: 2px solid var(--color-border);
-    border-radius: $radius-lg;
-    background: transparent;
-    color: var(--color-text);
-    text-align: left;
-
-    &[aria-pressed='true'] {
-      border-color: var(--color-text);
-    }
-  }
-
-  &__dot {
-    flex-shrink: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-  }
-
-  &__club-text {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-  }
-
-  &__club-title {
-    font-weight: 800;
-  }
-
-  &__club-hint,
   &__hint {
     color: var(--color-text-muted);
     font-size: $font-sm;

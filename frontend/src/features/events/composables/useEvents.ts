@@ -10,13 +10,12 @@ import {
   fetchEvent,
   fetchTeamEvents,
   setAttendance,
-  setMatchSquad,
   updateEvent,
   withdrawAttendance,
   type AttendanceRequest,
   type EventInput,
 } from '../api'
-import type { Attendance, SquadRole, TeamEvent } from '../logic'
+import type { Attendance, TeamEvent } from '../logic'
 
 export const eventKeys = {
   all: ['events'] as const,
@@ -29,11 +28,7 @@ export function useTeamEvents(teamId: MaybeRefOrGetter<string | null>) {
   const enabled = computed(() => !!toValue(teamId))
 
   useRealtimeInvalidate(
-    [
-      { table: 'events', filter: () => `team_id=eq.${toValue(teamId)}` },
-      { table: 'attendances' },
-      { table: 'match_squad' },
-    ],
+    [{ table: 'events', filter: () => `team_id=eq.${toValue(teamId)}` }, { table: 'attendances' }],
     key,
     enabled,
   )
@@ -48,12 +43,11 @@ export function useTeamEvents(teamId: MaybeRefOrGetter<string | null>) {
 export function useEvent(eventId: MaybeRefOrGetter<string>) {
   const key = computed(() => eventKeys.detail(toValue(eventId)))
 
-  // Live overview for coaches: answers and nominations update without reload.
+  // Live overview for coaches: answers update without reload.
   useRealtimeInvalidate(
     [
       { table: 'events', filter: () => `id=eq.${toValue(eventId)}` },
       { table: 'attendances', filter: () => `event_id=eq.${toValue(eventId)}` },
-      { table: 'match_squad', filter: () => `event_id=eq.${toValue(eventId)}` },
     ],
     key,
   )
@@ -184,20 +178,6 @@ export function useWithdrawAttendance() {
       for (const [key, data] of context?.snapshot ?? []) queryClient.setQueryData(key, data)
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: eventKeys.all }),
-  })
-}
-
-export function useSetMatchSquad() {
-  const invalidate = useInvalidateEvents()
-  return useMutation({
-    mutationFn: ({
-      eventId,
-      entries,
-    }: {
-      eventId: string
-      entries: { member_id: string; role: SquadRole }[]
-    }) => setMatchSquad(eventId, entries),
-    onSuccess: invalidate,
   })
 }
 

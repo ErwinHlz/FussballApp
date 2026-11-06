@@ -32,27 +32,26 @@ test('the coach reaches every open task from the start page with one tap', async
   await expect(tasks).toBeVisible()
   await expect(tasks.getByRole('link', { name: /1 Zusage ohne Gruppe/ })).toBeVisible()
   await expect(tasks.getByRole('link', { name: /Antworten fehlen/ }).first()).toBeVisible()
-  await expect(page.getByText('Wartet auf deine Antwort')).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Danach' })).toBeVisible()
 
   await tasks.getByRole('link', { name: /Plan veröffentlichen/ }).click()
   await expect(page).toHaveURL(new RegExp(`/events/${draft.id}/plan$`))
 
-  await page.goto('/')
-  await tasks.getByRole('link', { name: /Kader nominieren/ }).click()
-  await expect(page).toHaveURL(new RegExp(`/events/${demo.match.id}/squad$`))
-  await expect(page.getByRole('heading', { name: 'Spieltagskader', level: 1 })).toBeVisible()
+  await expect(tasks.getByRole('link', { name: /Kader nominieren/ })).toHaveCount(0)
 
   await page.goto('/')
   await tasks.getByRole('link', { name: /Zusage ohne Gruppe/ }).click()
   await expect(page).toHaveURL(new RegExp(`/events/${demo.training.id}/groups$`))
 })
 
-test('coaches answer on the side; players keep reminder and "attend all"', async ({ browser }) => {
+test('coaches answer on the side and can attend all; only players get the reminder', async ({
+  browser,
+}) => {
   const demo = await seedDemo()
 
   const coach = await (await browser.newContext()).newPage()
   await login(coach, demo.coach.email, '/events')
-  await expect(coach.getByRole('button', { name: 'Alle zusagen' })).toHaveCount(0)
+  await expect(coach.getByRole('button', { name: 'Alle zusagen' })).toBeVisible()
   await expect(coach.getByText(/noch nicht beantwortet/)).toHaveCount(0)
   await coach.goto(`/events/${demo.match.id}`)
   // The own answer is the slim line with three small buttons.

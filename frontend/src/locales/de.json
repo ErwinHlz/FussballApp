@@ -10,7 +10,8 @@
     "profile": "Profil",
     "club": "Verein",
     "start": "Start",
-    "team": "Team"
+    "team": "Team",
+    "home": "Rondo – zur Startseite"
   },
   "events": {
     "title": "Termine",
@@ -70,17 +71,6 @@
       "cup": "Pokal",
       "friendly": "Test"
     },
-    "squadRole": {
-      "starter": "Startelf",
-      "bench": "Bank",
-      "reserve": "Reserve"
-    },
-    "squadRoleShort": {
-      "starter": "Start",
-      "bench": "Bank",
-      "reserve": "Res.",
-      "none": "–"
-    },
     "overview": {
       "title": "Wer kommt?",
       "yes": "Zusagen",
@@ -89,21 +79,6 @@
       "none": "Keine Antwort",
       "change": "Antwort ändern",
       "answerFor": "Antwort für {name}"
-    },
-    "nomination": {
-      "title": "Spieltagskader",
-      "counts": "Startelf {starter} · Bank {bench} · Reserve {reserve}",
-      "coachOnly": "Nur Trainer können den Spieltagskader nominieren.",
-      "noCandidates": "Noch keine Zusagen.",
-      "save": "Kader speichern",
-      "saved": "Kader gespeichert",
-      "saveFailed": "Kader konnte nicht gespeichert werden.",
-      "you": "Du bist nominiert: {role}",
-      "notYou": "Du bist für dieses Spiel nicht nominiert.",
-      "tapHint": "Tipp auf die Rolle, um sie zu wechseln.",
-      "roleOf": "{name}: {role} – tippen zum Wechseln",
-      "noAnswer": "keine Antwort",
-      "unavailable": "{n} Nominierter hat abgesagt oder nicht geantwortet: | {n} Nominierte haben abgesagt oder nicht geantwortet:"
     },
     "coachActions": "Trainer-Aktionen",
     "edit": "Bearbeiten",
@@ -208,9 +183,7 @@
       "label": "Bereiche des Trainings",
       "overview": "Übersicht",
       "plan": "Plan",
-      "groups": "Gruppen",
-      "squad": "Kader",
-      "matchLabel": "Bereiche des Spiels"
+      "groups": "Gruppen"
     },
     "quick": {
       "duration": "Dauer",
@@ -233,14 +206,12 @@
     "cancelHint": "Die Spieler werden benachrichtigt. Der Termin bleibt durchgestrichen sichtbar.",
     "cancelledDone": "Termin abgesagt",
     "reactivatedDone": "Absage zurückgenommen",
-    "squadRoleLong": {
-      "none": "Nicht nominiert",
-      "starter": "Startelf",
-      "bench": "Bank",
-      "reserve": "Reserve"
-    },
     "navLabel": "Bereiche bei Termine",
-    "declineLonger": "Länger weg? Abwesenheit eintragen"
+    "declineLonger": "Länger weg? Abwesenheit eintragen",
+    "squad": {
+      "title": "Kader",
+      "empty": "Noch keine Zusagen."
+    }
   },
   "training": {
     "title": "Training",
@@ -255,8 +226,7 @@
       "label": "Bereiche im Training",
       "sessions": "Trainings",
       "drills": "Übungen",
-      "boards": "Taktik",
-      "templates": "Vorlagen"
+      "boards": "Taktik"
     }
   },
   "squad": {
@@ -339,11 +309,7 @@
     "themeLabel": "Hell oder dunkel",
     "accent": {
       "label": "Akzentfarbe",
-      "club": "Vereinsfarbe",
-      "clubHint": "Standard – die Farbe deines Vereins",
-      "clubNone": "Standard – dein Verein hat noch keine Farbe, daher Rondo-Grün",
       "rondo": "Rondo-Grün",
-      "logoColor": "Farbe aus dem Vereinslogo {color}",
       "color": "Farbe {color}",
       "custom": "Eigene Farbe wählen",
       "hint": "Gilt nur für dein Konto. Die Farbe wird für gute Lesbarkeit leicht angepasst.",
@@ -411,7 +377,6 @@
     "gotInviteTitle": "Du wurdest eingeladen?",
     "gotInviteText": "Öffne einfach den Einladungslink von deinem Trainer oder Verein. Du landest dann direkt in deiner Mannschaft.",
     "nav": "Mannschaften",
-    "navLabel": "Bereiche im Team",
     "welcomeChoose": "Wie möchtest du starten?",
     "inviteLink": "Einladungslink",
     "inviteLinkPlaceholder": "https://…/join/…",
@@ -677,7 +642,7 @@
     "removed": "„{title}“ entfernt",
     "actionsFor": "Aktionen für {title}",
     "moreTitle": "Plan-Aktionen",
-    "moreHint": "Kopieren, Vorlagen und Notizen unter ⋯",
+    "moreHint": "Kopieren und Notizen unter ⋯",
     "statusLabel": "Plan-Status",
     "publishedShort": "Spieler sehen den Plan",
     "draftShort": "Nur Trainer sehen den Plan",
@@ -746,15 +711,14 @@
     "countOpen": "{n} offen",
     "flowAndDetails": "Ablauf und Details",
     "allDetails": "Alle Details",
-    "yourBibs": "Deine Leibchen",
     "allDrills": "alle Übungen",
-    "nextDays": "Die nächsten 7 Tage",
-    "dayEvents": "Termine an diesem Tag",
-    "noEventThatDay": "An diesem Tag ist kein Termin.",
-    "waiting": "Wartet auf deine Antwort",
     "allEvents": "Alle Termine",
     "ownAnswer": "Deine Antwort",
-    "away": "Abwesend?"
+    "groupsAllDrills": "Gruppen für alle Übungen",
+    "later": "Danach",
+    "route": "· Route",
+    "video": "Video",
+    "animation": "Animation"
   },
   "board": {
     "title": "Taktiktafel",
@@ -911,52 +875,6 @@
       "stepWord": "Schritt"
     }
   },
-  "stats": {
-    "title": "Statistik",
-    "range": "Zeitraum",
-    "ranges": {
-      "last30": "Letzte 30 Tage",
-      "season": "Diese Saison",
-      "all": "Gesamt"
-    },
-    "loadFailed": "Statistik konnte nicht geladen werden.",
-    "empty": "Noch keine Daten",
-    "emptyHint": "Sobald Trainings und Spiele stattgefunden haben, erscheinen hier die Zahlen.",
-    "me": "Deine Werte",
-    "team": "Mannschaft",
-    "players": "Spieler",
-    "sortLabel": "Sortierung",
-    "sort": {
-      "rate": "Nach Beteiligung",
-      "name": "Nach Name"
-    },
-    "trainingRate": "Trainingsbeteiligung",
-    "trainingRateOf": "Trainingsbeteiligung von {name}",
-    "teamAverage": "Mannschaft: {value}",
-    "trainingTime": "Trainingszeit",
-    "hours": "{n} Std.",
-    "trainingsOf": "{yes} von {total} Trainings",
-    "matches": "Spiele",
-    "matchesShort": "Spiele {yes}/{total}",
-    "nominations": "Startelf {starter} · Bank {bench} · Res. {reserve}",
-    "nominatedShort": "{n}× nominiert",
-    "answerRate": "Antwortquote",
-    "avgAttendance": "Ø Beteiligung",
-    "avgPlayers": "Ø Spieler pro Training",
-    "trainings": "Trainings",
-    "declines": "Absagen",
-    "chart": {
-      "title": "Beteiligung pro Training",
-      "asTable": "Als Tabelle",
-      "asChart": "Als Diagramm",
-      "latestOnly": "Die letzten {n} Trainings; alle in der Tabelle.",
-      "date": "Training",
-      "yes": "Zusagen",
-      "rate": "Beteiligung",
-      "yesOf": "{yes} von {players} Spielern",
-      "point": "{date}: {yes} von {players} Spielern ({rate} %)"
-    }
-  },
   "absences": {
     "title": "Abwesenheiten",
     "intro": "Urlaub, Krankheit oder Arbeit? Trag den Zeitraum einmal ein – alle Termine darin werden automatisch abgesagt.",
@@ -964,7 +882,7 @@
     "from": "Von",
     "to": "Bis (einschließlich)",
     "notePlaceholder": "z. B. Familienurlaub",
-    "hint": "Gilt für alle deine Mannschaften. Eigene Zusagen bleiben bestehen; Termine nach Anmeldeschluss ändert nur der Trainer.",
+    "hint": "Gilt für alle deine Mannschaften. Auch bisherige Zusagen werden abgesagt; Termine nach Anmeldeschluss ändert nur der Trainer.",
     "save": "Abwesenheit speichern",
     "failed": "Abwesenheit konnte nicht gespeichert werden.",
     "created": "Gespeichert – kein Termin betroffen. | Gespeichert – {n} Termin abgesagt. | Gespeichert – {n} Termine abgesagt.",
@@ -976,7 +894,7 @@
   },
   "push": {
     "title": "Benachrichtigungen",
-    "intro": "Erhalte einen Hinweis bei neuen Terminen, veröffentlichten Trainingsplänen, Nominierungen, Absagen und kurz vor dem Anmeldeschluss.",
+    "intro": "Erhalte einen Hinweis bei neuen Terminen, veröffentlichten Trainingsplänen, Absagen und kurz vor dem Anmeldeschluss.",
     "on": "Auf diesem Gerät aktiv",
     "off": "Auf diesem Gerät aus",
     "enable": "Benachrichtigungen aktivieren",
@@ -996,7 +914,7 @@
     "deleteText": "Das kann nicht rückgängig gemacht werden. Gelöscht werden:",
     "deleteItems": {
       "memberships": "dein Konto, Profil und deine Einträge in allen Kadern",
-      "answers": "alle Zu- und Absagen, Nominierungen, Abwesenheiten und Geräte",
+      "answers": "alle Zu- und Absagen, Abwesenheiten und Geräte",
       "clubs": "Vereine, die nur du nutzt, mit allen Inhalten",
       "rest": "deine Einstellungen wie Akzentfarbe und Benachrichtigungen"
     },
@@ -1110,7 +1028,7 @@
   },
   "branding": {
     "title": "Vereinslogo",
-    "intro": "Lade das Vereinslogo hoch. Rondo übernimmt die kräftigste Farbe des Logos als Vereinsfarbe – sie ist für alle Mitglieder voreingestellt.",
+    "intro": "Lade das Vereinslogo hoch. Es erscheint oben in der App und auf Einladungen.",
     "upload": "Logo hochladen",
     "replace": "Logo ersetzen",
     "remove": "Logo entfernen",
@@ -1122,49 +1040,7 @@
       "size": "Das Bild ist zu groß (höchstens 10 MB).",
       "read": "Das Bild konnte nicht gelesen werden.",
       "save": "Speichern fehlgeschlagen. Bitte versuche es erneut."
-    },
-    "clubColor": "Vereinsfarbe aus dem Logo: {color}",
-    "clubColorNone": "Ohne Logo gilt das Rondo-Grün.",
-    "colorHint": "Jedes Mitglied kann im Profil unter „Erscheinungsbild“ eine eigene Akzentfarbe wählen."
-  },
-  "templates": {
-    "title": "Trainingsvorlagen",
-    "eyebrow": "Trainingsvorlage",
-    "open": "Vorlagen öffnen",
-    "teaser": "Trainings ohne Datum bauen, speichern und mit einem Tipp auf einen Termin legen.",
-    "intro": "Bau Trainings einmal und nutze sie immer wieder. Geteilte Vorlagen sehen auch die anderen Trainer im Verein.",
-    "own": "Vorlagen der {team}",
-    "fromClub": "Im Verein geteilt",
-    "shared": "Geteilt",
-    "new": "Neue Vorlage",
-    "create": "Vorlage anlegen",
-    "name": "Name",
-    "namePlaceholder": "z. B. Passen & Pressing, 90 Min.",
-    "description": "Beschreibung (optional)",
-    "descriptionPlaceholder": "Ziel, Schwerpunkt, Material …",
-    "shareLabel": "Mit den Trainern im Verein teilen",
-    "shareHint": "Andere Trainer können die Vorlage ansehen und auf ihre Trainings legen, aber nicht ändern.",
-    "fromPlanHint": "Tipp: Im Trainingsplan eines Termins kannst du einen fertigen Plan auch „Als Vorlage speichern“.",
-    "emptyTitle": "Noch keine Vorlagen",
-    "emptyText": "Leg eine Vorlage an oder speichere einen Trainingsplan als Vorlage.",
-    "emptyPick": "Noch keine Vorlagen vorhanden.",
-    "noDrills": "Noch keine Übungen in dieser Vorlage.",
-    "apply": "Auf ein Training legen",
-    "applyTitle": "Training wählen",
-    "applyHint": "Die Übungen werden an den Plan des Trainings angehängt.",
-    "noTrainings": "Keine kommenden Trainings.",
-    "applyFailed": "Die Vorlage konnte nicht übernommen werden.",
-    "pickTitle": "Aus Vorlage",
-    "pickHint": "Die Übungen der Vorlage werden an diesen Plan angehängt.",
-    "fromTemplate": "Aus Vorlage",
-    "saveAs": "Als Vorlage speichern",
-    "saveAsTitle": "Plan als Vorlage speichern",
-    "savedAs": "Als Vorlage gespeichert.",
-    "copyHint": "Übungen, die nur der anderen Mannschaft gehören, werden beim Übernehmen in eure Übungsbibliothek kopiert.",
-    "delete": "Vorlage löschen",
-    "loadFailed": "Die Vorlagen konnten nicht geladen werden.",
-    "loadFailedOne": "Die Vorlage konnte nicht geladen werden.",
-    "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+    }
   },
   "boards": {
     "title": "Taktiktafel",
@@ -1264,7 +1140,6 @@
   "coachTasks": {
     "title": "Zu erledigen",
     "plan": "Plan veröffentlichen",
-    "squad": "Kader nominieren",
     "answers": "{n} Antwort fehlt | {n} Antworten fehlen",
     "groups": "{n} Zusage ohne Gruppe | {n} Zusagen ohne Gruppe",
     "allDone": "Alles erledigt für die nächsten Tage"

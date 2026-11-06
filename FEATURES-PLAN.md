@@ -25,7 +25,7 @@ Phase anhalten, typecheck/lint/test grün, ein Commit pro Phase.
 - [x] Die Tab-Leiste unten ist auf allen Seiten sichtbar (auch Termin-Detail, Plan, Gruppen, Editoren);
       Aktionsleisten und schwebende Knöpfe sitzen darüber
 - [x] Neuer Tab **„Verein“** für Vereins-Admins (führt direkt zur Vereinsverwaltung)
-- [x] Bereichsleiste (Training: Einheiten/Übungen/Taktik/Vorlagen, Team: Kader/Statistik/Teams)
+- [x] Bereichsleiste (Training: Einheiten/Übungen/Taktik, Team: Kader/Teams)
       neu gestaltet als Reiter mit Unterstrich und **sticky unter der Kopfzeile**
 - [x] Browser-Tests angepasst
 

@@ -1,0 +1,146 @@
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+// The one button design of the app. UiButton (text, optionally with icon) and UiIconButton
+// (icon only) render these classes; components never style their own buttons, they only place
+// them. Change the look here and it changes everywhere.
+//
+//   .ui-button                      base: shape, border, type, motion, disabled
+//   .ui-button--primary|secondary|ghost|danger
+//   .ui-button--sm|md|lg            height 48 / 52 / 60 px (made for thumbs)
+//   .ui-button--icon                square, icon only
+//   .ui-button--block               full width
+
+.ui-button {
+  @include focus-visible;
+
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  min-height: 52px;
+  padding: 0 $space-5;
+  border: 2px solid transparent;
+  border-radius: $radius-md;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: $font-md;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  // Disabled is neutral grey in every variant and theme: a faded accent looked like the light
+  // accent of the dark theme, so an active main button could pass for a disabled one.
+  // A loading button (aria-busy) keeps its color.
+  &:disabled:not([aria-busy]) {
+    border-color: var(--color-border);
+    background: var(--color-surface-muted);
+    color: var(--color-text-muted);
+  }
+
+  // Sizes
+  &--sm {
+    min-height: 48px;
+    padding: 0 $space-4;
+    font-size: $font-sm;
+  }
+
+  &--lg {
+    min-height: 60px;
+    font-size: $font-lg;
+  }
+
+  &--block {
+    width: 100%;
+  }
+
+  &--icon {
+    width: 48px;
+    min-height: 48px;
+    height: 48px;
+    padding: 0;
+  }
+
+  // Variants
+  &--primary {
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+
+    &:hover:not(:disabled) {
+      background: var(--color-primary-hover);
+    }
+  }
+
+  &--secondary {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+
+    &:hover:not(:disabled) {
+      background: var(--color-surface-muted);
+    }
+  }
+
+  &--ghost:hover:not(:disabled) {
+    background: var(--color-surface-muted);
+  }
+
+  &--danger {
+    background: var(--color-danger);
+    color: var(--color-danger-contrast);
+  }
+
+  // Toggle buttons (aria-pressed) show their state with the text color as frame.
+  &[aria-pressed='true'] {
+    border-color: var(--color-text);
+    background: var(--color-surface-muted);
+  }
+
+  &__spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: ui-button-spin 0.8s linear infinite;
+  }
+
+  // Small count on a button (e.g. active filters).
+  &__badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    border-radius: $radius-full;
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    font-size: $font-xs;
+    font-weight: 800;
+  }
+}
+
+@keyframes ui-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
